@@ -8,7 +8,6 @@ class Service extends Model
 {
     protected $fillable = [
         'name',
-        'date',
         'description',
     ];
 
@@ -18,9 +17,4 @@ class Service extends Model
         ->withPivot('price', 'created_at', 'updated_at');
     }
 
-    protected function casts(): array {
-        return [
-            'date' => 'date'
-        ];
-    }
 }
