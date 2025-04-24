@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('article', length: 20);
             $table->unsignedBigInteger('category_id');
             $table->unsignedBigInteger('manufacturer_id');
-            $table->text('description')->nullable();
+            $table->text('description');
             $table->date('release_date');
             $table->decimal('price', total: 8, places: 2)->unsigned();
             $table->string('image_path');

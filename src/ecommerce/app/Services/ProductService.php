@@ -54,7 +54,7 @@ class ProductService
     public function attachServices(ProductStoreDTO $productStoreDTO, Product $created_product): Product
     {
         if (!empty($productStoreDTO->services)) {
-            $created_product->services()->attach($productStoreDTO->services);
+            $created_product->services()->attach($productStoreDTO->services); // Probably move to ProductRepository?
         }
 
         return $created_product;
