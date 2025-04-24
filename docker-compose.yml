@@ -45,6 +45,7 @@ services:
       context: ./docker/mysql
     container_name: ecommerce_mysql
     environment:
+      # MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DB}
       MYSQL_USER: ${MYSQL_USER}

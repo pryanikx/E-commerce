@@ -11,7 +11,7 @@ class Product extends Model
 {
     use HasFactory;
 
-     /**
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -24,6 +24,7 @@ class Product extends Model
         'price',
         'image_path',
     ];
+
 
     public function category(): BelongsTo
     {
@@ -38,7 +39,7 @@ class Product extends Model
     public function services(): BelongsToMany
     {
         return $this->belongsToMany(Service::class, 'products_services')
-        ->withPivot('price', 'created_at', 'updated_at');
+        ->withPivot('price');
     }
 
     protected function casts(): array {

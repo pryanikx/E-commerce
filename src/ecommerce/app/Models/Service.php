@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Service extends Model
 {
@@ -11,10 +12,10 @@ class Service extends Model
         'description',
     ];
 
-    public function products()
+    public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'products_services')
-        ->withPivot('price', 'created_at', 'updated_at');
+        ->withPivot('price');
     }
 
 }
