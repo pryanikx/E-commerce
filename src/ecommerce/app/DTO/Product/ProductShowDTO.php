@@ -1,8 +1,7 @@
 <?php
 
-namespace app\DTO;
+namespace App\DTO\Product;
 
-use App\Http\Requests\ProductStoreRequest;
 use App\Models\Product;
 
 readonly class ProductShowDTO

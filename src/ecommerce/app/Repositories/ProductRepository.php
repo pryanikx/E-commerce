@@ -23,8 +23,20 @@ class ProductRepository implements ProductRepositoryInterface
         return Product::create($data);
     }
 
+    public function update(Product $product, array $data): bool
+    {
+        return $product->update($data);
+    }
+
     public function delete(int $id) {
         // Do I need to detach() all services for product, if product is ON DELETE CASCADE?
         return Product::destroy($id);
+    }
+
+    public function attachServices(Product $product, array $services): void
+    {
+        if (!empty($services)) {
+            $product->services()->sync($services);
+        }
     }
 }

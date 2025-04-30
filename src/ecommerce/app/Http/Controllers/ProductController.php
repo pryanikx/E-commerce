@@ -1,10 +1,9 @@
 <?php
 
-namespace app\Http\Controllers;
+namespace App\Http\Controllers;
 
-use app\DTO\ProductListDTO;
-use app\DTO\ProductShowDTO;
-use App\Models\Product;
+use App\DTO\Product\ProductListDTO;
+use App\DTO\Product\ProductShowDTO;
 use App\Services\ProductService;
 
 class ProductController extends Controller

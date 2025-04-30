@@ -3,15 +3,17 @@
 
 namespace App\Services;
 
+use App\DTO\Product\ProductStoreDTO;
+use App\DTO\Product\ProductUpdateDTO;
 use App\Models\Product;
-use App\DTO\ProductStoreDTO;
 use App\Repositories\Contracts\ProductRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProductService
 {
     public function __construct(protected ProductRepositoryInterface $productRepository) {}
 
-    public function getAll()
+    public function getAll(): ?Collection
     {
         return $this->productRepository->all();
     }
@@ -21,46 +23,60 @@ class ProductService
         return $this->productRepository->find($id);
     }
 
-    public function createProduct(ProductStoreDTO $productStoreDTO): Product
-    {
-        $image_path = $this->createImagePath($productStoreDTO);
+    public function deleteProduct(int $id) {
+        return $this->productRepository->delete($id);
+    }
 
-        $created_product = $this->productRepository->create([
-            'name' => $productStoreDTO->name,
-            'article' => $productStoreDTO->article,
-            'description' => $productStoreDTO->description,
-            'release_date' => $productStoreDTO->release_date,
-            'price' => $productStoreDTO->price,
+    public function updateProduct(int $id, ProductUpdateDTO $dto): Product
+    {
+        $product = $this->getProduct($id);
+
+        $image_path = $this->handleImagePath($dto->image, $product->image_path);
+
+        $this->productRepository->update($product, [
+            'description' => $dto->description,
+            'price' => $dto->price,
             'image_path' => $image_path,
-            'manufacturer_id' => $productStoreDTO->manufacturer_id,
-            'category_id' => $productStoreDTO->category_id
         ]);
 
-        return $this->attachServices($productStoreDTO, $created_product);
+        $this->productRepository->attachServices($product, $dto->services);
+
+        return $product;
     }
 
-    public function createImagePath(ProductStoreDTO $product): string {
-        $image_path = null;
-
-        if (!empty($product->image)) {
-            $filename = uniqid() . '.' . $product->image->getClientOriginalExtension();
-            $product->image->storeAs('public/products', $filename);
-            $image_path = 'storage/products/' . $filename;
-        }
-
-        return $image_path;
-    }
-
-    public function attachServices(ProductStoreDTO $productStoreDTO, Product $created_product): Product
+    public function createProduct(ProductStoreDTO $dto): Product
     {
-        if (!empty($productStoreDTO->services)) {
-            $created_product->services()->attach($productStoreDTO->services); // Probably move to ProductRepository?
-        }
+        $image_path = $this->handleImagePath($dto->image);
+
+        $created_product = $this->productRepository->create([
+            'name' => $dto->name,
+            'article' => $dto->article,
+            'description' => $dto->description,
+            'release_date' => $dto->release_date,
+            'price' => $dto->price,
+            'image_path' => $image_path,
+            'manufacturer_id' => $dto->manufacturer_id,
+            'category_id' => $dto->category_id
+        ]);
+
+        $this->productRepository->attachServices($created_product, $dto->services);
 
         return $created_product;
     }
 
-    public function deleteProduct(int $id) {
-        return $this->productRepository->delete($id);
+    private function handleImagePath(?\Illuminate\Http\UploadedFile $image, ?string $oldPath = null): ?string
+    {
+        if (!$image || !$image->isValid()) {
+            return $oldPath;
+        }
+
+        if ($oldPath && file_exists(public_path($oldPath))) {
+            unlink(public_path($oldPath));
+        }
+
+        $filename = uniqid() . '.' . $image->getClientOriginalExtension();
+        $image->storeAs('public/products', $filename);
+
+        return 'storage/products/' . $filename;
     }
 }

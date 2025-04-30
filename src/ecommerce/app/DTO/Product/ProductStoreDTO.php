@@ -1,6 +1,6 @@
 <?php
 
-namespace app\DTO;
+namespace App\DTO\Product;
 
 use App\Http\Requests\ProductStoreRequest;
 
@@ -16,14 +16,13 @@ readonly class ProductStoreDTO
     public int $category_id;
     public array $services;
 
-
     public function __construct(ProductStoreRequest $request) {
         $this->name = $request->input('name');
         $this->article = $request->input('article');
         $this->description = $request->input('description');
         $this->release_date = $request->input('release_date');
         $this->price = $request->input('price');
-        $this->image = $request->file('image_path');
+        $this->image = $request->file('image');
         $this->manufacturer_id = $request->input('manufacturer_id');
         $this->category_id = $request->input('category_id');
         $this->services = collect($request->input('service_ids', []))
