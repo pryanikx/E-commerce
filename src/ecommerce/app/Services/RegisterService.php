@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Services;
+
+use App\DTO\Auth\RegisterDTO;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+class RegisterService
+{
+    public function register(RegisterDTO $dto): array
+    {
+        $user = User::create([
+            'name' => $dto->name,
+            'email' => $dto->email,
+            'password' => Hash::make($dto->password),
+        ]);
+
+        $token = $user->createToken('token')->plainTextToken;
+
+        return [
+            'user' => $user,
+            'token' => $token,
+        ];
+    }
+}

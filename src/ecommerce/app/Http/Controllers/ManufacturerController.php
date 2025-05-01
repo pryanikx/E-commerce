@@ -28,7 +28,7 @@ class ManufacturerController extends Controller
 
     public function store(ManufacturerStoreRequest $request) : JsonResponse
     {
-        $dto = new ManufacturerStoreDTO($request);
+        $dto = new ManufacturerStoreDTO($request->validated());
 
         $manufacturer = $this->manufacturerService->createManufacturer($dto);
 
@@ -37,7 +37,7 @@ class ManufacturerController extends Controller
 
     public function updateManufacturer(int $id, ManufacturerStoreRequest $request): JsonResponse
     {
-        $dto = new ManufacturerStoreDTO($request);
+        $dto = new ManufacturerStoreDTO($request->validated());
         $product = $this->manufacturerService->updateManufacturer($id, $dto);
 
         return response()->json($product, 200);

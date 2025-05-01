@@ -28,7 +28,7 @@ class ServiceController extends Controller
 
     public  function store(ServiceStoreRequest $request)
     {
-        $dto = new ServiceStoreDTO($request);
+        $dto = new ServiceStoreDTO($request->validated());
         $service = $this->serviceService->createService($dto);
 
         return response()->json($service, 201);
@@ -36,7 +36,7 @@ class ServiceController extends Controller
 
     public function updateService(int $id, ServiceStoreRequest $request): JsonResponse
     {
-        $dto = new ServiceStoreDTO($request);
+        $dto = new ServiceStoreDTO($request->validated());
         $service = $this->serviceService->updateService($id, $dto);
 
         return response()->json($service, 200);

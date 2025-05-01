@@ -12,7 +12,7 @@ class AdminProductController extends ProductController
 {
     public function store(ProductStoreRequest $request): JsonResponse
     {
-        $dto = new ProductStoreDTO($request);
+        $dto = new ProductStoreDTO($request->validated());
         $product = $this->productService->createProduct($dto);
         // TODO: сделать добавление НОВОЙ, а не существующей услуги при доабавлении продукта
 
@@ -21,7 +21,7 @@ class AdminProductController extends ProductController
 
     public function updateProduct(int $id, ProductUpdateRequest $request): JsonResponse
     {
-        $dto = new ProductUpdateDTO($request);
+        $dto = new ProductUpdateDTO($request->validated());
         $product = $this->productService->updateProduct($id, $dto);
 
         return response()->json($product, 200);

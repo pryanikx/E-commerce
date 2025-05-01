@@ -16,7 +16,7 @@ class ProductController extends Controller
         $products = $this->productService->getAll();
 
         if (!$products) {
-            return response()->json("No products found!", 404);
+            return response()->json(['error' => 'No products found!'], 404);
         }
 
         $result = $products->map(fn($product) => (new ProductListDTO($product))->toArray());
@@ -29,7 +29,7 @@ class ProductController extends Controller
         $product = $this->productService->getProduct($id);
 
         if (!$product) {
-            return response()->json("Product not found!", 404);
+            return response()->json(['error' => 'Product not found!'], 404);
         }
 
         return response()->json((new ProductShowDTO($product))->toArray(), 200);
