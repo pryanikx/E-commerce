@@ -12,7 +12,7 @@ interface ProductRepositoryInterface
     public function create(array $data): Product;
 
     public function update(Product $product, array $data): bool;
-    public function delete(int $id);
+    public function delete(int $id): bool;
 
-    public function attachServices(Product $product, array $services, ): void;
+    public function attachServices(Product $product, array $services): void;
 }

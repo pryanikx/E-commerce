@@ -7,7 +7,7 @@ use App\Http\Requests\ServiceStoreRequest;
 use App\DTO\Service\ServiceListDTO;
 use App\DTO\Service\ServiceStoreDTO;
 use App\Services\ServiceService;
-
+use \Illuminate\Http\JsonResponse;
 
 class ServiceController extends Controller
 {
@@ -32,6 +32,14 @@ class ServiceController extends Controller
         $service = $this->serviceService->createService($dto);
 
         return response()->json($service, 201);
+    }
+
+    public function updateService(int $id, ServiceStoreRequest $request): JsonResponse
+    {
+        $dto = new ServiceStoreDTO($request);
+        $service = $this->serviceService->updateService($id, $dto);
+
+        return response()->json($service, 200);
     }
 
     public function deleteService(int $id) {

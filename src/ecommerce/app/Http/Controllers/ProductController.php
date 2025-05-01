@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\DTO\Product\ProductListDTO;
 use App\DTO\Product\ProductShowDTO;
 use App\Services\ProductService;
+use \Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
     public function __construct(protected ProductService $productService) {}
 
-    public function index() {
+    public function index(): JsonResponse
+    {
         $products = $this->productService->getAll();
 
         if (!$products) {
@@ -22,7 +24,8 @@ class ProductController extends Controller
         return response()->json($result);
     }
 
-    public function show(int $id) {
+    public function show(int $id): JsonResponse
+    {
         $product = $this->productService->getProduct($id);
 
         if (!$product) {
@@ -31,5 +34,4 @@ class ProductController extends Controller
 
         return response()->json((new ProductShowDTO($product))->toArray(), 200);
     }
-
 }

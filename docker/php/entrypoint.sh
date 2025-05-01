@@ -14,6 +14,9 @@ sed -i "s/DB_USERNAME=.*/DB_USERNAME=${DB_USERNAME}/" .env
 sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/" .env
 
 php artisan migrate
+composer dump-autoload
+
+php artisan db:seed
 
 php artisan key:generate
 

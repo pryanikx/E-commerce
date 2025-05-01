@@ -17,12 +17,20 @@ class ServiceService
 
     public function createService(ServiceStoreDTO $dto): Service {
 
-        $created_service = $this->serviceRepository->create([
+        return $this->serviceRepository->create([
             'name' => $dto->name,
             'description' => $dto->description,
         ]);
+    }
 
-        return $created_service;
+    public function updateService(int $id, ServiceStoreDTO $dto): bool
+    {
+        $service = $this->serviceRepository->find($id);
+
+        return $this->serviceRepository->update($service, [
+            'name' => $dto->name,
+            'description' => $dto->description,
+        ]);
     }
 
     public function deleteService(int $id): ?bool

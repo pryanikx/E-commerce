@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\ManufacturerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -40,9 +41,12 @@ Route::patch('/products/{id}', [AdminProductController::class, 'updateProduct'])
 Route::get('/services', [ServiceController::class, 'index']);
 Route::post('/services', [ServiceController::class, 'store']);
 Route::delete('/services/{id}', [ServiceController::class, 'deleteService']);
-// Route::pathc('/services/{id}, [ServiceController::class, 'updateService']);
+Route::patch('/services/{id}', [ServiceController::class, 'updateService']);
 
-Route::get('/manufacturers' [ManufacturerController::class, 'index']);
-Route::post('/manufacturers' [ManufacturerController::class, 'store']);
-Route::delete('manufacturers/{id}', [ManufacturerController::class, 'deleteManufacturer']);
+
+    Route::get('/manufacturers', [ManufacturerController::class, 'index']);
+    //Route::get('/manufacturers/{id}', [ManufacturerController::class, 'show']);
+    Route::post('/manufacturers', [ManufacturerController::class, 'store']);
+    Route::delete('/manufacturers/{id}', [ManufacturerController::class, 'deleteManufacturer']);
+    Route::patch('/manufacturers/{id}', [ManufacturerController::class, 'updateManufacturer']);
 

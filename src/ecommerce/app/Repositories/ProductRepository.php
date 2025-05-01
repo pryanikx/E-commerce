@@ -28,7 +28,7 @@ class ProductRepository implements ProductRepositoryInterface
         return $product->update($data);
     }
 
-    public function delete(int $id) {
+    public function delete(int $id): bool {
         // Do I need to detach() all services for product, if product is ON DELETE CASCADE?
         return Product::destroy($id);
     }
