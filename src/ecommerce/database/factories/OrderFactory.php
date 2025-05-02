@@ -20,8 +20,8 @@ class OrderFactory extends Factory
     {
         return [
             'user_id' => User::inRandomOrder()->first()->id,
-            'product_service_id' => Product::inRandomOrder()->first()->id,
-            'service_date' => now(),
+            'product_maintenance_id' => Product::inRandomOrder()->first()->id,
+            'maintenance_date' => now(),
             ];
     }
 }

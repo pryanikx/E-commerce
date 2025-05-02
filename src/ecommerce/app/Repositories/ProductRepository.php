@@ -15,7 +15,7 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function find(int $id): ?Product
     {
-        return Product::with(['manufacturer', 'category', 'services'])->findOrFail($id);
+        return Product::with(['manufacturer', 'category', 'maintenance'])->findOrFail($id);
     }
 
     public function create(array $data): Product
@@ -33,10 +33,10 @@ class ProductRepository implements ProductRepositoryInterface
         return Product::destroy($id);
     }
 
-    public function attachServices(Product $product, array $services): void
+    public function attachMaintenances(Product $product, array $maintenances): void
     {
-        if (!empty($services)) {
-            $product->services()->sync($services);
+        if (!empty($maintenances)) {
+            $product->maintenances()->sync($maintenances);
         }
     }
 }

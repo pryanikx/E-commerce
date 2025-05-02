@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products_services', function (Blueprint $table) {
+        Schema::create('products_maintenances', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->foreignId('service_id')->constrained()->onDelete('cascade');
+            $table->foreignId('maintenance_id')->constrained()->onDelete('cascade');
 
             $table->decimal('price', total: 8, places: 2);
 
             $table->timestamps();
 
-            $table->unique(['product_id','service_id', 'price']);
+            $table->unique(['product_id','maintenance_id', 'price']);
 
 
         });
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products_services');
+        Schema::dropIfExists('products_maintenance');
     }
 };

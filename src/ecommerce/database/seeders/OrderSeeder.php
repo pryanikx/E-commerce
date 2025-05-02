@@ -14,8 +14,8 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
-        $products_services = DB::table('products_services')->count();
+        $products_maintenances = DB::table('products_maintenances')->count();
 
-        Order::factory()->count($products_services)->create();
+        Order::factory()->count($products_maintenances)->create();
     }
 }

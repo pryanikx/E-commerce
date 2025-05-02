@@ -39,7 +39,7 @@ class ProductService
             'image_path' => $image_path,
         ]);
 
-        $this->productRepository->attachServices($product, $dto->services);
+        $this->productRepository->attachMaintenances($product, $dto->maintenances);
 
         return $product;
     }
@@ -59,7 +59,7 @@ class ProductService
             'category_id' => $dto->category_id
         ]);
 
-        $this->productRepository->attachServices($created_product, $dto->services);
+        $this->productRepository->attachMaintenances($created_product, $dto->maintenance);
 
         return $created_product;
     }

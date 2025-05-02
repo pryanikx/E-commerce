@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('product_service_id')->constrained(table: 'products_services')->onDelete('cascade');
+            $table->foreignId('product_maintenance_id')->constrained(table: 'products_maintenances')->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            
-            $table->date('service_date');
-            
+
+            $table->date('maintenance_date');
+
             $table->timestamps();
         });
     }

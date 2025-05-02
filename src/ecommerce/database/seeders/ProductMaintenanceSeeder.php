@@ -6,9 +6,9 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\Product;
-use App\Models\Service;
+use App\Models\Maintenance;
 
-class ProductServiceSeeder extends Seeder
+class ProductMaintenanceSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,20 +16,20 @@ class ProductServiceSeeder extends Seeder
     public function run()
     {
         $products = Product::all();
-        $services = Service::all();
-    
+        $maintenances = Maintenance::all();
+
         foreach ($products as $product) {
-            $randomServices = $services->random(rand(1, 3));
-    
-            foreach ($randomServices as $service) {
-                if (!DB::table('products_services')
+            $randomMaintenances = $maintenances->random(rand(1, 3));
+
+            foreach ($randomMaintenances as $maintenance) {
+                if (!DB::table('products_maintenances')
                     ->where('product_id', $product->id)
-                    ->where('service_id', $service->id)
+                    ->where('maintenance_id', $maintenance->id)
                     ->exists()) {
-                    
-                    DB::table('products_services')->insert([
+
+                    DB::table('products_maintenances')->insert([
                         'product_id' => $product->id,
-                        'service_id' => $service->id,
+                        'maintenance_id' => $maintenance->id,
                         'price' => fake()->randomFloat(2, 10, 1000),
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -38,5 +38,4 @@ class ProductServiceSeeder extends Seeder
             }
         }
     }
-    
 }

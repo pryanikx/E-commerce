@@ -18,9 +18,9 @@ readonly class ProductShowDTO
             'manufacturer_name' => $product->manufacturer->name,
             'price' => $product->price,
             'image_url' => asset($product->image_path),
-            'services' => $product->services->map(fn ($service) => [
-                'name' => $service->name,
-                'price' => $service->pivot->price
+            'maintenances' => $product->maintenances->map(fn ($maintenance) => [
+                'name' => $maintenance->name,
+                'price' => $maintenance->pivot->price
             ])
         ];
     }

@@ -37,9 +37,9 @@ class Product extends Model
         return $this->belongsTo(Manufacturer::class);
     }
 
-    public function services(): BelongsToMany
+    public function maintenances(): BelongsToMany
     {
-        return $this->belongsToMany(Service::class, 'products_services')
+        return $this->belongsToMany(Maintenance::class, 'products_maintenances')
         ->withPivot('price');
     }
 

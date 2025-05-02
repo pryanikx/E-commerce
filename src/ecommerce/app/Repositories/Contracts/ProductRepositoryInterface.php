@@ -14,5 +14,5 @@ interface ProductRepositoryInterface
     public function update(Product $product, array $data): bool;
     public function delete(int $id): bool;
 
-    public function attachServices(Product $product, array $services): void;
+    public function attachMaintenances(Product $product, array $maintenances): void;
 }

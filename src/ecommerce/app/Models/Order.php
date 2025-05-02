@@ -11,8 +11,15 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'service_date',
+        'product_maintenance_id',
+        'user_id',
+        'maintenance_date',
     ];
+
+    public function productMaintenance(): BelongsTo
+    {
+        return $this->belongsTo('products_maintenances');
+    }
 
     public function user(): BelongsTo
     {
@@ -21,7 +28,7 @@ class Order extends Model
 
     protected function casts(): array {
         return [
-            'service_date' => 'date',
+            'maintenance_date' => 'date',
         ];
     }
 }

@@ -25,9 +25,9 @@ class ProductUpdateRequest extends FormRequest
             'description' => 'required|string',
             'price' => 'required|decimal:2|min:0',
             'image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-            'service_ids' => 'nullable|array',
-            'service_ids.*.id' => 'required|exists:services,id',
-            'service_ids.*.price' => 'required|decimal:2|min:0',
+            'maintenance_ids' => 'nullable|array',
+            'maintenance_ids.*.id' => 'required|exists:maintenances,id',
+            'maintenance_ids.*.price' => 'required|decimal:2|min:0',
         ];
     }
 }

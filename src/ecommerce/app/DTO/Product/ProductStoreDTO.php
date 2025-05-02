@@ -14,7 +14,7 @@ readonly class ProductStoreDTO
     public \Illuminate\Http\UploadedFile $image;
     public int $manufacturer_id;
     public int $category_id;
-    public array $services;
+    public array $maintenances;
 
     public function __construct(ProductStoreRequest $request) {
         $this->name = $request->input('name');
@@ -25,8 +25,8 @@ readonly class ProductStoreDTO
         $this->image = $request->file('image');
         $this->manufacturer_id = $request->input('manufacturer_id');
         $this->category_id = $request->input('category_id');
-        $this->services = collect($request->input('service_ids', []))
-            ->mapWithKeys(fn($s) => [$s['id'] => ['price' => $s['price']]])
+        $this->maintenances = collect($request->input('maintenance_ids', []))
+            ->mapWithKeys(fn($m) => [$m['id'] => ['price' => $m['price']]])
             ->toArray();
     }
 }

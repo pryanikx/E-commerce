@@ -3,9 +3,9 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AdminProductController;
-use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ManufacturerController;
-use Illuminate\Http\Request;
+// use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
@@ -25,10 +25,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::delete('/products/{id}', [AdminProductController::class, 'deleteProduct']);
     Route::patch('/products/{id}', [AdminProductController::class, 'updateProduct']);
 
-    Route::get('/services', [ServiceController::class, 'index']);
-    Route::post('/services', [ServiceController::class, 'store']);
-    Route::delete('/services/{id}', [ServiceController::class, 'deleteService']);
-    Route::patch('/services/{id}', [ServiceController::class, 'updateService']);
+    Route::get('/maintenance', [MaintenanceController::class, 'index']);
+    Route::post('/maintenance', [MaintenanceController::class, 'store']);
+    Route::delete('/maintenance/{id}', [MaintenanceController::class, 'deleteMaintenance']);
+    Route::patch('/maintenance/{id}', [MaintenanceController::class, 'updateMaintenance']);
 
     Route::get('/manufacturers', [ManufacturerController::class, 'index']);
     //Route::get('/manufacturers/{id}', [ManufacturerController::class, 'show']);

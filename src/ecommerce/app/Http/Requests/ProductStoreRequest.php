@@ -30,9 +30,9 @@ class ProductStoreRequest extends FormRequest
             'image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'manufacturer_id' => 'required|exists:manufacturers,id',
             'category_id' => 'required|exists:categories,id',
-            'service_ids' => 'required|array',
-            'service_ids.*.id' => 'required|exists:services,id',
-            'service_ids.*.price' => 'required|decimal:2|min:0',
+            'maintenance_ids' => 'required|array',
+            'maintenance_ids.*.id' => 'required|exists:maintenances,id',
+            'maintenance_ids.*.price' => 'required|decimal:2|min:0',
         ];
     }
 }

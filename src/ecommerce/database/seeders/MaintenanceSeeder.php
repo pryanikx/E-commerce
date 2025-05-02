@@ -4,24 +4,24 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Service;
+use App\Models\Maintenance;
 
-class ServiceSeeder extends Seeder
+class MaintenanceSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $services = [
+        $maintenances = [
             ['name' => 'installation', 'description' => 'installation of the device'],
             ['name' => 'delivery', 'description' => 'delivery of the device'],
             ['name' => 'configuration', 'description' => 'configuration of the device'],
-            ['name' => 'warranty', 'description' => 'warrantry of the device'],
+            ['name' => 'warranty', 'description' => 'warranty of the device'],
         ];
-    
-        foreach ($services as $service) {
-            Service::create($service);
+
+        foreach ($maintenances as $maintenance) {
+            Maintenance::create($maintenance);
         }
     }
 }

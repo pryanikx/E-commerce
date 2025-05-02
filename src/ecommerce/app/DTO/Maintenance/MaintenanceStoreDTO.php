@@ -1,8 +1,8 @@
 <?php
 
-namespace App\DTO\Service;
+namespace App\DTO\Maintenance;
 
-readonly class ServiceStoreDTO
+readonly class MaintenanceStoreDTO
 {
     public string $name;
     public string $description;

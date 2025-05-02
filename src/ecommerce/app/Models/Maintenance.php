@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Service extends Model
+class Maintenance extends Model
 {
     protected $fillable = [
         'name',
@@ -14,7 +14,7 @@ class Service extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'products_services')
+        return $this->belongsToMany(Product::class, 'products_maintenances')
         ->withPivot('price');
     }
 
