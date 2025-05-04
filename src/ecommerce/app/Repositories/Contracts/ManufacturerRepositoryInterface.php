@@ -9,7 +9,7 @@ interface ManufacturerRepositoryInterface
 {
     public function all(): ?Collection;
 
-    public function find(int $id): ?Manufacturer;
+    public function find(int $id): Manufacturer;
 
     public function update(Manufacturer $manufacturer, array $data): bool;
 

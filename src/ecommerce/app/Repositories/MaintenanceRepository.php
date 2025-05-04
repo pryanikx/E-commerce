@@ -13,7 +13,7 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
         return Maintenance::all();
     }
 
-    public function find(int $id): ?Maintenance
+    public function find(int $id): Maintenance
     {
         return Maintenance::findOrFail($id);
     }

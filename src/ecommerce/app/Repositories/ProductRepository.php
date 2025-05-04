@@ -13,7 +13,7 @@ class ProductRepository implements ProductRepositoryInterface
         return Product::with(['manufacturer'])->get();
     }
 
-    public function find(int $id): ?Product
+    public function find(int $id): Product
     {
         return Product::with(['manufacturer', 'category', 'maintenance'])->findOrFail($id);
     }

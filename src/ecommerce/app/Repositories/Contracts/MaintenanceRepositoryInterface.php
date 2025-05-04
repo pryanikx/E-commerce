@@ -10,7 +10,7 @@ interface MaintenanceRepositoryInterface
 {
     public function all(): ?Collection;
 
-    public function find(int $id): ?Maintenance;
+    public function find(int $id): Maintenance;
 
     public function update(Maintenance $maintenance, array $data): bool;
 

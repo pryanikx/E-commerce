@@ -13,7 +13,7 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
         return Manufacturer::all();
     }
 
-    public function find(int $id): ?Manufacturer
+    public function find(int $id): Manufacturer
     {
         return Manufacturer::findOrFail($id);
     }
