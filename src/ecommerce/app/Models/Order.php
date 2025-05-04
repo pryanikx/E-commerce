@@ -18,7 +18,7 @@ class Order extends Model
 
     public function productMaintenance(): BelongsTo
     {
-        return $this->belongsTo('products_maintenances');
+        return $this->belongsTo(ProductMaintenance::class);
     }
 
     public function user(): BelongsTo
