@@ -15,8 +15,8 @@ class ProductController extends Controller
     {
         $products = $this->productService->getAll();
 
-        if (!$products) {
-            return response()->json(['error' => 'No products found!'], 404);
+        if ($products->isEmpty()) {
+            return response()->json(['error' => 'No products found!'], 200);
         }
 
         $result = $products->map(fn($product) => (new ProductListDTO($product))->toArray());

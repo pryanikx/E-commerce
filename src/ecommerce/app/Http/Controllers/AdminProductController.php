@@ -19,7 +19,7 @@ class AdminProductController extends ProductController
         return response()->json($product, 201);
     }
 
-    public function updateProduct(int $id, ProductUpdateRequest $request): JsonResponse
+    public function update(int $id, ProductUpdateRequest $request): JsonResponse
     {
         $dto = new ProductUpdateDTO($request->validated());
         $product = $this->productService->updateProduct($id, $dto);
@@ -27,7 +27,7 @@ class AdminProductController extends ProductController
         return response()->json($product, 200);
     }
 
-    public function deleteProduct(int $id): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
         $this->productService->deleteProduct($id);
 

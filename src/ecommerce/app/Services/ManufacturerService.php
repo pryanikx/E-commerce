@@ -30,7 +30,7 @@ class ManufacturerService
         ]);
     }
 
-    public function getManufacturer(int $id): ?Manufacturer {
+    public function getManufacturer(int $id): Manufacturer {
         return $this->manufacturerRepository->find($id);
     }
 

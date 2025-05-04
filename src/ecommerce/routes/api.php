@@ -22,18 +22,18 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/products', [AdminProductController::class, 'index']);
     Route::get('/products/{id}', [AdminProductController::class, 'show']);
     Route::post('/products', [AdminProductController::class, 'store']);
-    Route::delete('/products/{id}', [AdminProductController::class, 'deleteProduct']);
-    Route::patch('/products/{id}', [AdminProductController::class, 'updateProduct']);
+    Route::delete('/products/{id}', [AdminProductController::class, 'destroy']);
+    Route::patch('/products/{id}', [AdminProductController::class, 'update']);
 
     Route::get('/maintenance', [MaintenanceController::class, 'index']);
     Route::post('/maintenance', [MaintenanceController::class, 'store']);
-    Route::delete('/maintenance/{id}', [MaintenanceController::class, 'deleteMaintenance']);
-    Route::patch('/maintenance/{id}', [MaintenanceController::class, 'updateMaintenance']);
+    Route::delete('/maintenance/{id}', [MaintenanceController::class, 'destroy']);
+    Route::patch('/maintenance/{id}', [MaintenanceController::class, 'update']);
 
     Route::get('/manufacturers', [ManufacturerController::class, 'index']);
     //Route::get('/manufacturers/{id}', [ManufacturerController::class, 'show']);
     Route::post('/manufacturers', [ManufacturerController::class, 'store']);
-    Route::delete('/manufacturers/{id}', [ManufacturerController::class, 'deleteManufacturer']);
-    Route::patch('/manufacturers/{id}', [ManufacturerController::class, 'updateManufacturer']);
+    Route::delete('/manufacturers/{id}', [ManufacturerController::class, 'destroy']);
+    Route::patch('/manufacturers/{id}', [ManufacturerController::class, 'update']);
 });
 

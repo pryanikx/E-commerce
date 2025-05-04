@@ -14,7 +14,7 @@ interface MaintenanceRepositoryInterface
 
     public function update(Maintenance $maintenance, array $data): bool;
 
-    public function delete(int $id): ?bool;
+    public function delete(int $id): bool;
 
     public function create(array $array): Maintenance;
 }

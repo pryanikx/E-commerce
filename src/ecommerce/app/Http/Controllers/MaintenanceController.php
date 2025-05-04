@@ -16,8 +16,8 @@ class MaintenanceController extends Controller
     public function index() {
         $maintenances = $this->maintenanceService->getAll();
 
-        if (!$maintenances) {
-            return response()->json("No services found!", 404);
+        if ($maintenances->isEmpty()) {
+            return response()->json(['message' => 'No services found!'], 200);
         }
 
         $result = $maintenances->map(fn($maintenance) => (new MaintenanceListDTO($maintenance))->toArray());
@@ -34,7 +34,7 @@ class MaintenanceController extends Controller
         return response()->json($maintenance, 201);
     }
 
-    public function updateMaintenance(int $id, MaintenanceStoreRequest $request): JsonResponse
+    public function update(int $id, MaintenanceStoreRequest $request): JsonResponse
     {
         $dto = new MaintenanceStoreDTO($request->validated());
         $maintenance = $this->maintenanceService->updateMaintenance($id, $dto);
@@ -42,7 +42,7 @@ class MaintenanceController extends Controller
         return response()->json($maintenance, 200);
     }
 
-    public function deleteMaintenance(int $id) {
+    public function destroy(int $id) {
         $this->maintenanceService->deleteMaintenance($id);
 
         return response()->json("Successfully deleted!", 204);

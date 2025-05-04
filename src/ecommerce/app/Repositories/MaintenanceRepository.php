@@ -23,9 +23,9 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
         return $maintenance->update($data);
     }
 
-    public function delete(int $id): ?bool
+    public function delete(int $id): bool
     {
-        return Maintenance::destroy($id);
+        return (bool) Maintenance::destroy($id);
     }
 
     public function create(array $array): Maintenance

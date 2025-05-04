@@ -17,8 +17,8 @@ class ManufacturerController extends Controller
     {
         $manufacturers = $this->manufacturerService->getAll();
 
-        if (!$manufacturers) {
-            return response()->json("No services found!", 404);
+        if ($manufacturers->isEmpty()) {
+            return response()->json(['message' => 'No services found!'], 200);
         }
 
         $result = $manufacturers->map(fn($manufacturer) => (new ManufacturerListDTO($manufacturer))->toArray());
@@ -35,7 +35,7 @@ class ManufacturerController extends Controller
         return response()->json($manufacturer, 201);
     }
 
-    public function updateManufacturer(int $id, ManufacturerStoreRequest $request): JsonResponse
+    public function update(int $id, ManufacturerStoreRequest $request): JsonResponse
     {
         $dto = new ManufacturerStoreDTO($request->validated());
         $product = $this->manufacturerService->updateManufacturer($id, $dto);
@@ -43,7 +43,7 @@ class ManufacturerController extends Controller
         return response()->json($product, 200);
     }
 
-    public function deleteManufacturer(int $id): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
         $this->manufacturerService->deleteManufacturer($id);
 

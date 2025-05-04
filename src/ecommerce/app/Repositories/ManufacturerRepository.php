@@ -25,7 +25,7 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
 
     public function delete(int $id): bool
     {
-        return Manufacturer::destroy($id);
+        return (bool) Manufacturer::destroy($id);
     }
 
     public function create(array $array): Manufacturer
