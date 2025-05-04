@@ -24,6 +24,7 @@ class MaintenanceStoreRequest extends FormRequest
         return [
             'name' => 'required|string|max:20',
             'description' => 'nullable|string',
+            'duration' => 'nullable|string|max:50',
         ];
     }
 }

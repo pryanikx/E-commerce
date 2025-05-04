@@ -14,10 +14,10 @@ class MaintenanceSeeder extends Seeder
     public function run(): void
     {
         $maintenances = [
-            ['name' => 'installation', 'description' => 'installation of the device'],
-            ['name' => 'delivery', 'description' => 'delivery of the device'],
-            ['name' => 'configuration', 'description' => 'configuration of the device'],
-            ['name' => 'warranty', 'description' => 'warranty of the device'],
+            ['name' => 'installation', 'description' => 'installation of the device', 'duration' => '1 day'],
+            ['name' => 'delivery', 'description' => 'delivery of the device', 'duration' => '3 days'],
+            ['name' => 'configuration', 'description' => 'configuration of the device', 'duration' => '2 hours'],
+            ['name' => 'warranty', 'description' => 'warranty of the device', 'duration' => '2 years'],
         ];
 
         foreach ($maintenances as $maintenance) {

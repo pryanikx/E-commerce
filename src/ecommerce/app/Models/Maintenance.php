@@ -10,6 +10,7 @@ class Maintenance extends Model
     protected $fillable = [
         'name',
         'description',
+        'duration',
     ];
 
     public function products(): BelongsToMany
