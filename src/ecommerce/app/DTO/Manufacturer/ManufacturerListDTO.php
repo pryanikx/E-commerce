@@ -6,15 +6,16 @@ use App\Models\Manufacturer;
 
 class ManufacturerListDTO
 {
-    public array $data;
+
+    public string $name;
 
     public function __construct(Manufacturer $product) {
-        $this->data = [
-            'name' => $product->name,
-        ];
+        $this->name = $product->name;
     }
 
     public function toArray(): array {
-        return $this->data;
+        return [
+            'name' => $this->name,
+            ];
     }
 }
