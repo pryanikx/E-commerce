@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', length: 20)->unique();
             $table->text('description')->nullable();
-            $table->char('duration', 50);
+            $table->char('duration', 50)->nullable();
             $table->timestamps();
         });
     }
