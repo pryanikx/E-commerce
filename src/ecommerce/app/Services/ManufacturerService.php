@@ -36,13 +36,11 @@ class ManufacturerService
 
         $dto = new ManufacturerUpdateDTO($request_validated);
 
-        $data = array_filter([
-            'name' => $dto->name,
-        ], fn($value) => !is_null($value));
+        $data = [
+            'name' => $dto->name !== null ? $dto->name : $manufacturer->name,
+        ];
 
-        if (!empty($data)) {
-            $this->manufacturerRepository->update($manufacturer, $data);
-        }
+        $this->manufacturerRepository->update($manufacturer, $data);
 
         return $manufacturer->refresh();
     }

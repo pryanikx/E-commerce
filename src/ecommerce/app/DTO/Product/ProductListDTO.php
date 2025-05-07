@@ -11,7 +11,6 @@ readonly class ProductListDTO
     public string $manufacturer_name;
     public float $price;
     public string $image_url;
-    public array $data;
 
     public function __construct(Product $product) {
         $this->name = $product->name;

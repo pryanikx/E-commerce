@@ -38,15 +38,13 @@ class MaintenanceService
 
         $dto = new MaintenanceUpdateDTO($request_validated);
 
-        $data = array_filter([
+        $data = [
             'name' => $dto->name !== null ? $dto->name : $maintenance->name,
             'description' => $dto->description !== null ? $dto->description : $maintenance->description,
             'duration' => $dto->duration !== null ? $dto->duration : $maintenance->duration,
-        ], fn($value) => $value !== null);
+        ];
 
-        if (!empty($data)) {
-            $this->maintenanceRepository->update($maintenance, $data);
-        }
+        $this->maintenanceRepository->update($maintenance, $data);
 
         return $maintenance->refresh();
     }

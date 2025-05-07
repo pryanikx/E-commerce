@@ -47,14 +47,11 @@ class CategoryService
 
         $dto = new CategoryUpdateDTO($request_validated);
 
-        $data = array_filter([
+        $data = [
             'name' => $dto->name ?? $category->name,
             'alias' => $dto->alias ?? ($dto->name ? Str::slug($dto->name) : $category->alias),
-        ], fn($value) => !is_null($value));
-
-        if (!empty($data)) {
-            $this->categoryRepository->update($category, $data);
-        }
+        ];
+        $this->categoryRepository->update($category, $data);
 
         return $category->refresh();
     }

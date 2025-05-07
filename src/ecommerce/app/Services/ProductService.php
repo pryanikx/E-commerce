@@ -70,22 +70,18 @@ class ProductService
 
         $image_path = $this->handleImagePath($dto->image, $product->image_path);
 
-        $data = array_filter([
-            'name' => $dto->name,
-            'article' => $dto->article,
-            'description' => $dto->description,
-            'release_date' => $dto->release_date,
-            'price' => $dto->price,
-            'manufacturer_id' => $dto->manufacturer_id,
-            'category_id' => $dto->category_id,
+        $data = [
+            'name' => $dto->name !== null ? $dto->name : $product->name,
+            'article' => $dto->article !== null ? $dto->article : $product->article,
+            'description' => $dto->description !== null ? $dto->description : $product->description,
+            'release_date' => $dto->release_date !== null ? $dto->release_date : $product->release_date,
+            'price' => $dto->price !== null ? $dto->price : $product->price,
+            'manufacturer_id' => $dto->manufacturer_id !== null ? $dto->manufacturer_id : $product->manufacturer_id,
+            'category_id' => $dto->category_id !== null ? $dto->category_id : $product->category_id,
             'image_path' => $image_path !== $product->image_path ? $image_path : null,
-        ], fn($value) => !is_null($value));
+        ];
 
-        if (!empty($data)) {
-            $this->productRepository->update($product, $data);
-        } else {
-            Log::warning('No data to update for product', ['id' => $id]);
-        }
+        $this->productRepository->update($product, $data);
 
         if ($dto->maintenances !== null) {
             $this->productRepository->attachMaintenances($product, $dto->maintenances);
@@ -97,7 +93,6 @@ class ProductService
     private function handleImagePath(?\Illuminate\Http\UploadedFile $image, ?string $oldPath = null): ?string
     {
         if (!$image || !$image->isValid()) {
-            Log::debug('No valid image uploaded, using old path', ['oldPath' => $oldPath]);
             return $oldPath;
         }
 
@@ -108,9 +103,6 @@ class ProductService
         $filename = uniqid() . '.' . $image->getClientOriginalExtension();
         $image->storeAs('public/products', $filename);
 
-        $newPath = 'storage/products/' . $filename;
-        Log::debug('New image path created', ['newPath' => $newPath]);
-
-        return $newPath;
+        return 'storage/products/' . $filename;
     }
 }
