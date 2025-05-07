@@ -8,7 +8,7 @@ use \Illuminate\Database\Eloquent\Collection;
 
 class ManufacturerRepository implements ManufacturerRepositoryInterface
 {
-    public function all(): ?Collection
+    public function all(): Collection
     {
         return Manufacturer::all();
     }

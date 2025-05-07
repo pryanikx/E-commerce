@@ -2,41 +2,59 @@
 
 namespace App\Services;
 
+use App\DTO\Category\CategoryListDTO;
 use App\DTO\Category\CategoryStoreDTO;
+use App\DTO\Category\CategoryUpdateDTO;
+use App\DTO\Product\ProductListDTO;
 use App\Models\Category;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 
 class CategoryService
 {
     public function __construct(protected CategoryRepositoryInterface $categoryRepository) {}
 
-    public function getAll(): ?Collection
+    public function getAll(): ?array
     {
-        return $this->categoryRepository->all();
+        $categories = $this->categoryRepository->all();
+
+        return $categories->map(fn($category)
+            => (new CategoryListDTO($category))->toArray())->toArray();
     }
 
-    public function find(int $id): Category
+    public function getProductsForCategory(int $id): array
     {
-        return $this->categoryRepository->find($id);
+        $products = $this->categoryRepository->getProductsForCategory($id);
+
+        return $products->setCollection($products->getCollection()->map(fn($product)
+            => (new ProductListDTO($product))->toArray()))->toArray();
     }
 
-    public function createCategory(CategoryStoreDTO $dto): Category
+    public function createCategory(array $request_validated): Category
     {
+        $dto = new CategoryStoreDTO($request_validated);
+
         return $this->categoryRepository->create([
             'name' => $dto->name,
             'alias' => $dto->alias,
         ]);
     }
 
-    public function updateCategory(int $id, CategoryStoreDTO $dto): Category
+    public function updateCategory(int $id, array $request_validated): Category
     {
         $category = $this->categoryRepository->find($id);
 
-        $this->categoryRepository->update($category, [
-            'name' => $dto->name,
-            'alias' => $dto->alias,
-        ]);
+        $dto = new CategoryUpdateDTO($request_validated);
+
+        $data = array_filter([
+            'name' => $dto->name ?? $category->name,
+            'alias' => $dto->alias ?? ($dto->name ? Str::slug($dto->name) : $category->alias),
+        ], fn($value) => !is_null($value));
+
+        if (!empty($data)) {
+            $this->categoryRepository->update($category, $data);
+        }
 
         return $category->refresh();
     }
@@ -44,5 +62,10 @@ class CategoryService
     public function deleteCategory(int $id): bool
     {
         return $this->categoryRepository->delete($id);
+    }
+
+    public function find(int $id): Category
+    {
+        return $this->categoryRepository->find($id);
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\DTO\Manufacturer\ManufacturerListDTO;
 use App\DTO\Manufacturer\ManufacturerStoreDTO;
+use App\DTO\Manufacturer\ManufacturerUpdateDTO;
 use App\Models\Manufacturer;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -11,27 +13,38 @@ class ManufacturerService
 {
     public function __construct(protected ManufacturerRepositoryInterface $manufacturerRepository) {}
 
-    public function getAll(): ?Collection  {
-        return $this->manufacturerRepository->all();
+    public function getAll(): ?array
+    {
+        $manufacturers = $this->manufacturerRepository->all();
+
+        return $manufacturers->map(fn($manufacturer)
+            => (new ManufacturerListDTO($manufacturer))->toArray())->toArray();
     }
 
-    public function createManufacturer(ManufacturerStoreDTO $dto): Manufacturer {
+    public function createManufacturer(array $request_validated): Manufacturer
+    {
+        $dto = new ManufacturerStoreDTO($request_validated);
 
         return $this->manufacturerRepository->create([
             'name' => $dto->name,
         ]);
     }
 
-    public function updateManufacturer(int $id, ManufacturerStoreDTO $dto): bool {
-        $manufacturer = $this->getManufacturer($id);
+    public function updateManufacturer(int $id, array $request_validated): Manufacturer
+    {
+        $manufacturer = $this->manufacturerRepository->find($id);
 
-        return $this->manufacturerRepository->update($manufacturer, [
+        $dto = new ManufacturerUpdateDTO($request_validated);
+
+        $data = array_filter([
             'name' => $dto->name,
-        ]);
-    }
+        ], fn($value) => !is_null($value));
 
-    public function getManufacturer(int $id): Manufacturer {
-        return $this->manufacturerRepository->find($id);
+        if (!empty($data)) {
+            $this->manufacturerRepository->update($manufacturer, $data);
+        }
+
+        return $manufacturer->refresh();
     }
 
     public function deleteManufacturer(int $id): ?bool

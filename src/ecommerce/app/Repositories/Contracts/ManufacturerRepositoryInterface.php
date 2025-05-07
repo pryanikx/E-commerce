@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface ManufacturerRepositoryInterface
 {
-    public function all(): ?Collection;
+    public function all(): Collection;
 
     public function find(int $id): Manufacturer;
 

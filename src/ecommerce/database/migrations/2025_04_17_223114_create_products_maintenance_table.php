@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('maintenance_id')->constrained()->onDelete('cascade');
 
-            $table->decimal('price', total: 8, places: 2);
+            $table->decimal('price', total: 10, places: 2);
 
             $table->timestamps();
 

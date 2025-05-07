@@ -8,7 +8,7 @@ use \Illuminate\Database\Eloquent\Collection;
 
 class MaintenanceRepository implements MaintenanceRepositoryInterface
 {
-    public function all(): ?Collection
+    public function all(): Collection
     {
         return Maintenance::all();
     }

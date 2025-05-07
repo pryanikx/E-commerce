@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
 use App\DTO\Auth\LoginDTO;
 use App\DTO\Auth\RegisterDTO;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\LoginService;
 use App\Services\RegisterService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -20,7 +20,8 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): JsonResponse
     {
-        $dto = new RegisterDTO($request->validated());
+        $validated = $request->validated();
+        $dto = new RegisterDTO($validated);
 
         $result = $this->registerService->register($dto);
 
@@ -29,7 +30,8 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $dto = new LoginDTO($request->validated());
+        $validated = $request->validated();
+        $dto = new LoginDTO($validated);
 
         try {
             $result = $this->loginService->login($dto);

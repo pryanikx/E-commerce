@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Maintenance;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,9 +22,9 @@ class MaintenanceStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:20',
+            'name' => 'required|string|unique:maintenances,name',
             'description' => 'nullable|string',
-            'duration' => 'nullable|string|max:50',
+            'duration' => 'nullable|string|max:50', // TODO: change duration to FROM & TILL
         ];
     }
 }

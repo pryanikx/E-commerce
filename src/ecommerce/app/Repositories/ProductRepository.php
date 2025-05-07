@@ -4,18 +4,18 @@ namespace App\Repositories;
 
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
-use \Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProductRepository implements ProductRepositoryInterface
 {
-    public function all(): ?Collection
+    public function all(): Collection
     {
         return Product::with(['manufacturer'])->get();
     }
 
     public function find(int $id): Product
     {
-        return Product::with(['manufacturer', 'category', 'maintenance'])->findOrFail($id);
+        return Product::with(['manufacturer', 'category', 'maintenances'])->findOrFail($id);
     }
 
     public function create(array $data): Product
@@ -28,15 +28,13 @@ class ProductRepository implements ProductRepositoryInterface
         return $product->update($data);
     }
 
-    public function delete(int $id): bool {
-        // Do I need to detach() all services for product, if product is ON DELETE CASCADE?
+    public function delete(int $id): bool
+    {
         return (bool) Product::destroy($id);
     }
 
     public function attachMaintenances(Product $product, array $maintenances): void
     {
-        if (!empty($maintenances)) {
-            $product->maintenances()->sync($maintenances);
-        }
+        $product->maintenances()->sync($maintenances);
     }
 }

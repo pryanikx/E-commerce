@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Maintenance;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProductUpdateRequest extends FormRequest
+class MaintenanceUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,12 +22,9 @@ class ProductUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'required|string',
-            'price' => 'required|decimal:2|min:0',
-            'image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-            'maintenance_ids' => 'nullable|array',
-            'maintenance_ids.*.id' => 'required|exists:maintenances,id',
-            'maintenance_ids.*.price' => 'required|decimal:2|min:0',
+            'name' => 'sometimes|string|nullable|unique:maintenances,name',
+            'description' => 'sometimes|string|nullable',
+            'duration' => 'nullable|string|max:50|nullable', // TODO: change duration to FROM & TILL
         ];
     }
 }

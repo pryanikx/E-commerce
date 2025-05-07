@@ -8,7 +8,7 @@ use \Illuminate\Database\Eloquent\Collection;
 
 interface MaintenanceRepositoryInterface
 {
-    public function all(): ?Collection;
+    public function all(): Collection;
 
     public function find(int $id): Maintenance;
 

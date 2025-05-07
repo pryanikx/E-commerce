@@ -10,29 +10,30 @@ readonly class ProductShowDTO
     public string $article;
     public string $description;
     public string $release_date;
-    public string $category_name;
-    public string $manufacturer_name;
+    public ?string $category_name;
+    public ?string $manufacturer_name;
     public float $price;
-    public string $image_url;
+    public ?string $image_url;
     public array $maintenances;
 
-
-    public function __construct(Product $product) {
+    public function __construct(Product $product)
+    {
         $this->name = $product->name;
         $this->article = $product->article;
         $this->description = $product->description;
         $this->release_date = $product->release_date;
-        $this->category_name = $product->category->name;
-        $this->manufacturer_name = $product->manufacturer->name;
+        $this->category_name = $product->category ? $product->category->name : null;
+        $this->manufacturer_name = $product->manufacturer ? $product->manufacturer->name : null;
         $this->price = $product->price;
-        $this->image_url = asset($product->image_path);
-        $this->maintenances = $product->maintenances->map(fn ($maintenance) => [
+        $this->image_url = $product->image_path ? asset($product->image_path) : null;
+        $this->maintenances = $product->maintenances->map(fn($maintenance) => [
             'name' => $maintenance->name,
-            'price' => $maintenance->pivot->price
-            ]);
+            'price' => (float) $maintenance->pivot->price,
+        ])->toArray();
     }
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return [
             'name' => $this->name,
             'article' => $this->article,

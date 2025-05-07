@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
-use App\DTO\Product\ProductListDTO;
-use App\DTO\Product\ProductShowDTO;
+use App\Http\Controllers\Controller;
 use App\Services\ProductService;
-use \Illuminate\Http\JsonResponse;
+use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
@@ -15,13 +14,11 @@ class ProductController extends Controller
     {
         $products = $this->productService->getAll();
 
-        if ($products->isEmpty()) {
+        if (empty($products)) {
             return response()->json(['error' => 'No products found!'], 200);
         }
 
-        $result = $products->map(fn($product) => (new ProductListDTO($product))->toArray());
-
-        return response()->json($result);
+        return response()->json($products, 200);
     }
 
     public function show(int $id): JsonResponse
@@ -32,6 +29,6 @@ class ProductController extends Controller
             return response()->json(['error' => 'Product not found!'], 404);
         }
 
-        return response()->json((new ProductShowDTO($product))->toArray(), 200);
+        return response()->json($product, 200);
     }
 }

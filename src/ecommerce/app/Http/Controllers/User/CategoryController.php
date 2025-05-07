@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
-use App\DTO\Category\CategoryListDTO;
-use App\DTO\Product\ProductListDTO;
+use App\Http\Controllers\Controller;
 use App\Services\CategoryService;
 use Illuminate\Http\JsonResponse;
 
@@ -15,22 +14,16 @@ class CategoryController extends Controller
     {
         $categories = $this->categoryService->getAll();
 
-        if ($categories->isEmpty()) {
+        if (empty($categories)) {
             return response()->json(['message' => 'No categories found!'], 200);
         }
 
-        $result = $categories->map(fn($category) => (new CategoryListDTO($category))->toArray());
-
-        return response()->json($result);
+        return response()->json($categories, 200);
     }
 
     public function products(int $id): JsonResponse
     {
-        $category = $this->categoryService->find($id);
-
-        $products = $category->products()
-            ->paginate(10)
-            ->through(fn($product) => (new ProductListDTO($product))->toArray());
+        $products = $this->categoryService->getProductsForCategory($id);
 
         return response()->json($products);
     }

@@ -3,10 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Nette\Utils\Random;
-use Ramsey\Uuid\Type\Decimal;
 use App\Models\Category;
 use App\Models\Manufacturer;
 

@@ -16,7 +16,7 @@ class Maintenance extends Model
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'products_maintenances')
-        ->withPivot('price');
+            ->withPivot('price');
     }
 
 }

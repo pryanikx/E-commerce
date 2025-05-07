@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('maintenances', function (Blueprint $table) {
             $table->id();
-            $table->string('name', length: 20)->unique();
+            $table->string('name')->unique();
             $table->text('description')->nullable();
-            $table->char('duration', 50)->nullable();
+            $table->string('duration', 50)->nullable(); // TODO: change duration to FROM & TILL
             $table->timestamps();
         });
     }
