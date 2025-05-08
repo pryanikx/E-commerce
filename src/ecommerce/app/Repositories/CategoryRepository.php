@@ -9,13 +9,10 @@ use App\Repositories\Contracts\CategoryRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-/**
- * @implements CategoryRepositoryInterface<Category>
- */
 class CategoryRepository implements CategoryRepositoryInterface
 {
     /**
-     * Get all categories.
+     * Get all categories from the database.
      *
      * @return Collection<int, Category>
      */
@@ -25,7 +22,7 @@ class CategoryRepository implements CategoryRepositoryInterface
     }
 
     /**
-     * Find a category by ID.
+     * Find an existing category by ID.
      *
      * @param int $id
      * @return Category
@@ -50,7 +47,7 @@ class CategoryRepository implements CategoryRepositoryInterface
      * Update an existing category.
      *
      * @param Category $category
-     * @param array<string, mixed> $data
+     * @param array $data
      * @return bool
      */
     public function update(Category $category, array $data): bool
