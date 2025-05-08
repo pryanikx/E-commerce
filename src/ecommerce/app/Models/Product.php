@@ -29,22 +29,36 @@ class Product extends Model
         'category_id',
     ];
 
+    /**
+     * @return BelongsTo
+     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
+    /**
+     * @return BelongsTo
+     */
     public function manufacturer(): BelongsTo
     {
         return $this->belongsTo(Manufacturer::class);
     }
 
+    /**
+     * @return BelongsToMany
+     */
     public function maintenances(): BelongsToMany
     {
         return $this->belongsToMany(Maintenance::class, 'products_maintenances')
         ->withPivot('price');
     }
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return string[]
+     */
     protected function casts(): array
     {
         return [
