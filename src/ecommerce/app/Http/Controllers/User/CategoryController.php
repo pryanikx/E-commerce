@@ -10,10 +10,18 @@ use Illuminate\Http\JsonResponse;
 
 class CategoryController extends Controller
 {
+    /**
+     * @param CategoryService $categoryService
+     */
     public function __construct(protected CategoryService $categoryService)
     {
     }
 
+    /**
+     * List all categories.
+     *
+     * @return JsonResponse
+     */
     public function index(): JsonResponse
     {
         $categories = $this->categoryService->getAll();
@@ -25,6 +33,13 @@ class CategoryController extends Controller
         return response()->json($categories, 200);
     }
 
+    /**
+     * List products of the specified category.
+     *
+     * @param int $id
+     *
+     * @return JsonResponse
+     */
     public function products(int $id): JsonResponse
     {
         $products = $this->categoryService->getProductsForCategory($id);

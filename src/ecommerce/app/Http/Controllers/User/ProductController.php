@@ -10,10 +10,18 @@ use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
+    /**
+     * @param ProductService $productService
+     */
     public function __construct(protected ProductService $productService)
     {
     }
 
+    /**
+     * List all products.
+     *
+     * @return JsonResponse
+     */
     public function index(): JsonResponse
     {
         $products = $this->productService->getAll();
@@ -25,6 +33,13 @@ class ProductController extends Controller
         return response()->json($products, 200);
     }
 
+    /**
+     * Show one product by ID.
+     *
+     * @param int $id
+     *
+     * @return JsonResponse
+     */
     public function show(int $id): JsonResponse
     {
         $product = $this->productService->getProduct($id);
