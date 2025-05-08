@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginService
 {
+    /**
+     * Login an existing user/admion.
+     *
+     * @param LoginDTO $dto
+     *
+     * @return array
+     * @throws \Exception<string>
+     */
     public function login(LoginDTO $dto): array
     {
         $credentials = [$dto->email, $dto->password];
@@ -28,6 +36,13 @@ class LoginService
         ];
     }
 
+    /**
+     * Logout user/admin
+     *
+     * @param User $user
+     *
+     * @return void
+     */
     public function logout(User $user): void
     {
         $user->currentAccessToken()->delete();

@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Hash;
 
 class RegisterService
 {
+    /**
+     * Register a new user.
+     *
+     * @param RegisterDTO $dto
+     *
+     * @return array
+     */
     public function register(RegisterDTO $dto): array
     {
         $user = User::create([

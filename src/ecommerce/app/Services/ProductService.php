@@ -14,10 +14,18 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ProductService
 {
+    /**
+     * @param ProductRepositoryInterface $productRepository
+     */
     public function __construct(protected ProductRepositoryInterface $productRepository)
     {
     }
 
+    /**
+     * Get all products.
+     *
+     * @return array|null
+     */
     public function getAll(): ?array
     {
         $products = $this->productRepository->all();
@@ -26,6 +34,13 @@ class ProductService
             => (new ProductListDTO($product))->toArray())->toArray();
     }
 
+    /**
+     * Get one product by ID.
+     *
+     * @param int $id
+     *
+     * @return array|null
+     */
     public function getProduct(int $id): ?array
     {
         try {
@@ -37,11 +52,25 @@ class ProductService
         return (new ProductShowDTO($product))->toArray();
     }
 
+    /**
+     * delete an existing product by ID.
+     *
+     * @param int $id
+     *
+     * @return bool
+     */
     public function deleteProduct(int $id): bool
     {
         return $this->productRepository->delete($id);
     }
 
+    /**
+     * Create a new product.
+     *
+     * @param array $request_validated
+     *
+     * @return Product
+     */
     public function createProduct(array $request_validated): Product
     {
         $dto = new ProductStoreDTO($request_validated);
@@ -64,6 +93,14 @@ class ProductService
         return $created_product;
     }
 
+    /**
+     * Update an existing product by ID.
+     *
+     * @param int $id
+     * @param array $request_validated
+     *
+     * @return Product
+     */
     public function updateProduct(int $id, array $request_validated): Product
     {
         $product = $this->productRepository->find($id);
@@ -92,6 +129,14 @@ class ProductService
         return $product->refresh();
     }
 
+    /**
+     * Store an uploaded file on a filesystem disk and return its path.
+     *
+     * @param \Illuminate\Http\UploadedFile|null $image
+     * @param string|null $oldPath
+     *
+     * @return string|null
+     */
     private function handleImagePath(?\Illuminate\Http\UploadedFile $image, ?string $oldPath = null): ?string
     {
         if (!$image || !$image->isValid()) {

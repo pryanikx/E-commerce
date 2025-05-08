@@ -14,10 +14,18 @@ use Illuminate\Support\Str;
 
 class CategoryService
 {
+    /**
+     * @param CategoryRepositoryInterface $categoryRepository
+     */
     public function __construct(protected CategoryRepositoryInterface $categoryRepository)
     {
     }
 
+    /**
+     * Get all categories.
+     *
+     * @return array|null
+     */
     public function getAll(): ?array
     {
         $categories = $this->categoryRepository->all();
@@ -26,6 +34,13 @@ class CategoryService
             => (new CategoryListDTO($category))->toArray())->toArray();
     }
 
+    /**
+     * Get paginated products of the specified category.
+     *
+     * @param int $id
+     *
+     * @return array
+     */
     public function getProductsForCategory(int $id): array
     {
         $products = $this->categoryRepository->getProductsForCategory($id);
@@ -34,6 +49,13 @@ class CategoryService
             => (new ProductListDTO($product))->toArray()))->toArray();
     }
 
+    /**
+     * Create a new category.
+     *
+     * @param array $request_validated
+     *
+     * @return Category
+     */
     public function createCategory(array $request_validated): Category
     {
         $dto = new CategoryStoreDTO($request_validated);
@@ -44,6 +66,14 @@ class CategoryService
         ]);
     }
 
+    /**
+     * Update an existing category by ID.
+     *
+     * @param int $id
+     * @param array $request_validated
+     *
+     * @return Category
+     */
     public function updateCategory(int $id, array $request_validated): Category
     {
         $category = $this->categoryRepository->find($id);
@@ -59,11 +89,25 @@ class CategoryService
         return $category->refresh();
     }
 
+    /**
+     * delete an existing category by ID.
+     *
+     * @param int $id
+     *
+     * @return bool
+     */
     public function deleteCategory(int $id): bool
     {
         return $this->categoryRepository->delete($id);
     }
 
+    /**
+     * find an existing category by ID.
+     *
+     * @param int $id
+     *
+     * @return Category
+     */
     public function find(int $id): Category
     {
         return $this->categoryRepository->find($id);

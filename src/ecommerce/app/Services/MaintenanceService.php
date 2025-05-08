@@ -12,10 +12,18 @@ use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 
 class MaintenanceService
 {
+    /**
+     * @param MaintenanceRepositoryInterface $maintenanceRepository
+     */
     public function __construct(protected MaintenanceRepositoryInterface $maintenanceRepository)
     {
     }
 
+    /**
+     * Get all maintenances.
+     *
+     * @return array|null
+     */
     public function getAll(): ?array
     {
         $maintenances = $this->maintenanceRepository->all();
@@ -24,6 +32,13 @@ class MaintenanceService
             => (new MaintenanceListDTO($maintenance))->toArray())->toArray();
     }
 
+    /**
+     * Create new maintenance.
+     *
+     * @param array $request_validated
+     *
+     * @return Maintenance
+     */
     public function createMaintenance(array $request_validated): Maintenance
     {
         $dto = new MaintenanceStoreDTO($request_validated);
@@ -35,6 +50,14 @@ class MaintenanceService
         ]);
     }
 
+    /**
+     * Update existing maintenance by ID.
+     *
+     * @param int $id
+     * @param array $request_validated
+     *
+     * @return Maintenance
+     */
     public function updateMaintenance(int $id, array $request_validated): Maintenance
     {
         $maintenance = $this->maintenanceRepository->find($id);
@@ -52,6 +75,13 @@ class MaintenanceService
         return $maintenance->refresh();
     }
 
+    /**
+     * Delete existing maintenance by ID.
+     *
+     * @param int $id
+     *
+     * @return bool
+     */
     public function deleteMaintenance(int $id): bool
     {
         return $this->maintenanceRepository->delete($id);

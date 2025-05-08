@@ -12,10 +12,18 @@ use App\Repositories\Contracts\ManufacturerRepositoryInterface;
 
 class ManufacturerService
 {
+    /**
+     * @param ManufacturerRepositoryInterface $manufacturerRepository
+     */
     public function __construct(protected ManufacturerRepositoryInterface $manufacturerRepository)
     {
     }
 
+    /**
+     * Get all manufacturers.
+     *
+     * @return array|null
+     */
     public function getAll(): ?array
     {
         $manufacturers = $this->manufacturerRepository->all();
@@ -24,6 +32,13 @@ class ManufacturerService
             => (new ManufacturerListDTO($manufacturer))->toArray())->toArray();
     }
 
+    /**
+     * Create a new manufacturer.
+     *
+     * @param array $request_validated
+     *
+     * @return Manufacturer
+     */
     public function createManufacturer(array $request_validated): Manufacturer
     {
         $dto = new ManufacturerStoreDTO($request_validated);
@@ -33,6 +48,14 @@ class ManufacturerService
         ]);
     }
 
+    /**
+     * Update an existing manufacturer by ID.
+     *
+     * @param int $id
+     * @param array $request_validated
+     *
+     * @return Manufacturer
+     */
     public function updateManufacturer(int $id, array $request_validated): Manufacturer
     {
         $manufacturer = $this->manufacturerRepository->find($id);
@@ -48,6 +71,13 @@ class ManufacturerService
         return $manufacturer->refresh();
     }
 
+    /**
+     * Delete an existing manufacturer by ID.
+     *
+     * @param int $id
+     *
+     * @return bool|null
+     */
     public function deleteManufacturer(int $id): ?bool
     {
         return $this->manufacturerRepository->delete($id);
