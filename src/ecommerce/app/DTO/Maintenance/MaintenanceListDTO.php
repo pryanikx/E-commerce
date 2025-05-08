@@ -8,11 +8,29 @@ use App\Models\Maintenance;
 
 readonly class MaintenanceListDTO
 {
+    /**
+     * @var int $id
+     */
     public int $id;
+
+    /**
+     * @var string $name
+     */
     public string $name;
+
+    /**
+     * @var string|null $description
+     */
     public ?string $description;
+
+    /**
+     * @var string|null $duration
+     */
     public ?string $duration;
 
+    /**
+     * @param Maintenance $maintenance
+     */
     public function __construct(Maintenance $maintenance)
     {
         $this->id = $maintenance->id;
@@ -21,6 +39,9 @@ readonly class MaintenanceListDTO
         $this->duration = $maintenance->duration;
     }
 
+    /**
+     * @return array
+     */
     public function toArray(): array
     {
         return [

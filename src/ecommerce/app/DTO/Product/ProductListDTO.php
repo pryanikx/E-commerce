@@ -8,12 +8,34 @@ use App\Models\Product;
 
 readonly class ProductListDTO
 {
+    /**
+     * @var string $name
+     */
     public string $name;
+
+    /**
+     * @var string $article
+     */
     public string $article;
+
+    /**
+     * @var string $manufacturer_name
+     */
     public string $manufacturer_name;
+
+    /**
+     * @var float $price
+     */
     public float $price;
+
+    /**
+     * @var string $image_url
+     */
     public string $image_url;
 
+    /**
+     * @param Product $product
+     */
     public function __construct(Product $product)
     {
         $this->name = $product->name;
@@ -23,6 +45,9 @@ readonly class ProductListDTO
         $this->image_url = asset($product->image_path);
     }
 
+    /**
+     * @return array
+     */
     public function toArray(): array
     {
         return [

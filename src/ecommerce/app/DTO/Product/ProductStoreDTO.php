@@ -8,16 +8,54 @@ use Illuminate\Http\UploadedFile;
 
 readonly class ProductStoreDTO
 {
+    /**
+     * @var string $name
+     */
     public string $name;
+
+    /**
+     * @var string $article
+     */
     public string $article;
+
+    /**
+     * @var string $description
+     */
     public string $description;
+
+    /**
+     * @var string $release_date
+     */
     public string $release_date;
+
+    /**
+     * @var float $price
+     */
     public float $price;
+
+    /**
+     * @var UploadedFile|null $image
+     */
     public ?UploadedFile $image;
+
+    /**
+     * @var int $manufacturer_id
+     */
     public int $manufacturer_id;
+
+    /**
+     * @var int $category_id
+     */
     public int $category_id;
+
+    /**
+     * @var array $maintenances
+     */
     public array $maintenances;
 
+    /**
+     * @param array $validated
+     */
     public function __construct(array $validated)
     {
         $this->name = $validated['name'];

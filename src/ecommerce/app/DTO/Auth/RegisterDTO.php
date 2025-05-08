@@ -6,10 +6,24 @@ namespace App\DTO\Auth;
 
 readonly class RegisterDTO
 {
+    /**
+     * @var string $name
+     */
     public string $name;
+
+    /**
+     * @var string $email
+     */
     public string $email;
+
+    /**
+     * @var string $password
+     */
     public string $password;
 
+    /**
+     * @param array $request_data
+     */
     public function __construct(array $request_data)
     {
         $this->name = $request_data['name'];
@@ -17,6 +31,9 @@ readonly class RegisterDTO
         $this->password = $request_data['password'];
     }
 
+    /**
+     * @return array
+     */
     public function toArray(): array
     {
         return [

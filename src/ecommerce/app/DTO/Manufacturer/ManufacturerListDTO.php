@@ -8,15 +8,28 @@ use App\Models\Manufacturer;
 
 class ManufacturerListDTO
 {
+    /**
+     * @var int $id
+     */
     public int $id;
+
+    /**
+     * @var string $name
+     */
     public string $name;
 
+    /**
+     * @param Manufacturer $manufacturer
+     */
     public function __construct(Manufacturer $manufacturer)
     {
         $this->id = $manufacturer->id;
         $this->name = $manufacturer->name;
     }
 
+    /**
+     * @return array
+     */
     public function toArray(): array
     {
         return [

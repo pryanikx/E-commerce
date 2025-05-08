@@ -5,24 +5,51 @@ declare(strict_types=1);
 namespace App\DTO\Product;
 
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Log;
 
 readonly class ProductUpdateDTO
 {
+    /**
+     * @var string|null $name
+     */
     public ?string $name;
+    /**
+     * @var string|null $article
+     */
     public ?string $article;
+    /**
+     * @var string|null $description
+     */
     public ?string $description;
+    /**
+     * @var string|null $release_date
+     */
     public ?string $release_date;
+    /**
+     * @var float|null $price
+     */
     public ?float $price;
+    /**
+     * @var UploadedFile|null $image
+     */
     public ?UploadedFile $image;
+    /**
+     * @var int|null $manufacturer_id
+     */
     public ?int $manufacturer_id;
+    /**
+     * @var int|null $category_id
+     */
     public ?int $category_id;
+    /**
+     * @var array|null $maintenances
+     */
     public ?array $maintenances;
 
+    /**
+     * @param array $validated
+     */
     public function __construct(array $validated)
     {
-        Log::debug('ProductUpdateDTO raw validated data', $validated);
-
         $this->name = $validated['name'] ?? null;
         $this->article = $validated['article'] ?? null;
         $this->description = $validated['description'] ?? null;
@@ -36,12 +63,5 @@ readonly class ProductUpdateDTO
                 return [(int) $m['id'] => ['price' => (float) $m['price']]];
             })->toArray()
             : null;
-
-        Log::debug('ProductUpdateDTO constructed', [
-            'name' => $this->name,
-            'description' => $this->description,
-            'price' => $this->price,
-            'maintenances' => $this->maintenances,
-        ]);
     }
 }
