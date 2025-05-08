@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\DTO\Product\ProductListDTO;
@@ -8,19 +10,19 @@ use App\DTO\Product\ProductStoreDTO;
 use App\DTO\Product\ProductUpdateDTO;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Log;
 
 class ProductService
 {
-    public function __construct(protected ProductRepositoryInterface $productRepository) {}
+    public function __construct(protected ProductRepositoryInterface $productRepository)
+    {
+    }
 
     public function getAll(): ?array
     {
         $products = $this->productRepository->all();
 
-        return $products->map(fn($product)
+        return $products->map(fn ($product)
             => (new ProductListDTO($product))->toArray())->toArray();
     }
 

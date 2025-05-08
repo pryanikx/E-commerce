@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DTO\Product;
 
 use Illuminate\Http\UploadedFile;
@@ -27,7 +29,7 @@ readonly class ProductStoreDTO
         $this->manufacturer_id = (int) $validated['manufacturer_id'];
         $this->category_id = (int) $validated['category_id'];
         $this->maintenances = !empty($validated['maintenance_ids'])
-            ? collect($validated['maintenance_ids'])->mapWithKeys(fn($m) => [$m['id'] => ['price' => (float) $m['price']]])->toArray()
+            ? collect($validated['maintenance_ids'])->mapWithKeys(fn ($m) => [$m['id'] => ['price' => (float) $m['price']]])->toArray()
             : [];
     }
 }

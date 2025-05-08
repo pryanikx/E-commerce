@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\DTO\Manufacturer\ManufacturerListDTO;
@@ -7,17 +9,18 @@ use App\DTO\Manufacturer\ManufacturerStoreDTO;
 use App\DTO\Manufacturer\ManufacturerUpdateDTO;
 use App\Models\Manufacturer;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 
 class ManufacturerService
 {
-    public function __construct(protected ManufacturerRepositoryInterface $manufacturerRepository) {}
+    public function __construct(protected ManufacturerRepositoryInterface $manufacturerRepository)
+    {
+    }
 
     public function getAll(): ?array
     {
         $manufacturers = $this->manufacturerRepository->all();
 
-        return $manufacturers->map(fn($manufacturer)
+        return $manufacturers->map(fn ($manufacturer)
             => (new ManufacturerListDTO($manufacturer))->toArray())->toArray();
     }
 
@@ -49,5 +52,4 @@ class ManufacturerService
     {
         return $this->manufacturerRepository->delete($id);
     }
-
 }

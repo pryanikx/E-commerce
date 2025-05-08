@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories;
 
 use App\Models\Maintenance;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
-use \Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Collection;
 
 class MaintenanceRepository implements MaintenanceRepositoryInterface
 {

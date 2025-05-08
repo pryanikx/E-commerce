@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\DTO\Auth\LoginDTO;
@@ -16,7 +18,8 @@ class AuthController extends Controller
     public function __construct(
         protected LoginService $loginService,
         protected RegisterService $registerService,
-    ) {}
+    ) {
+    }
 
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -40,7 +43,6 @@ class AuthController extends Controller
         } catch (\Exception $exception) {
             return response()->json(['error' => $exception->getMessage()], 401);
         }
-
     }
 
     public function logout(Request $request): JsonResponse

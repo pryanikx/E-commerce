@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -10,9 +12,11 @@ use Illuminate\Http\JsonResponse;
 
 class AdminManufacturerController extends Controller
 {
-    public function __construct(protected ManufacturerService $manufacturerService) {}
+    public function __construct(protected ManufacturerService $manufacturerService)
+    {
+    }
 
-    public function index() : JsonResponse
+    public function index(): JsonResponse
     {
         $manufacturers = $this->manufacturerService->getAll();
 
@@ -23,7 +27,7 @@ class AdminManufacturerController extends Controller
         return response()->json($manufacturers, 200);
     }
 
-    public function store(ManufacturerStoreRequest $request) : JsonResponse
+    public function store(ManufacturerStoreRequest $request): JsonResponse
     {
         $manufacturer = $this->manufacturerService->createManufacturer($request->validated());
 

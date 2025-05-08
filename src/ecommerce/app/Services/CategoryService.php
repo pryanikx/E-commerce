@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\DTO\Category\CategoryListDTO;
@@ -8,18 +10,19 @@ use App\DTO\Category\CategoryUpdateDTO;
 use App\DTO\Product\ProductListDTO;
 use App\Models\Category;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 
 class CategoryService
 {
-    public function __construct(protected CategoryRepositoryInterface $categoryRepository) {}
+    public function __construct(protected CategoryRepositoryInterface $categoryRepository)
+    {
+    }
 
     public function getAll(): ?array
     {
         $categories = $this->categoryRepository->all();
 
-        return $categories->map(fn($category)
+        return $categories->map(fn ($category)
             => (new CategoryListDTO($category))->toArray())->toArray();
     }
 
@@ -27,7 +30,7 @@ class CategoryService
     {
         $products = $this->categoryRepository->getProductsForCategory($id);
 
-        return $products->setCollection($products->getCollection()->map(fn($product)
+        return $products->setCollection($products->getCollection()->map(fn ($product)
             => (new ProductListDTO($product))->toArray()))->toArray();
     }
 

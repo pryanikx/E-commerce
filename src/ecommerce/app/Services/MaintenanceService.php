@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\DTO\Maintenance\MaintenanceListDTO;
@@ -7,17 +9,18 @@ use App\DTO\Maintenance\MaintenanceStoreDTO;
 use App\DTO\Maintenance\MaintenanceUpdateDTO;
 use App\Models\Maintenance;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 
 class MaintenanceService
 {
-    public function __construct(protected MaintenanceRepositoryInterface $maintenanceRepository) {}
+    public function __construct(protected MaintenanceRepositoryInterface $maintenanceRepository)
+    {
+    }
 
     public function getAll(): ?array
     {
         $maintenances = $this->maintenanceRepository->all();
 
-        return $maintenances->map(fn($maintenance)
+        return $maintenances->map(fn ($maintenance)
             => (new MaintenanceListDTO($maintenance))->toArray())->toArray();
     }
 

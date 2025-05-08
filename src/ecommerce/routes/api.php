@@ -50,4 +50,3 @@ Route::fallback(function () {
         'error' => 'Route not found'
     ], 404);
 });
-

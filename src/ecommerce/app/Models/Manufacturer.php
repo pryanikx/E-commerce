@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +16,8 @@ class Manufacturer extends Model
         'name',
     ];
 
-    public function product(): HasMany {
+    public function product(): HasMany
+    {
         return $this->hasMany(Product::class);
     }
 }

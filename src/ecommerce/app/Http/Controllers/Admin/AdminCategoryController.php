@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\User\CategoryController;
@@ -9,7 +11,6 @@ use Illuminate\Http\JsonResponse;
 
 class AdminCategoryController extends CategoryController
 {
-
     public function store(CategoryStoreRequest $request): JsonResponse
     {
         $category = $this->categoryService->createCategory($request->validated());

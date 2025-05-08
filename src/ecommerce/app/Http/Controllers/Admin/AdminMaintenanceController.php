@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -10,7 +12,9 @@ use Illuminate\Http\JsonResponse;
 
 class AdminMaintenanceController extends Controller
 {
-    public function __construct(protected MaintenanceService $maintenanceService) {}
+    public function __construct(protected MaintenanceService $maintenanceService)
+    {
+    }
 
     public function index(): JsonResponse
     {

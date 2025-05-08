@@ -1,17 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Repositories\CategoryRepository;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
-use Illuminate\Support\ServiceProvider;
-use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
-use App\Repositories\ProductRepository;
+use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\MaintenanceRepository;
 use App\Repositories\ManufacturerRepository;
-
+use App\Repositories\ProductRepository;
+use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
 {

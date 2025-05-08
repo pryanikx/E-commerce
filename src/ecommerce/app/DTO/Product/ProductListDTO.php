@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DTO\Product;
 
 use App\Models\Product;
@@ -12,7 +14,8 @@ readonly class ProductListDTO
     public float $price;
     public string $image_url;
 
-    public function __construct(Product $product) {
+    public function __construct(Product $product)
+    {
         $this->name = $product->name;
         $this->article = $product->article;
         $this->manufacturer_name = $product->manufacturer->name;
@@ -20,7 +23,8 @@ readonly class ProductListDTO
         $this->image_url = asset($product->image_path);
     }
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return [
             'name' => $this->name,
             'article' => $this->article,

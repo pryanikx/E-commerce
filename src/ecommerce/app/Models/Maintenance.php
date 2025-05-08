@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -18,5 +20,4 @@ class Maintenance extends Model
         return $this->belongsToMany(Product::class, 'products_maintenances')
             ->withPivot('price');
     }
-
 }

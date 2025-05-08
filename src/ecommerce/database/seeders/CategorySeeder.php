@@ -19,7 +19,7 @@ class CategorySeeder extends Seeder
             ['name' => 'Laptops', 'alias' => 'laptops'],
             ['name' => 'TV', 'alias' => 'tv'],
         ];
-    
+
         foreach ($categories as $category) {
             Category::create($category);
         }

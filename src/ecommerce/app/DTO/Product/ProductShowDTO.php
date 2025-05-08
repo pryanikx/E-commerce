@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DTO\Product;
 
 use App\Models\Product;
@@ -26,7 +28,7 @@ readonly class ProductShowDTO
         $this->manufacturer_name = $product->manufacturer ? $product->manufacturer->name : null;
         $this->price = $product->price;
         $this->image_url = $product->image_path ? asset($product->image_path) : null;
-        $this->maintenances = $product->maintenances->map(fn($maintenance) => [
+        $this->maintenances = $product->maintenances->map(fn ($maintenance) => [
             'name' => $maintenance->name,
             'price' => (float) $maintenance->pivot->price,
         ])->toArray();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
@@ -8,7 +10,9 @@ use Illuminate\Http\JsonResponse;
 
 class CategoryController extends Controller
 {
-    public function __construct(protected CategoryService $categoryService) {}
+    public function __construct(protected CategoryService $categoryService)
+    {
+    }
 
     public function index(): JsonResponse
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
@@ -8,7 +10,9 @@ use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
-    public function __construct(protected ProductService $productService) {}
+    public function __construct(protected ProductService $productService)
+    {
+    }
 
     public function index(): JsonResponse
     {
