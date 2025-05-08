@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface ProductRepositoryInterface
 {
-
     /**
      * Get all products from the database.
      *
