@@ -11,6 +11,13 @@ use Illuminate\Http\JsonResponse;
 
 class AdminProductController extends ProductController
 {
+    /**
+     * store a new product.
+     *
+     * @param ProductStoreRequest $request
+     *
+     * @return JsonResponse
+     */
     public function store(ProductStoreRequest $request): JsonResponse
     {
         $product = $this->productService->createProduct($request->validated());
@@ -18,6 +25,14 @@ class AdminProductController extends ProductController
         return response()->json($product, 201);
     }
 
+    /**
+     * update an existing product.
+     *
+     * @param int $id
+     * @param ProductUpdateRequest $request
+     *
+     * @return JsonResponse
+     */
     public function update(int $id, ProductUpdateRequest $request): JsonResponse
     {
         $product = $this->productService->updateProduct($id, $request->validated());
@@ -25,6 +40,13 @@ class AdminProductController extends ProductController
         return response()->json($product, 200);
     }
 
+    /**
+     * erase an existing product.
+     *
+     * @param int $id
+     *
+     * @return JsonResponse
+     */
     public function destroy(int $id): JsonResponse
     {
         $this->productService->deleteProduct($id);

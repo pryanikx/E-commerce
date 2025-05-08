@@ -12,10 +12,18 @@ use Illuminate\Http\JsonResponse;
 
 class AdminManufacturerController extends Controller
 {
+    /**
+     * @param ManufacturerService $manufacturerService
+     */
     public function __construct(protected ManufacturerService $manufacturerService)
     {
     }
 
+    /**
+     * list all existing manufacturers.
+     *
+     * @return JsonResponse
+     */
     public function index(): JsonResponse
     {
         $manufacturers = $this->manufacturerService->getAll();
@@ -27,6 +35,13 @@ class AdminManufacturerController extends Controller
         return response()->json($manufacturers, 200);
     }
 
+    /**
+     * store a new manufacturer.
+     *
+     * @param ManufacturerStoreRequest $request
+     *
+     * @return JsonResponse
+     */
     public function store(ManufacturerStoreRequest $request): JsonResponse
     {
         $manufacturer = $this->manufacturerService->createManufacturer($request->validated());
@@ -34,6 +49,14 @@ class AdminManufacturerController extends Controller
         return response()->json($manufacturer, 201);
     }
 
+    /**
+     * update an existing manufacturer.
+     *
+     * @param int $id
+     * @param ManufacturerUpdateRequest $request
+     *
+     * @return JsonResponse
+     */
     public function update(int $id, ManufacturerUpdateRequest $request): JsonResponse
     {
         $manufacturer = $this->manufacturerService->updateManufacturer($id, $request->validated());
@@ -41,6 +64,13 @@ class AdminManufacturerController extends Controller
         return response()->json($manufacturer, 200);
     }
 
+    /**
+     * erase an existing manufacturer.
+     *
+     * @param int $id
+     *
+     * @return JsonResponse
+     */
     public function destroy(int $id): JsonResponse
     {
         $this->manufacturerService->deleteManufacturer($id);

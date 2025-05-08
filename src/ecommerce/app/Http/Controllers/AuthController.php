@@ -15,12 +15,23 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
+    /**
+     * @param LoginService $loginService
+     * @param RegisterService $registerService
+     */
     public function __construct(
         protected LoginService $loginService,
         protected RegisterService $registerService,
     ) {
     }
 
+    /**
+     * register a new user.
+     *
+     * @param RegisterRequest $request
+     *
+     * @return JsonResponse
+     */
     public function register(RegisterRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -31,6 +42,13 @@ class AuthController extends Controller
         return response()->json($result);
     }
 
+    /**
+     * login an existing user/admin.
+     *
+     * @param LoginRequest $request
+     *
+     * @return JsonResponse
+     */
     public function login(LoginRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -45,6 +63,13 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * logout a user/admin.
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
     public function logout(Request $request): JsonResponse
     {
         $this->loginService->logout($request->user());

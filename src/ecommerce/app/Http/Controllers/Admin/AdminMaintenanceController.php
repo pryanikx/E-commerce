@@ -12,10 +12,18 @@ use Illuminate\Http\JsonResponse;
 
 class AdminMaintenanceController extends Controller
 {
+    /**
+     * @param MaintenanceService $maintenanceService
+     */
     public function __construct(protected MaintenanceService $maintenanceService)
     {
     }
 
+    /**
+     * list all existing maintenances.
+     *
+     * @return JsonResponse
+     */
     public function index(): JsonResponse
     {
         $maintenances = $this->maintenanceService->getAll();
@@ -27,6 +35,13 @@ class AdminMaintenanceController extends Controller
         return response()->json($maintenances, 200);
     }
 
+    /**
+     * store new maintenance.
+     *
+     * @param MaintenanceStoreRequest $request
+     *
+     * @return JsonResponse
+     */
     public function store(MaintenanceStoreRequest $request): JsonResponse
     {
         $maintenance = $this->maintenanceService->createMaintenance($request->validated());
@@ -34,6 +49,14 @@ class AdminMaintenanceController extends Controller
         return response()->json($maintenance, 201);
     }
 
+    /**
+     * update existing maintenance.
+     *
+     * @param int $id
+     * @param MaintenanceUpdateRequest $request
+     *
+     * @return JsonResponse
+     */
     public function update(int $id, MaintenanceUpdateRequest $request): JsonResponse
     {
         $maintenance = $this->maintenanceService->updateMaintenance($id, $request->validated());
@@ -41,6 +64,13 @@ class AdminMaintenanceController extends Controller
         return response()->json($maintenance, 200);
     }
 
+    /**
+     * erase existing maintenance.
+     *
+     * @param int $id
+     *
+     * @return JsonResponse
+     */
     public function destroy(int $id): JsonResponse
     {
         $this->maintenanceService->deleteMaintenance($id);
