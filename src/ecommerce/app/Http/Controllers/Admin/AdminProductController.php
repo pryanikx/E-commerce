@@ -51,6 +51,6 @@ class AdminProductController extends ProductController
     {
         $this->productService->deleteProduct($id);
 
-        return response()->json(['message' => 'Successfully deleted!'], 200);
+        return response()->json(['message' => __('messages.deleted')], 200);
     }
 }

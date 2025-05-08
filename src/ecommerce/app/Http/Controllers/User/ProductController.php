@@ -27,7 +27,7 @@ class ProductController extends Controller
         $products = $this->productService->getAll();
 
         if (empty($products)) {
-            return response()->json(['error' => 'No products found!'], 200);
+            return response()->json(['message' => __('messages.empty_products')], 200);
         }
 
         return response()->json($products, 200);
@@ -45,7 +45,7 @@ class ProductController extends Controller
         $product = $this->productService->getProduct($id);
 
         if (!$product) {
-            return response()->json(['error' => 'Product not found!'], 404);
+            return response()->json(['message' => __('messages.no_product')], 200);
         }
 
         return response()->json($product, 200);

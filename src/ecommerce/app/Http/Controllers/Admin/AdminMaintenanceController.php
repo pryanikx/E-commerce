@@ -29,7 +29,7 @@ class AdminMaintenanceController extends Controller
         $maintenances = $this->maintenanceService->getAll();
 
         if (empty($maintenances)) {
-            return response()->json(['message' => 'No services found!'], 200);
+            return response()->json(['message' => __('messages.empty_maintenances')], 200);
         }
 
         return response()->json($maintenances, 200);
@@ -75,6 +75,6 @@ class AdminMaintenanceController extends Controller
     {
         $this->maintenanceService->deleteMaintenance($id);
 
-        return response()->json(['message' => 'Successfully deleted!'], 200);
+        return response()->json(['message' => __('messages.deleted')], 200);
     }
 }

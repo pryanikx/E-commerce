@@ -29,7 +29,7 @@ class AdminManufacturerController extends Controller
         $manufacturers = $this->manufacturerService->getAll();
 
         if (empty($manufacturers)) {
-            return response()->json(['message' => 'No manufacturers found!'], 200);
+            return response()->json(['message' => __('messages.empty_manufacturers')], 200);
         }
 
         return response()->json($manufacturers, 200);
@@ -75,6 +75,6 @@ class AdminManufacturerController extends Controller
     {
         $this->manufacturerService->deleteManufacturer($id);
 
-        return response()->json(['message' => 'Successfully deleted!'], 200);
+        return response()->json(['message' => __('messages.deleted')], 200);
     }
 }

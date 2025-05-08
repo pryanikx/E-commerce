@@ -51,6 +51,6 @@ class AdminCategoryController extends CategoryController
     {
         $this->categoryService->deleteCategory($id);
 
-        return response()->json(['message' => 'Successfully deleted!'], 200);
+        return response()->json(['message' => __('messages.deleted')], 200);
     }
 }

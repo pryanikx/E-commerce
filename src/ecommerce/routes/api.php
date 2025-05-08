@@ -47,6 +47,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
 Route::fallback(function () {
     return response()->json([
-        'error' => 'Route not found'
+        'error' => __('errors.route_not_found')
     ], 404);
 });

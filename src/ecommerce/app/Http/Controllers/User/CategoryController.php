@@ -27,7 +27,7 @@ class CategoryController extends Controller
         $categories = $this->categoryService->getAll();
 
         if (empty($categories)) {
-            return response()->json(['message' => 'No categories found!'], 200);
+            return response()->json(['message' => __('messages.empty_categories')], 200);
         }
 
         return response()->json($categories, 200);

@@ -18,7 +18,7 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, string $role): Response
     {
         if (!$request->user() || ($request->user()->role !== $role && $request->user()->role !== 'admin')) {
-            return response()->json(['error' => 'Access denied'], 403);
+            return response()->json(['error' => __('errors.access_denied')], 403);
         }
 
         return $next($request);

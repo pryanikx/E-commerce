@@ -7,11 +7,12 @@ namespace App\Services;
 use App\DTO\Auth\LoginDTO;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Mockery\Exception;
 
 class LoginService
 {
     /**
-     * Login an existing user/admion.
+     * Login an existing user/admin.
      *
      * @param LoginDTO $dto
      *
@@ -23,7 +24,7 @@ class LoginService
         $credentials = [$dto->email, $dto->password];
 
         if (!Auth::attempt($credentials)) {
-            throw new \Exception("Invalid email or password");
+            throw new \Exception(__('auth.failed'));
         }
 
         $user = Auth::user();
