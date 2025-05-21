@@ -64,7 +64,7 @@ readonly class ProductShowDTO
         $this->release_date = $product->release_date;
         $this->category_name = $product->category->name;
         $this->manufacturer_name = $product->manufacturer->name;
-        $this->price = $product->price;
+        $this->price = (float) $product->price;
         $this->image_url = $product->image_path ? asset($product->image_path) : null;
         $this->maintenances = $product->maintenances->map(fn ($maintenance) => [
             'name' => $maintenance->name,
