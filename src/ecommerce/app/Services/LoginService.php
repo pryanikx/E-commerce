@@ -18,9 +18,10 @@ class LoginService
      * @return array
      * @throws \Exception<string>
      */
-    public function login(LoginDTO $dto): array
+    public function login(array $request_validated): array
     {
-        $credentials = [$dto->email, $dto->password];
+        $dto = new LoginDTO($request_validated);
+        $credentials = $dto->toArray();
 
         if (!Auth::attempt($credentials)) {
             throw new \Exception(__('auth.failed'));

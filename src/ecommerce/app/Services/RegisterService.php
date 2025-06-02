@@ -17,14 +17,11 @@ class RegisterService
      *
      * @return array
      */
-    public function register(RegisterDTO $dto): array
+    public function register(array $request_validated): array
     {
-        $user = User::create([
-            'name' => $dto->name,
-            'email' => $dto->email,
-            'password' => Hash::make($dto->password),
-            'role' => $dto->role,
-        ]);
+        $dto = new RegisterDTO($request_validated);
+
+        $user = User::create($dto->toArray());
 
         $token = $user->createToken('token')->plainTextToken;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DTO\Auth;
 
 use App\Enums\UserRole;
+use Illuminate\Support\Facades\Hash;
 
 readonly class RegisterDTO
 {
@@ -47,7 +48,7 @@ readonly class RegisterDTO
         return [
             'name' => $this->name,
             'email' => $this->email,
-            'password' => $this->password,
+            'password' => Hash::make($this->password),
             'role' => $this->role,
         ];
     }

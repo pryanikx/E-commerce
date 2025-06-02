@@ -48,6 +48,7 @@ readonly class ProductUpdateDTO
     /**
      * @param array $validated
      */
+
     public function __construct(array $validated)
     {
         $this->name = $validated['name'] ?? null;
@@ -55,7 +56,7 @@ readonly class ProductUpdateDTO
         $this->description = $validated['description'] ?? null;
         $this->release_date = $validated['release_date'] ?? null;
         $this->price = isset($validated['price']) ? (float) $validated['price'] : null;
-        $this->image = $validated['image'] ?? null;
+        $this->image = $validated['image'] instanceof UploadedFile ? $validated['image'] : null;
         $this->manufacturer_id = isset($validated['manufacturer_id']) ? (int) $validated['manufacturer_id'] : null;
         $this->category_id = isset($validated['category_id']) ? (int) $validated['category_id'] : null;
         $this->maintenances = isset($validated['maintenance_ids']) && is_array($validated['maintenance_ids'])

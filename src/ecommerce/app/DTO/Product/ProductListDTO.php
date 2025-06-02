@@ -8,6 +8,12 @@ use App\Models\Product;
 
 readonly class ProductListDTO
 {
+
+    /**
+     * @var int $id
+     */
+    public int $id;
+
     /**
      * @var string $name
      */
@@ -38,6 +44,7 @@ readonly class ProductListDTO
      */
     public function __construct(Product $product)
     {
+        $this->id = $product->id;
         $this->name = $product->name;
         $this->article = $product->article;
         $this->manufacturer_name = $product->manufacturer->name;
@@ -51,6 +58,7 @@ readonly class ProductListDTO
     public function toArray(): array
     {
         return [
+            'id' => $this->id,
             'name' => $this->name,
             'article' => $this->article,
             'manufacturer_name' => $this->manufacturer_name,

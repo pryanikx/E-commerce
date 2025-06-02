@@ -11,6 +11,8 @@ use App\DTO\Product\ProductUpdateDTO;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProductService
 {
@@ -29,9 +31,7 @@ class ProductService
     public function getAll(): ?array
     {
         $products = $this->productRepository->all();
-
-        return $products->map(fn ($product)
-            => (new ProductListDTO($product))->toArray())->toArray();
+        return $products->map(fn($product) => (new ProductListDTO($product))->toArray())->toArray();
     }
 
     /**
@@ -48,7 +48,6 @@ class ProductService
         } catch (ModelNotFoundException $e) {
             return null;
         }
-
         return (new ProductShowDTO($product))->toArray();
     }
 
@@ -73,10 +72,9 @@ class ProductService
      */
     public function createProduct(array $request_validated): Product
     {
+        Log::info('Creating product', ['data' => $request_validated]);
         $dto = new ProductStoreDTO($request_validated);
-
         $image_path = $this->handleImagePath($dto->image);
-
         $created_product = $this->productRepository->create([
             'name' => $dto->name,
             'article' => $dto->article,
@@ -87,9 +85,8 @@ class ProductService
             'manufacturer_id' => $dto->manufacturer_id,
             'category_id' => $dto->category_id,
         ]);
-
         $this->productRepository->attachMaintenances($created_product, $dto->maintenances);
-
+        Log::info('Product created', ['product_id' => $created_product->id]);
         return $created_product;
     }
 
@@ -103,22 +100,22 @@ class ProductService
      */
     public function updateProduct(int $id, array $request_validated): Product
     {
+        Log::info('Updating product', ['id' => $id, 'data' => $request_validated]);
         $product = $this->productRepository->find($id);
-
         $dto = new ProductUpdateDTO($request_validated);
 
         $image_path = $this->handleImagePath($dto->image, $product->image_path);
 
-        $data = [
-            'name' => $dto->name !== null ? $dto->name : $product->name,
-            'article' => $dto->article !== null ? $dto->article : $product->article,
-            'description' => $dto->description !== null ? $dto->description : $product->description,
-            'release_date' => $dto->release_date !== null ? $dto->release_date : $product->release_date,
-            'price' => $dto->price !== null ? $dto->price : $product->price,
-            'manufacturer_id' => $dto->manufacturer_id !== null ? $dto->manufacturer_id : $product->manufacturer_id,
-            'category_id' => $dto->category_id !== null ? $dto->category_id : $product->category_id,
-            'image_path' => $image_path !== $product->image_path ? $image_path : null,
-        ];
+        $data = array_filter([
+            'name' => $dto->name,
+            'article' => $dto->article,
+            'description' => $dto->description,
+            'release_date' => $dto->release_date,
+            'price' => $dto->price,
+            'manufacturer_id' => $dto->manufacturer_id,
+            'category_id' => $dto->category_id,
+            'image_path' => $image_path,
+        ], fn($value) => $value !== null);
 
         $this->productRepository->update($product, $data);
 
@@ -126,6 +123,7 @@ class ProductService
             $this->productRepository->attachMaintenances($product, $dto->maintenances);
         }
 
+        Log::info('Product updated', ['product_id' => $product->id, 'data' => $data]);
         return $product->refresh();
     }
 
@@ -139,17 +137,23 @@ class ProductService
      */
     private function handleImagePath(?\Illuminate\Http\UploadedFile $image, ?string $oldPath = null): ?string
     {
-        if (!$image || !$image->isValid()) {
-            return $oldPath;
+        if ($image && $image->isValid()) {
+            if ($oldPath && Storage::disk('public')->exists(str_replace('storage/', '', $oldPath))) {
+                Storage::disk('public')->delete(str_replace('storage/', '', $oldPath));
+            }
+            $filename = uniqid() . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('products', $filename, 'public');
+            Log::info('Image uploaded', ['path' => 'storage/' . $path]);
+            return 'storage/' . $path;
         }
-
-        if ($oldPath && file_exists(public_path($oldPath))) {
-            unlink(public_path($oldPath));
+        if ($image === null && $oldPath) {
+            if (Storage::disk('public')->exists(str_replace('storage/', '', $oldPath))) {
+                Storage::disk('public')->delete(str_replace('storage/', '', $oldPath));
+            }
+            Log::info('Image cleared');
+            return null;
         }
-
-        $filename = uniqid() . '.' . $image->getClientOriginalExtension();
-        $image->storeAs('public/products', $filename);
-
-        return 'storage/products/' . $filename;
+        Log::info('Image unchanged', ['old_path' => $oldPath]);
+        return $oldPath;
     }
 }

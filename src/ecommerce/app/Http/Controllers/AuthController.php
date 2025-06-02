@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\DTO\Auth\LoginDTO;
-use App\DTO\Auth\RegisterDTO;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\LoginService;
@@ -34,10 +32,7 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $validated = $request->validated();
-        $dto = new RegisterDTO($validated);
-
-        $result = $this->registerService->register($dto);
+        $result = $this->registerService->register($request->validated());
 
         return response()->json($result);
     }
@@ -51,11 +46,8 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        $validated = $request->validated();
-        $dto = new LoginDTO($validated);
-
         try {
-            $result = $this->loginService->login($dto);
+            $result = $this->loginService->login($request->validated());
 
             return response()->json($result);
         } catch (\Exception $exception) {

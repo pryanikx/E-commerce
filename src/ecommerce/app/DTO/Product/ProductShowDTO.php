@@ -9,6 +9,11 @@ use App\Models\Product;
 readonly class ProductShowDTO
 {
     /**
+     * @var int $id
+     */
+    public int $id;
+
+    /**
      * @var string $name
      */
     public string $name;
@@ -58,10 +63,11 @@ readonly class ProductShowDTO
      */
     public function __construct(Product $product)
     {
+        $this->id = $product->id;
         $this->name = $product->name;
         $this->article = $product->article;
         $this->description = $product->description;
-        $this->release_date = $product->release_date;
+        $this->release_date = $product->release_date->toDateString();
         $this->category_name = $product->category->name;
         $this->manufacturer_name = $product->manufacturer->name;
         $this->price = (float) $product->price;
@@ -78,6 +84,7 @@ readonly class ProductShowDTO
     public function toArray(): array
     {
         return [
+            'id' => $this->id,
             'name' => $this->name,
             'article' => $this->article,
             'description' => $this->description,

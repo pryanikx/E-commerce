@@ -17,7 +17,7 @@ Route::middleware(['auth:sanctum', 'role:user'])->group(function () {
     Route::apiResource('products', ProductController::class)->only(['index', 'show']);
 
     Route::apiResource('categories', CategoryController::class)->only(['index']);
-    Route::get('/categories/{id}/products', [AdminCategoryController::class, 'products']);
+    Route::get('/categories/{id}/products', [CategoryController::class, 'products']);
 });
 
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
