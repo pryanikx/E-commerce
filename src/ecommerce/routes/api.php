@@ -4,10 +4,13 @@ use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminMaintenanceController;
 use App\Http\Controllers\Admin\AdminManufacturerController;
 use App\Http\Controllers\Admin\AdminProductController;
+use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\User\CategoryController;
 use App\Http\Controllers\User\ProductController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/export-catalog', [ProductExportController::class, 'export']);
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -21,6 +24,7 @@ Route::middleware(['auth:sanctum', 'role:user'])->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+
     Route::apiResource('products', AdminProductController::class)
         ->names([
             'index' => 'admin.products.index',

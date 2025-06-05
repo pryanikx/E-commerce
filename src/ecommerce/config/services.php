@@ -14,6 +14,14 @@ return [
     |
     */
 
+    'open_exchange_rates' => [
+        'api_key' => env('OPEN_EXCHANGE_RATES_API_KEY'),
+    ],
+
+    'currency' => [
+        'base' => env('CURRENCY_BASE', 'USD'),
+    ],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],

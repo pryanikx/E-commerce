@@ -13,7 +13,7 @@ class RegisterService
     /**
      * Register a new user.
      *
-     * @param RegisterDTO $dto
+     * @param array $request_validated
      *
      * @return array
      */

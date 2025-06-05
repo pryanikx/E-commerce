@@ -10,6 +10,7 @@ use App\DTO\Product\ProductStoreDTO;
 use App\DTO\Product\ProductUpdateDTO;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
+use App\Services\Currency\CurrencyCalculator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -18,8 +19,12 @@ class ProductService
 {
     /**
      * @param ProductRepositoryInterface $productRepository
+     * @param CurrencyCalculator $currencyCalculator
      */
-    public function __construct(protected ProductRepositoryInterface $productRepository)
+    public function __construct(
+        protected ProductRepositoryInterface $productRepository,
+        protected CurrencyCalculator $currencyCalculator,
+    )
     {
     }
 
@@ -31,7 +36,7 @@ class ProductService
     public function getAll(): ?array
     {
         $products = $this->productRepository->all();
-        return $products->map(fn($product) => (new ProductListDTO($product))->toArray())->toArray();
+        return $products->map(fn($product) => (new ProductListDTO($product, $this->currencyCalculator))->toArray())->toArray();
     }
 
     /**

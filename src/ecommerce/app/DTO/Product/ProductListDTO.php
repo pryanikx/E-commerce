@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DTO\Product;
 
 use App\Models\Product;
+use App\Services\Currency\CurrencyCalculator;
 
 readonly class ProductListDTO
 {
@@ -30,9 +31,9 @@ readonly class ProductListDTO
     public string $manufacturer_name;
 
     /**
-     * @var float $price
+     * @var array $prices
      */
-    public float $price;
+    public array $prices;
 
     /**
      * @var string $image_url
@@ -41,14 +42,15 @@ readonly class ProductListDTO
 
     /**
      * @param Product $product
+     * @param CurrencyCalculator $calculator
      */
-    public function __construct(Product $product)
+    public function __construct(Product $product, CurrencyCalculator $calculator)
     {
         $this->id = $product->id;
         $this->name = $product->name;
         $this->article = $product->article;
         $this->manufacturer_name = $product->manufacturer->name;
-        $this->price = (float) $product->price;
+        $this->prices = $product->price ? $calculator->convert((float) $product->price) : null;
         $this->image_url = asset($product->image_path);
     }
 
@@ -62,7 +64,7 @@ readonly class ProductListDTO
             'name' => $this->name,
             'article' => $this->article,
             'manufacturer_name' => $this->manufacturer_name,
-            'price' => $this->price,
+            'prices' => $this->prices,
             'image_url' => $this->image_url,
         ];
     }

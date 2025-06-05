@@ -58,8 +58,10 @@ interface CategoryRepositoryInterface
      * Get paginated products for a category.
      *
      * @param int $id
+     * @param array $filters
+     * @param array $sort
      *
      * @return LengthAwarePaginator
      */
-    public function getProductsForCategory(int $id): LengthAwarePaginator;
+    public function getProductsForCategory(int $id, array $filters = [], array $sort = []): LengthAwarePaginator;
 }

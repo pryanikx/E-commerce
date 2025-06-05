@@ -1,0 +1,72 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\Currency;
+
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+class OpenExchangeRatesSource implements CurrencySource
+{
+    /**
+     * @var string $apiKey
+     */
+    protected string $apiKey;
+
+    /**
+     * @var string $apiUrl
+     */
+    protected string $apiUrl = 'https://openexchangerates.org/api/latest.json';
+
+    public function __construct()
+    {
+        $this->apiKey = config('services.open_exchange_rates.api_key');
+    }
+
+    /**
+     * Fetch exchange rates with base currency.
+     *
+     * @param string $baseCurrency
+     * @return array<string, float>
+     * @throws \Exception
+     */
+    public function getExchangeRates(string $baseCurrency): array
+    {
+        $cacheKey = "exchange_rates_{$baseCurrency}";
+        $cacheDuration = now()->addHours(24);
+
+        return Cache::remember($cacheKey, $cacheDuration, function () use ($baseCurrency) {
+            try {
+                $response = Http::get($this->apiUrl, [
+                    'app_id' => $this->apiKey,
+                    'base' => $baseCurrency,
+                ]);
+
+                if ($response->failed()) {
+                    Log::error('OpenExchangeRates API error', [
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
+                    throw new \RuntimeException(__('errors.fetch_exchange_rates_failed'));
+                }
+
+                $data = $response->json();
+
+                return $data['rates'] ?? [];
+            } catch (\Exception $e) {
+                Log::error(__('errros.fetch_exchange_rates_failed'), [
+                    'message' => $e->getMessage(),
+                    'base_currency' => $baseCurrency,
+                ]);
+                return [
+                    'BYN' => 1.0,
+                    'USD' => 1.0,
+                    'EUR' => 1.0,
+                    'RUB' => 1.0,
+                ];
+            }
+        });
+    }
+}

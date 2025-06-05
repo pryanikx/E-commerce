@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+    'default' => env('MAIL_MAILER', 'ses'),
 
     /*
     |--------------------------------------------------------------------------
@@ -51,6 +51,11 @@ return [
 
         'ses' => [
             'transport' => 'ses',
+            'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+            'endpoint' => env('AWS_ENDPOINT_URL', 'http://localhost:4566'),
+            'options' => [
+                'ConfigurationSetName' => null,
+            ],
         ],
 
         'postmark' => [
@@ -111,8 +116,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Example'),
+        'address' => env('MAIL_FROM_ADDRESS', 'admin@example.com'),
+        'name' => env('MAIL_FROM_NAME', 'Ecommerce Admin'),
     ],
 
 ];

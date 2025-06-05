@@ -10,14 +10,19 @@ use App\DTO\Category\CategoryUpdateDTO;
 use App\DTO\Product\ProductListDTO;
 use App\Models\Category;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
+use App\Services\Currency\CurrencyCalculator;
 use Illuminate\Support\Str;
 
 class CategoryService
 {
     /**
      * @param CategoryRepositoryInterface $categoryRepository
+     * @param CurrencyCalculator $currencyCalculator
      */
-    public function __construct(protected CategoryRepositoryInterface $categoryRepository)
+    public function __construct(
+        protected CategoryRepositoryInterface $categoryRepository,
+        protected CurrencyCalculator $currencyCalculator
+    )
     {
     }
 
@@ -38,15 +43,25 @@ class CategoryService
      * Get paginated products of the specified category.
      *
      * @param int $id
+     * @param array $filters
+     * @param array $sort
      *
      * @return array
      */
-    public function getProductsForCategory(int $id): array
+    public function getProductsForCategory(int $id, array $filters = [], array $sort = []): array
     {
-        $products = $this->categoryRepository->getProductsForCategory($id);
+        $products = $this->categoryRepository->getProductsForCategory($id, $filters, $sort);
 
-        return $products->setCollection($products->getCollection()->map(fn ($product)
-            => (new ProductListDTO($product))->toArray()))->toArray();
+        return [
+            'data' => $products->map(fn ($product)
+                => (new ProductListDTO($product, $this->currencyCalculator))->toArray())->toArray(),
+            'meta' => [
+                'current_page' => $products->currentPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+                'last_page' => $products->lastPage(),
+            ],
+        ];
     }
 
     /**

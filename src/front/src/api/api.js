@@ -1,21 +1,22 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api';
-
 const api = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: 'http://localhost:8000/api',
     headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
     },
 });
 
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 export default api;

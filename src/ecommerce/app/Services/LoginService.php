@@ -13,10 +13,10 @@ class LoginService
     /**
      * Login an existing user/admin.
      *
-     * @param LoginDTO $dto
+     * @param array $request_validated
      *
      * @return array
-     * @throws \Exception<string>
+     * @throws \Exception
      */
     public function login(array $request_validated): array
     {
