@@ -6,6 +6,9 @@ namespace App\Services\Currency;
 
 class CurrencyCalculator
 {
+    private const SUPPORTED_CURRENCIES = ['BYN', 'USD', 'EUR', 'RUB'];
+    PRIVATE const BASE_CURRENCY = 'USD';
+
     /**
      * @var CurrencySource $source
      */
@@ -16,12 +19,11 @@ class CurrencyCalculator
      */
     protected string $baseCurrency;
 
-
     /**
      * @param CurrencySource $source
      * @param string $baseCurrency
      */
-    public function __construct(CurrencySource $source, string $baseCurrency = 'USD')
+    public function __construct(CurrencySource $source, string $baseCurrency = self::BASE_CURRENCY)
     {
         $this->source = $source;
         $this->baseCurrency = $baseCurrency;
@@ -34,7 +36,7 @@ class CurrencyCalculator
      * @param array<string> $targetCurrencies
      * @return array<string, float>
      */
-    public function convert(float $price, array $targetCurrencies = ['BYN', 'USD', 'EUR', 'RUB']): array //TODO: Move $targetCurrencies to a constant
+    public function convert(float $price, array $targetCurrencies = self::SUPPORTED_CURRENCIES): array
     {
         $rates = $this->source->getExchangeRates($this->baseCurrency);
         $converted = [];

@@ -19,6 +19,9 @@ class OpenExchangeRatesSource implements CurrencySource
      */
     protected string $apiUrl = 'https://openexchangerates.org/api/latest.json';
 
+    /**
+     * @param LoggerInterface $logger
+     */
     public function __construct(private readonly LoggerInterface $logger)
     {
         $this->apiKey = config('services.open_exchange_rates.api_key');
@@ -44,7 +47,7 @@ class OpenExchangeRatesSource implements CurrencySource
                 ]);
 
                 if ($response->failed()) {
-                    $this->logger->error('OpenExchangeRates API error', [
+                    $this->logger->error(__('errors.fetch_exchange_rates_failed'), [
                         'status' => $response->status(),
                         'body' => $response->body(),
                     ]);
