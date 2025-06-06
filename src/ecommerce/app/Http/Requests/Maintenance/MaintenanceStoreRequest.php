@@ -26,7 +26,7 @@ class MaintenanceStoreRequest extends FormRequest
         return [
             'name' => 'required|string|unique:maintenances,name',
             'description' => 'nullable|string',
-            'duration' => 'nullable|string|max:50', // TODO: change duration to FROM & TILL
+            'duration' => 'nullable|string|max:50',
         ];
     }
 }

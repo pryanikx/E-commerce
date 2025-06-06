@@ -8,9 +8,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use Psr\Log\LoggerInterface;
 
 class PublishCatalogJob implements ShouldQueue
 {
@@ -18,8 +18,9 @@ class PublishCatalogJob implements ShouldQueue
 
     /**
      * @param ProductRepositoryInterface $productRepository
+     * @param LoggerInterface $logger
      */
-    public function __construct(protected ProductRepositoryInterface $productRepository)
+    public function __construct(protected ProductRepositoryInterface $productRepository, private readonly LoggerInterface $logger)
     {
         $this->onQueue(env('RABBITMQ_JOB_QUEUE', 'default'));
     }
@@ -32,7 +33,7 @@ class PublishCatalogJob implements ShouldQueue
      */
     public function handle(): void
     {
-        Log::info('Starting PublishCatalogJob');
+        $this->logger->info('Starting PublishCatalogJob');
 
         $csvFileName = 'product-catalog-' . date('Y-m-d_H-i-s') . '.csv';
         $csvFilePath = storage_path('app/' . $csvFileName);
@@ -40,13 +41,13 @@ class PublishCatalogJob implements ShouldQueue
         try {
             $storageDir = dirname($csvFilePath);
             if (!is_writable($storageDir)) {
-                Log::error('Storage directory is not writable', ['dir' => $storageDir]);
+                $this->logger->error('Storage directory is not writable', ['dir' => $storageDir]);
                 throw new \Exception(__('errors.directory_is_not_writeable') . $storageDir);
             }
 
             $file = fopen($csvFilePath, 'w');
             if (!$file) {
-                Log::error('Failed to open CSV file for writing', ['path' => $csvFilePath]);
+                $this->logger->error('Failed to open CSV file for writing', ['path' => $csvFilePath]);
                 throw new \Exception(__('errors.csv_creation_failed'). $csvFilePath);
             }
 
@@ -55,13 +56,13 @@ class PublishCatalogJob implements ShouldQueue
                 'Manufacturer Name', 'Price', 'Image URL', 'Maintenances',
             ];
             fputcsv($file, $headers);
-            Log::info('CSV headers written', ['headers' => $headers]);
+            $this->logger->info('CSV headers written', ['headers' => $headers]);
 
             $products = $this->productRepository->all()->load(['category', 'manufacturer', 'maintenances']);
-            Log::info('Retrieved products', ['count' => $products->count()]);
+            $this->logger->info('Retrieved products', ['count' => $products->count()]);
 
             if ($products->isEmpty()) {
-                Log::warning('No products found for export');
+                $this->logger->warning('No products found for export');
             }
 
             foreach ($products as $product) {
@@ -84,7 +85,7 @@ class PublishCatalogJob implements ShouldQueue
                 fputcsv($file, $row);
             }
             fclose($file);
-            Log::info('CSV file generated', ['file' => $csvFileName, 'path' => $csvFilePath]);
+            $this->logger->info('CSV file generated', ['file' => $csvFileName, 'path' => $csvFilePath]);
 
             $connection = new AMQPStreamConnection(
                 env('RABBITMQ_HOST', 'localhost'),
@@ -102,18 +103,18 @@ class PublishCatalogJob implements ShouldQueue
                 'csv_file_name' => $csvFileName,
             ]);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                Log::error('Failed to encode JSON message', ['error' => json_last_error_msg()]);
+                $this->logger->error('Failed to encode JSON message', ['error' => json_last_error_msg()]);
                 throw new \Exception(__('errors.encode_json_failed') . json_last_error_msg());
             }
 
             $message = new AMQPMessage($messageBody, ['delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
             $channel->basic_publish($message, '', $queue);
-            Log::info('Published message to RabbitMQ', ['queue' => $queue, 'message' => $messageBody]);
+            $this->logger->info('Published message to RabbitMQ', ['queue' => $queue, 'message' => $messageBody]);
 
             $channel->close();
             $connection->close();
         } catch (\Exception $e) {
-            Log::error('PublishCatalogJob failed', [
+            $this->logger->error('PublishCatalogJob failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

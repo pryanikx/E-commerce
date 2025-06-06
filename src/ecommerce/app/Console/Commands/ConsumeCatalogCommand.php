@@ -5,10 +5,10 @@ namespace App\Console\Commands;
 use Aws\S3\S3Client;
 use Aws\Ses\SesClient;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Contracts\Mail\Mailer;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use Psr\Log\LoggerInterface;
 
 class ConsumeCatalogCommand extends Command
 {
@@ -32,7 +32,11 @@ class ConsumeCatalogCommand extends Command
      */
     protected SesClient $ses;
 
-    public function __construct()
+    /**
+     * @param LoggerInterface $logger
+     * @param Mailer $mailer
+     */
+    public function __construct(private readonly LoggerInterface $logger, private readonly Mailer $mailer)
     {
         parent::__construct();
         $this->s3 = $this->initializeS3Client();
@@ -42,7 +46,7 @@ class ConsumeCatalogCommand extends Command
     public function handle(): void
     {
         $this->info('Starting RabbitMQ consumer for product catalog');
-        Log::info('Starting RabbitMQ consumer for product catalog');
+        $this->logger->info('Starting RabbitMQ consumer for product catalog');
 
         try {
             $connection = new AMQPStreamConnection(
@@ -52,18 +56,18 @@ class ConsumeCatalogCommand extends Command
                 env('RABBITMQ_PASSWORD', 'guest'),
                 env('RABBITMQ_VHOST', '/')
             );
-            Log::info('Connected to RabbitMQ');
+            $this->logger->info('Connected to RabbitMQ');
 
             $channel = $connection->channel();
             $queue = env('RABBITMQ_MESSAGE_QUEUE', 'catalog_messages');
             $channel->queue_declare($queue, false, true, false, false);
-            Log::info('Declared RabbitMQ queue', ['queue' => $queue]);
+            $this->logger->info('Declared RabbitMQ queue', ['queue' => $queue]);
 
             $callback = function (AMQPMessage $msg) use ($channel) {
                 try {
                     $data = json_decode($msg->body, true);
                     if (!is_array($data) || !isset($data['csv_file_path'], $data['csv_file_name'])) {
-                        Log::error('Invalid RabbitMQ message format', ['message' => $msg->body]);
+                        $this->logger->error('Invalid RabbitMQ message format', ['message' => $msg->body]);
                         $channel->basic_ack($msg->delivery_info['delivery_tag']);
                         $this->warn('Skipped invalid message: ' . $msg->body);
                         return;
@@ -73,7 +77,7 @@ class ConsumeCatalogCommand extends Command
                     $csvFileName = $data['csv_file_name'];
                     $bucket = env('AWS_BUCKET', 'product-catalog');
 
-                    Log::info('Received message from RabbitMQ', ['file' => $csvFileName, 'path' => $csvFilePath]);
+                    $this->logger->info('Received message from RabbitMQ', ['file' => $csvFileName, 'path' => $csvFilePath]);
 
                     if (!file_exists($csvFilePath)) {
                         throw new \Exception('CSV file not found: ' . $csvFilePath);
@@ -82,7 +86,7 @@ class ConsumeCatalogCommand extends Command
                     if (!$this->s3->doesBucketExist($bucket)) {
                         $this->s3->createBucket(['Bucket' => $bucket]);
                         $this->s3->waitUntil('BucketExists', ['Bucket' => $bucket]);
-                        Log::info('S3 bucket created', ['bucket' => $bucket]);
+                        $this->logger->info('S3 bucket created', ['bucket' => $bucket]);
                     }
 
                     $this->s3->putObject([
@@ -91,36 +95,36 @@ class ConsumeCatalogCommand extends Command
                         'Body' => fopen($csvFilePath, 'r'),
                         'ContentType' => 'text/csv',
                     ]);
-                    Log::info('Uploaded to S3', ['bucket' => $bucket, 'file' => $csvFileName]);
+                    $this->logger->info('Uploaded to S3', ['bucket' => $bucket, 'file' => $csvFileName]);
 
                     unlink($csvFilePath);
-                    Log::info('Deleted local CSV file', ['path' => $csvFilePath]);
+                    $this->logger->info('Deleted local CSV file', ['path' => $csvFilePath]);
 
                     try {
                         $adminEmail = env('ADMIN_EMAIL', 'test@example.com');
                         $fromEmail = env('MAIL_FROM_ADDRESS', 'test@example.com');
                         $emailContent = "The product catalog has been exported to S3: s3://$bucket/$csvFileName";
-                        Log::info('Preparing to send email', [
+                        $this->logger->info('Preparing to send email', [
                             'to' => $adminEmail,
                             'from' => $fromEmail,
                             'mailer' => config('mail.mailer'),
                             'endpoint' => env('AWS_ENDPOINT_URL'),
                         ]);
-                        Mail::raw($emailContent, function ($message) use ($adminEmail, $fromEmail) {
+                        $this->mailer->raw($emailContent, function ($message) use ($adminEmail, $fromEmail) {
                             $message->to($adminEmail)
                                 ->subject('Product Catalog Export Completed')
                                 ->from($fromEmail, env('MAIL_FROM_NAME', 'Ecommerce Admin'));
                         });
-                        Log::info('Confirmation email sent', ['email' => $adminEmail, 'content' => $emailContent]);
+                        $this->logger->info('Confirmation email sent', ['email' => $adminEmail, 'content' => $emailContent]);
                         $this->info('Sent email to: ' . $adminEmail);
                     } catch (\Exception $e) {
-                        Log::warning('Failed to send confirmation email', [
+                        $this->logger->warning('Failed to send confirmation email', [
                             'error' => $e->getMessage(),
                             'trace' => $e->getTraceAsString(),
                         ]);
                         $this->warn('Failed to send email: ' . $e->getMessage());
 
-                        Log::info('Email content (fallback)', [
+                        $this->logger->info('Email content (fallback)', [
                             'to' => $adminEmail,
                             'subject' => 'Product Catalog Export Completed',
                             'from' => $fromEmail,
@@ -131,7 +135,7 @@ class ConsumeCatalogCommand extends Command
                     $channel->basic_ack($msg->delivery_info['delivery_tag']);
                     $this->info('Processed message successfully: ' . $csvFileName);
                 } catch (\Exception $e) {
-                    Log::error('Failed to process RabbitMQ message', [
+                    $this->logger->error('Failed to process RabbitMQ message', [
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString(),
                         'message' => $msg->body,
@@ -142,7 +146,7 @@ class ConsumeCatalogCommand extends Command
             };
 
             $channel->basic_consume($queue, '', false, false, false, false, $callback);
-            Log::info('Consumer started, waiting for messages');
+            $this->logger->info('Consumer started, waiting for messages');
             $this->info('Consumer started, waiting for messages');
 
             while ($channel->is_consuming()) {
@@ -152,7 +156,7 @@ class ConsumeCatalogCommand extends Command
             $channel->close();
             $connection->close();
         } catch (\Exception $e) {
-            Log::error('RabbitMQ consumer failed', [
+            $this->logger->error('RabbitMQ consumer failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -162,7 +166,7 @@ class ConsumeCatalogCommand extends Command
 
     protected function initializeS3Client(): S3Client
     {
-        Log::info('Initializing S3 client');
+        $this->logger->info('Initializing S3 client');
         return new S3Client([
             'version' => 'latest',
             'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
@@ -177,7 +181,7 @@ class ConsumeCatalogCommand extends Command
 
     protected function initializeSesClient(): SesClient
     {
-        Log::info('Initializing SES client');
+        $this->logger->info('Initializing SES client');
         return new SesClient([
             'version' => 'latest',
             'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
@@ -186,7 +190,7 @@ class ConsumeCatalogCommand extends Command
                 'key' => env('AWS_ACCESS_KEY_ID', 'test'),
                 'secret' => env('AWS_SECRET_ACCESS_KEY', 'test'),
             ],
-            'debug' => env('APP_DEBUG', false) ? ['logfn' => function ($msg) { Log::debug('SES Client: ' . $msg); }] : false,
+            'debug' => env('APP_DEBUG', false) ? ['logfn' => function ($msg) { $this->logger->debug('SES Client: ' . $msg); }] : false,
         ]);
     }
 }

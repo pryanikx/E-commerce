@@ -12,18 +12,20 @@ use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Services\Currency\CurrencyCalculator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Psr\Log\LoggerInterface;
 
 class ProductService
 {
     /**
      * @param ProductRepositoryInterface $productRepository
      * @param CurrencyCalculator $currencyCalculator
+     * @param LoggerInterface $logger
      */
     public function __construct(
         protected ProductRepositoryInterface $productRepository,
         protected CurrencyCalculator $currencyCalculator,
+        private readonly LoggerInterface $logger,
     )
     {
     }
@@ -53,7 +55,7 @@ class ProductService
         } catch (ModelNotFoundException $e) {
             return null;
         }
-        return (new ProductShowDTO($product))->toArray();
+        return (new ProductShowDTO($product, $this->currencyCalculator))->toArray();
     }
 
     /**
@@ -77,7 +79,7 @@ class ProductService
      */
     public function createProduct(array $request_validated): Product
     {
-        Log::info('Creating product', ['data' => $request_validated]);
+        $this->logger->info('Creating product', ['data' => $request_validated]);
         $dto = new ProductStoreDTO($request_validated);
         $image_path = $this->handleImagePath($dto->image);
         $created_product = $this->productRepository->create([
@@ -91,7 +93,7 @@ class ProductService
             'category_id' => $dto->category_id,
         ]);
         $this->productRepository->attachMaintenances($created_product, $dto->maintenances);
-        Log::info('Product created', ['product_id' => $created_product->id]);
+        $this->logger->info('Product created', ['product_id' => $created_product->id]);
         return $created_product;
     }
 
@@ -105,7 +107,7 @@ class ProductService
      */
     public function updateProduct(int $id, array $request_validated): Product
     {
-        Log::info('Updating product', ['id' => $id, 'data' => $request_validated]);
+        $this->logger->info('Updating product', ['id' => $id, 'data' => $request_validated]);
         $product = $this->productRepository->find($id);
         $dto = new ProductUpdateDTO($request_validated);
 
@@ -128,7 +130,7 @@ class ProductService
             $this->productRepository->attachMaintenances($product, $dto->maintenances);
         }
 
-        Log::info('Product updated', ['product_id' => $product->id, 'data' => $data]);
+        $this->logger->info('Product updated', ['product_id' => $product->id, 'data' => $data]);
         return $product->refresh();
     }
 
@@ -148,17 +150,17 @@ class ProductService
             }
             $filename = uniqid() . '.' . $image->getClientOriginalExtension();
             $path = $image->storeAs('products', $filename, 'public');
-            Log::info('Image uploaded', ['path' => 'storage/' . $path]);
+            $this->logger->info('Image uploaded', ['path' => 'storage/' . $path]);
             return 'storage/' . $path;
         }
         if ($image === null && $oldPath) {
             if (Storage::disk('public')->exists(str_replace('storage/', '', $oldPath))) {
                 Storage::disk('public')->delete(str_replace('storage/', '', $oldPath));
             }
-            Log::info('Image cleared');
+            $this->logger->info('Image cleared');
             return null;
         }
-        Log::info('Image unchanged', ['old_path' => $oldPath]);
+        $this->logger->info('Image unchanged', ['old_path' => $oldPath]);
         return $oldPath;
     }
 }

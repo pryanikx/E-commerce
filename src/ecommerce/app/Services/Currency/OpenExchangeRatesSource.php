@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Currency;
 
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
 class OpenExchangeRatesSource implements CurrencySource
 {
@@ -20,7 +19,7 @@ class OpenExchangeRatesSource implements CurrencySource
      */
     protected string $apiUrl = 'https://openexchangerates.org/api/latest.json';
 
-    public function __construct()
+    public function __construct(private readonly LoggerInterface $logger)
     {
         $this->apiKey = config('services.open_exchange_rates.api_key');
     }
@@ -37,7 +36,7 @@ class OpenExchangeRatesSource implements CurrencySource
         $cacheKey = "exchange_rates_{$baseCurrency}";
         $cacheDuration = now()->addHours(24);
 
-        return Cache::remember($cacheKey, $cacheDuration, function () use ($baseCurrency) {
+        return cache()->remember($cacheKey, $cacheDuration, function () use ($baseCurrency) {
             try {
                 $response = Http::get($this->apiUrl, [
                     'app_id' => $this->apiKey,
@@ -45,7 +44,7 @@ class OpenExchangeRatesSource implements CurrencySource
                 ]);
 
                 if ($response->failed()) {
-                    Log::error('OpenExchangeRates API error', [
+                    $this->logger->error('OpenExchangeRates API error', [
                         'status' => $response->status(),
                         'body' => $response->body(),
                     ]);
@@ -56,7 +55,7 @@ class OpenExchangeRatesSource implements CurrencySource
 
                 return $data['rates'] ?? [];
             } catch (\Exception $e) {
-                Log::error(__('errros.fetch_exchange_rates_failed'), [
+                $this->logger->error(__('errors.fetch_exchange_rates_failed'), [
                     'message' => $e->getMessage(),
                     'base_currency' => $baseCurrency,
                 ]);

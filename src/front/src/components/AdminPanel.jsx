@@ -29,7 +29,6 @@ const AdminPanel = () => {
                 setCategories(catRes.data.data || catRes.data);
                 setManufacturers(manRes.data.data || manRes.data);
                 setMaintenances(mainRes.data.data || mainRes.data);
-                console.log('Data fetched successfully');
             } catch (error) {
                 console.error('Failed to fetch data:', error);
             }
@@ -43,12 +42,10 @@ const AdminPanel = () => {
             return;
         }
         try {
-            const response = await api.post('/admin/products', data, { headers });
-            console.log('Create product response:', response.data);
+            await api.post('/admin/products', data, { headers });
             const productsRes = await api.get('/admin/products');
             setProducts(productsRes.data.data || productsRes.data);
             setEditingProduct(null);
-            console.log('Product created successfully');
         } catch (error) {
             console.error('Failed to create product:', {
                 message: error.message,
@@ -65,12 +62,10 @@ const AdminPanel = () => {
             return;
         }
         try {
-            const response = await api.put(`/admin/products/${editingProduct.id}`, data, { headers });
-            console.log('Update product response:', response.data);
+            await api.put(`/admin/products/${editingProduct.id}`, data, { headers });
             const productsRes = await api.get('/admin/products');
             setProducts(productsRes.data.data || productsRes.data);
             setEditingProduct(null);
-            console.log('Product updated successfully');
         } catch (error) {
             console.error('Failed to update product:', {
                 message: error.message,
@@ -85,7 +80,6 @@ const AdminPanel = () => {
         try {
             await api.delete(`/admin/products/${id}`);
             setProducts(products.filter((p) => p.id !== id));
-            console.log('Product deleted successfully');
         } catch (error) {
             console.error('Failed to delete product:', error);
         }
@@ -297,7 +291,14 @@ const AdminPanel = () => {
             )}
             <ResourceTable
                 title="Products"
-                data={products}
+                data={products.map((product) => ({
+                    ...product,
+                    id: product.id,
+                    name: product.name,
+                    article: product.article,
+                    manufacturer_name: product.manufacturer_name,
+                    price: product.prices?.USD || 0,
+                }))}
                 fields={['ID', 'Name', 'Article', 'Manufacturer_Name', 'Price']}
                 onEdit={handleEditProduct}
                 onDelete={handleDeleteProduct}
@@ -305,8 +306,8 @@ const AdminPanel = () => {
 
             <h2 className="text-2xl font-bold mb-4">Categories</h2>
             <button
-                onClick={handleCreateCategoryClick}
                 className="bg-primary text-white p-2 rounded mb-4"
+                onClick={handleCreateCategoryClick}
             >
                 Create Category
             </button>
@@ -327,8 +328,8 @@ const AdminPanel = () => {
 
             <h2 className="text-2xl font-bold mb-4">Manufacturers</h2>
             <button
-                onClick={handleCreateManufacturerClick}
                 className="bg-primary text-white p-2 rounded mb-4"
+                onClick={handleCreateManufacturerClick}
             >
                 Create Manufacturer
             </button>
@@ -349,8 +350,8 @@ const AdminPanel = () => {
 
             <h2 className="text-2xl font-bold mb-4">Maintenances</h2>
             <button
-                onClick={handleCreateMaintenanceClick}
                 className="bg-primary text-white p-2 rounded mb-4"
+                onClick={handleCreateMaintenanceClick}
             >
                 Create Maintenance
             </button>

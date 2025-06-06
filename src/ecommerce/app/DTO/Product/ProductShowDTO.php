@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DTO\Product;
 
 use App\Models\Product;
+use App\Services\Currency\CurrencyCalculator;
 
 readonly class ProductShowDTO
 {
@@ -44,9 +45,9 @@ readonly class ProductShowDTO
     public string $manufacturer_name;
 
     /**
-     * @var float $price
+     * @var array $prices
      */
-    public float $price;
+    public array $prices;
 
     /**
      * @var string|null $image_url
@@ -60,8 +61,9 @@ readonly class ProductShowDTO
 
     /**
      * @param Product $product
+     * @param CurrencyCalculator $calculator
      */
-    public function __construct(Product $product)
+    public function __construct(Product $product, CurrencyCalculator $calculator)
     {
         $this->id = $product->id;
         $this->name = $product->name;
@@ -70,11 +72,11 @@ readonly class ProductShowDTO
         $this->release_date = $product->release_date->toDateString();
         $this->category_name = $product->category->name;
         $this->manufacturer_name = $product->manufacturer->name;
-        $this->price = (float) $product->price;
+        $this->prices = $product->price ? $calculator->convert((float) $product->price) : null;
         $this->image_url = $product->image_path ? asset($product->image_path) : null;
         $this->maintenances = $product->maintenances->map(fn ($maintenance) => [
             'name' => $maintenance->name,
-            'price' => (float) $maintenance->pivot->price,
+            'prices' => $calculator->convert((float) $maintenance->pivot->price),
         ])->toArray();
     }
 
@@ -91,7 +93,7 @@ readonly class ProductShowDTO
             'release_date' => $this->release_date,
             'category_name' => $this->category_name,
             'manufacturer_name' => $this->manufacturer_name,
-            'price' => $this->price,
+            'prices' => $this->prices,
             'image_url' => $this->image_url,
             'maintenances' => $this->maintenances,
         ];

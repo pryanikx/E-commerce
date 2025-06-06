@@ -1,63 +1,55 @@
 import { useState, useEffect } from 'react';
 import api from '../api/api';
-import CategoryCard from './CategoryCard';
+import CategoryProductList from './CategoryProductList';
 
 const Home = () => {
     const [categories, setCategories] = useState([]);
-    const [productsByCategory, setProductsByCategory] = useState({});
+    const [selectedCategory, setSelectedCategory] = useState(null);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchCategories = async () => {
             try {
-                // Получаем категории
-                const categoriesResponse = await api.get('/categories');
-                const categoriesData = Array.isArray(categoriesResponse.data)
-                    ? categoriesResponse.data
-                    : [];
-                console.log('Categories:', categoriesData);
+                const response = await api.get('/categories');
+                const categoriesData = Array.isArray(response.data) ? response.data : [];
                 setCategories(categoriesData);
-
-                // Получаем продукты для каждой категории
-                const productsData = {};
-                for (const category of categoriesData) {
-                    try {
-                        const response = await api.get(`/categories/${category.id}/products`);
-                        // Извлекаем массив из response.data.data
-                        productsData[category.id] = Array.isArray(response.data.data)
-                            ? response.data.data
-                            : [];
-                        console.log(`Products for category ${category.id}:`, productsData[category.id]);
-                    } catch (error) {
-                        console.error(`Failed to fetch products for category ${category.id}:`, error);
-                        productsData[category.id] = [];
-                    }
+                if (categoriesData.length > 0) {
+                    setSelectedCategory(categoriesData[0].id); // Select first category by default
                 }
-                setProductsByCategory(productsData);
             } catch (error) {
                 console.error('Failed to fetch categories:', error);
-                setError('Failed to load data. Please try again later.');
+                setError('Failed to load categories. Please try again later.');
                 setCategories([]);
-                setProductsByCategory({});
             }
         };
-        fetchData();
+        fetchCategories();
     }, []);
+
+    const handleCategoryChange = (e) => {
+        setSelectedCategory(e.target.value ? Number(e.target.value) : null);
+    };
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-8">Categories</h1>
+            <h1 className="text-3xl font-bold mb-8">Shop</h1>
             {error && <p className="text-red-500 mb-4">{error}</p>}
-            {categories.length === 0 ? (
-                <p className="text-secondary">No categories available</p>
-            ) : (
-                categories.map((category) => (
-                    <CategoryCard
-                        key={category.id}
-                        category={category}
-                        products={productsByCategory[category.id] || []}
-                    />
-                ))
+            <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Select Category:</label>
+                <select
+                    value={selectedCategory || ''}
+                    onChange={handleCategoryChange}
+                    className="w-full max-w-xs p-2 border rounded"
+                >
+                    <option value="">Choose a category</option>
+                    {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                            {category.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            {selectedCategory && (
+                <CategoryProductList categoryId={selectedCategory} />
             )}
         </div>
     );

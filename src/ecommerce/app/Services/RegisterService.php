@@ -6,7 +6,6 @@ namespace App\Services;
 
 use App\DTO\Auth\RegisterDTO;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 
 class RegisterService
 {

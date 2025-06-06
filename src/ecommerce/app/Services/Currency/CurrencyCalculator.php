@@ -34,7 +34,7 @@ class CurrencyCalculator
      * @param array<string> $targetCurrencies
      * @return array<string, float>
      */
-    public function convert(float $price, array $targetCurrencies = ['BYN', 'USD', 'EUR', 'RUB']): array
+    public function convert(float $price, array $targetCurrencies = ['BYN', 'USD', 'EUR', 'RUB']): array //TODO: Move $targetCurrencies to a constant
     {
         $rates = $this->source->getExchangeRates($this->baseCurrency);
         $converted = [];
