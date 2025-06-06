@@ -6,191 +6,426 @@ use Aws\S3\S3Client;
 use Aws\Ses\SesClient;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Mail\Mailer;
+use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use Psr\Log\LoggerInterface;
 
 class ConsumeCatalogCommand extends Command
 {
+    private const COMMAND_SIGNATURE = 'catalog:consume';
+    private const RABBITMQ_DEFAULT_HOST = 'localhost';
+    private const RABBITMQ_DEFAULT_PORT = 5672;
+    private const RABBITMQ_DEFAULT_USER = 'guest';
+    private const RABBITMQ_DEFAULT_PASSWORD = 'guest';
+    private const RABBITMQ_DEFAULT_VHOST = '/';
+    private const RABBITMQ_MESSAGE_QUEUE = 'catalog_messages';
+    private const AWS_DEFAULT_REGION = 'us-east-1';
+    private const AWS_DEFAULT_ENDPOINT = 'http://localhost:4566';
+    private const AWS_DEFAULT_ACCESS_KEY = 'test';
+    private const AWS_DEFAULT_SECRET_KEY = 'test';
+    private const AWS_DEFAULT_BUCKET = 'product-catalog';
+    private const DEFAULT_ADMIN_EMAIL = 'test@example.com';
+    private const DEFAULT_FROM_EMAIL = 'test@example.com';
+    private const DEFAULT_FROM_NAME = 'Ecommerce Admin';
+    private const EMAIL_SUBJECT = 'Product Catalog Export Completed';
+    private const CSV_CONTENT_TYPE = 'text/csv';
+
     /**
      * @var string $signature
      */
-    protected $signature = 'catalog:consume';
+    protected $signature = self::COMMAND_SIGNATURE;
 
     /**
      * @var string $description
      */
-    protected $description = 'Consume product catalog CSV from RabbitMQ and upload to S3';
-
-    /**
-     * @var S3Client $s3
-     */
-    protected S3Client $s3;
+    protected $description = 'Consume product catalog CSV from RabbitMQ, upload to S3, and send confirmation email';
 
     /**
      * @var SesClient $ses
      */
-    protected SesClient $ses;
+    private SesClient $ses;
+
+    /**
+     * @var S3Client $s3
+     */
+    private S3Client $s3;
+    /**
+     * @var string $rabbitmqHost
+     */
+    private string $rabbitmqHost;
+    /**
+     * @var int $rabbitmqPort
+     */
+    private int $rabbitmqPort;
+    /**
+     * @var string $rabbitmqUser
+     */
+    private string $rabbitmqUser;
+    /**
+     * @var string $rabbitmqPassword
+     */
+    private string $rabbitmqPassword;
+    /**
+     * @var string $rabbitmqVhost
+     */
+    private string $rabbitmqVhost;
+    /**
+     * @var string $rabbitmqQueue
+     */
+    private string $rabbitmqQueue;
+    /**
+     * @var string $awsRegion
+     */
+    private string $awsRegion;
+    /**
+     * @var string $awsEndpoint
+     */
+    private string $awsEndpoint;
+    /**
+     * @var string $awsAccessKey
+     */
+    private string $awsAccessKey;
+    /**
+     * @var string $awsSecretKey
+     */
+    private string $awsSecretKey;
+    /**
+     * @var string $awsBucket
+     */
+    private string $awsBucket;
+    /**
+     * @var string $adminEmail
+     */
+    private string $adminEmail;
+    /**
+     * @var string $fromEmail
+     */
+    private string $fromEmail;
+    /**
+     * @var string $fromName
+     */
+    private string $fromName;
+    /**
+     * @var bool $debug
+     */
+    private bool $debug;
 
     /**
      * @param LoggerInterface $logger
      * @param Mailer $mailer
      */
-    public function __construct(private readonly LoggerInterface $logger, private readonly Mailer $mailer)
-    {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+        private readonly Mailer $mailer
+    ) {
         parent::__construct();
+        $this->initializeEnvVariables();
         $this->s3 = $this->initializeS3Client();
         $this->ses = $this->initializeSesClient();
     }
 
+    /**
+     * @return void
+     */
     public function handle(): void
     {
-        $this->info('Starting RabbitMQ consumer for product catalog');
-        $this->logger->info('Starting RabbitMQ consumer for product catalog');
+        $this->info(__('messages.rabbitmq_starting_consumer'));
+        $this->logger->info(__('messages.rabbitmq_starting_consumer'));
 
         try {
-            $connection = new AMQPStreamConnection(
-                env('RABBITMQ_HOST', 'localhost'),
-                env('RABBITMQ_PORT', 5672),
-                env('RABBITMQ_USER', 'guest'),
-                env('RABBITMQ_PASSWORD', 'guest'),
-                env('RABBITMQ_VHOST', '/')
-            );
-            $this->logger->info('Connected to RabbitMQ');
-
-            $channel = $connection->channel();
-            $queue = env('RABBITMQ_MESSAGE_QUEUE', 'catalog_messages');
-            $channel->queue_declare($queue, false, true, false, false);
-            $this->logger->info('Declared RabbitMQ queue', ['queue' => $queue]);
-
-            $callback = function (AMQPMessage $msg) use ($channel) {
-                try {
-                    $data = json_decode($msg->body, true);
-                    if (!is_array($data) || !isset($data['csv_file_path'], $data['csv_file_name'])) {
-                        $this->logger->error('Invalid RabbitMQ message format', ['message' => $msg->body]);
-                        $channel->basic_ack($msg->delivery_info['delivery_tag']);
-                        $this->warn('Skipped invalid message: ' . $msg->body);
-                        return;
-                    }
-
-                    $csvFilePath = $data['csv_file_path'];
-                    $csvFileName = $data['csv_file_name'];
-                    $bucket = env('AWS_BUCKET', 'product-catalog');
-
-                    $this->logger->info('Received message from RabbitMQ', ['file' => $csvFileName, 'path' => $csvFilePath]);
-
-                    if (!file_exists($csvFilePath)) {
-                        throw new \Exception('CSV file not found: ' . $csvFilePath);
-                    }
-
-                    if (!$this->s3->doesBucketExist($bucket)) {
-                        $this->s3->createBucket(['Bucket' => $bucket]);
-                        $this->s3->waitUntil('BucketExists', ['Bucket' => $bucket]);
-                        $this->logger->info('S3 bucket created', ['bucket' => $bucket]);
-                    }
-
-                    $this->s3->putObject([
-                        'Bucket' => $bucket,
-                        'Key' => $csvFileName,
-                        'Body' => fopen($csvFilePath, 'r'),
-                        'ContentType' => 'text/csv',
-                    ]);
-                    $this->logger->info('Uploaded to S3', ['bucket' => $bucket, 'file' => $csvFileName]);
-
-                    unlink($csvFilePath);
-                    $this->logger->info('Deleted local CSV file', ['path' => $csvFilePath]);
-
-                    try {
-                        $adminEmail = env('ADMIN_EMAIL', 'test@example.com');
-                        $fromEmail = env('MAIL_FROM_ADDRESS', 'test@example.com');
-                        $emailContent = "The product catalog has been exported to S3: s3://$bucket/$csvFileName";
-                        $this->logger->info('Preparing to send email', [
-                            'to' => $adminEmail,
-                            'from' => $fromEmail,
-                            'mailer' => config('mail.mailer'),
-                            'endpoint' => env('AWS_ENDPOINT_URL'),
-                        ]);
-                        $this->mailer->raw($emailContent, function ($message) use ($adminEmail, $fromEmail) {
-                            $message->to($adminEmail)
-                                ->subject('Product Catalog Export Completed')
-                                ->from($fromEmail, env('MAIL_FROM_NAME', 'Ecommerce Admin'));
-                        });
-                        $this->logger->info('Confirmation email sent', ['email' => $adminEmail, 'content' => $emailContent]);
-                        $this->info('Sent email to: ' . $adminEmail);
-                    } catch (\Exception $e) {
-                        $this->logger->warning('Failed to send confirmation email', [
-                            'error' => $e->getMessage(),
-                            'trace' => $e->getTraceAsString(),
-                        ]);
-                        $this->warn('Failed to send email: ' . $e->getMessage());
-
-                        $this->logger->info('Email content (fallback)', [
-                            'to' => $adminEmail,
-                            'subject' => 'Product Catalog Export Completed',
-                            'from' => $fromEmail,
-                            'content' => $emailContent,
-                        ]);
-                    }
-
-                    $channel->basic_ack($msg->delivery_info['delivery_tag']);
-                    $this->info('Processed message successfully: ' . $csvFileName);
-                } catch (\Exception $e) {
-                    $this->logger->error('Failed to process RabbitMQ message', [
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString(),
-                        'message' => $msg->body,
-                    ]);
-                    $channel->basic_nack($msg->delivery_info['delivery_tag']);
-                    $this->error('Failed to process message: ' . $e->getMessage());
-                }
-            };
-
-            $channel->basic_consume($queue, '', false, false, false, false, $callback);
-            $this->logger->info('Consumer started, waiting for messages');
-            $this->info('Consumer started, waiting for messages');
-
-            while ($channel->is_consuming()) {
-                $channel->wait();
-            }
-
-            $channel->close();
-            $connection->close();
+            $connection = $this->connectToRabbitMQ();
+            $channel = $this->createRabbitMQChannel($connection);
+            $this->consumeMessages($channel);
+            $this->closeConnection($channel, $connection);
         } catch (\Exception $e) {
-            $this->logger->error('RabbitMQ consumer failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            $this->error('Consumer failed: ' . $e->getMessage());
+            $this->logError(__('errors.rabbitmq_consumer_failed'), $e);
+            $this->error(__('errors.rabbitmq_consumer_failed') . $e->getMessage());
         }
     }
 
-    protected function initializeS3Client(): S3Client
+    /**
+     * @return void
+     */
+    private function initializeEnvVariables(): void
     {
-        $this->logger->info('Initializing S3 client');
+        $this->rabbitmqHost = env('RABBITMQ_HOST', self::RABBITMQ_DEFAULT_HOST);
+        $this->rabbitmqPort = (int) env('RABBITMQ_PORT', self::RABBITMQ_DEFAULT_PORT);
+        $this->rabbitmqUser = env('RABBITMQ_USER', self::RABBITMQ_DEFAULT_USER);
+        $this->rabbitmqPassword = env('RABBITMQ_PASSWORD', self::RABBITMQ_DEFAULT_PASSWORD);
+        $this->rabbitmqVhost = env('RABBITMQ_VHOST', self::RABBITMQ_DEFAULT_VHOST);
+        $this->rabbitmqQueue = env('RABBITMQ_MESSAGE_QUEUE', self::RABBITMQ_MESSAGE_QUEUE);
+        $this->awsRegion = env('AWS_DEFAULT_REGION', self::AWS_DEFAULT_REGION);
+        $this->awsEndpoint = env('AWS_ENDPOINT_URL', self::AWS_DEFAULT_ENDPOINT);
+        $this->awsAccessKey = env('AWS_ACCESS_KEY_ID', self::AWS_DEFAULT_ACCESS_KEY);
+        $this->awsSecretKey = env('AWS_SECRET_ACCESS_KEY', self::AWS_DEFAULT_SECRET_KEY);
+        $this->awsBucket = env('AWS_BUCKET', self::AWS_DEFAULT_BUCKET);
+        $this->adminEmail = env('ADMIN_EMAIL', self::DEFAULT_ADMIN_EMAIL);
+        $this->fromEmail = env('MAIL_FROM_ADDRESS', self::DEFAULT_FROM_EMAIL);
+        $this->fromName = env('MAIL_FROM_NAME', self::DEFAULT_FROM_NAME);
+        $this->debug = env('APP_DEBUG', false);
+    }
+
+    /**
+     * @return S3Client
+     */
+    private function initializeS3Client(): S3Client
+    {
+        $this->logger->info(__('messages.s3_client_initializing'));
         return new S3Client([
             'version' => 'latest',
-            'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
-            'endpoint' => env('AWS_ENDPOINT_URL', 'http://localhost:4566'),
+            'region' => $this->awsRegion,
+            'endpoint' => $this->awsEndpoint,
             'use_path_style_endpoint' => true,
             'credentials' => [
-                'key' => env('AWS_ACCESS_KEY_ID', 'test'),
-                'secret' => env('AWS_SECRET_ACCESS_KEY', 'test'),
+                'key' => $this->awsAccessKey,
+                'secret' => $this->awsSecretKey,
             ],
         ]);
     }
 
-    protected function initializeSesClient(): SesClient
+    /**
+     * @return SesClient
+     */
+    private function initializeSesClient(): SesClient
     {
-        $this->logger->info('Initializing SES client');
+        $this->logger->info(__('messages.ses_client_initializing'));
         return new SesClient([
             'version' => 'latest',
-            'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
-            'endpoint' => env('AWS_ENDPOINT_URL', 'http://localhost:4566'),
+            'region' => $this->awsRegion,
+            'endpoint' => $this->awsEndpoint,
             'credentials' => [
-                'key' => env('AWS_ACCESS_KEY_ID', 'test'),
-                'secret' => env('AWS_SECRET_ACCESS_KEY', 'test'),
+                'key' => $this->awsAccessKey,
+                'secret' => $this->awsSecretKey,
             ],
-            'debug' => env('APP_DEBUG', false) ? ['logfn' => function ($msg) { $this->logger->debug('SES Client: ' . $msg); }] : false,
+            'debug' => $this->debug ? ['logfn' => fn($msg) => $this->logger->debug('SES Client: ' . $msg)] : false,
         ]);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function connectToRabbitMQ(): AMQPStreamConnection
+    {
+        $connection = new AMQPStreamConnection(
+            $this->rabbitmqHost,
+            $this->rabbitmqPort,
+            $this->rabbitmqUser,
+            $this->rabbitmqPassword,
+            $this->rabbitmqVhost
+        );
+        $this->logger->info('Connected to RabbitMQ');
+        return $connection;
+    }
+
+    /**
+     * @param AMQPStreamConnection $connection
+     *
+     * @return AMQPChannel
+     */
+    private function createRabbitMQChannel(AMQPStreamConnection $connection): AMQPChannel
+    {
+        $channel = $connection->channel();
+        $channel->queue_declare($this->rabbitmqQueue, false, true, false, false);
+        $this->logger->info(__('messages.rabbitmq_queue_declared'), ['queue' => $this->rabbitmqQueue]);
+        return $channel;
+    }
+
+    /**
+     * @param AMQPChannel $channel
+     *
+     * @return void
+     */
+    private function consumeMessages(AMQPChannel $channel): void
+    {
+        $callback = function (AMQPMessage $msg) use ($channel) {
+            $this->processMessage($msg, $channel);
+        };
+        $channel->basic_consume($this->rabbitmqQueue, '', false, false, false, false, $callback);
+        $this->logger->info(__('messages.consumer_started'));
+        $this->info(__('messages.consumer_started'));
+
+        while ($channel->is_consuming()) {
+            $channel->wait();
+        }
+    }
+
+    /**
+     * @param AMQPMessage $message
+     * @param AMQPChannel $channel
+     *
+     * @return void
+     */
+    private function processMessage(AMQPMessage $message, AMQPChannel $channel): void
+    {
+        try {
+            $data = $this->decodeMessage($message);
+            if (!$data) {
+                $channel->basic_ack($message->delivery_info['delivery_tag']);
+                return;
+            }
+
+            $this->logger->info(__('messages.rabbitmq_message_received'), ['file' => $data['csv_file_name'], 'path' => $data['csv_file_path']]);
+
+            $this->validateFile($data['csv_file_path']);
+            $this->ensureS3Bucket();
+            $this->uploadToS3($data['csv_file_path'], $data['csv_file_name']);
+            $this->deleteLocalFile($data['csv_file_path']);
+            $this->sendConfirmationEmail($data['csv_file_name']);
+            $channel->basic_ack($message->delivery_info['delivery_tag']);
+            $this->info(__('messages.message_processed') . $data['csv_file_name']);
+        } catch (\Exception $e) {
+            $this->logMessageError($e, $message->body);
+            $channel->basic_nack($message->delivery_info['delivery_tag']);
+            $this->error(__('errors.process_message_failed') . $e->getMessage());
+        }
+    }
+
+    /**
+     * @param AMQPMessage $message
+     *
+     * @return array|null
+     */
+    private function decodeMessage(AMQPMessage $message): ?array
+    {
+        $data = json_decode($message->body, true);
+        if (!is_array($data) || !isset($data['csv_file_path'], $data['csv_file_name'])) {
+            $this->logger->error(__('errors.invalid_message_format'), ['message' => $message->body]);
+            $this->warn('Skipped invalid message: ' . $message->body);
+            return null;
+        }
+        return $data;
+    }
+
+    /**
+     * @param string $filePath
+     *
+     * @return void
+     * @throws \Exception
+     */
+    private function validateFile(string $filePath): void
+    {
+        if (!file_exists($filePath)) {
+            throw new \Exception(__('errors.csv_file_not_found') . $filePath);
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function ensureS3Bucket(): void
+    {
+        if (!$this->s3->doesBucketExist($this->awsBucket)) {
+            $this->s3->createBucket(['Bucket' => $this->awsBucket]);
+            $this->s3->waitUntil('BucketExists', ['Bucket' => $this->awsBucket]);
+            $this->logger->info(__('messages.s3_bucket_created'), ['bucket' => $this->awsBucket]);
+        }
+    }
+
+    /**
+     * @param string $filePath
+     * @param string $fileName
+     *
+     * @return void
+     */
+    private function uploadToS3(string $filePath, string $fileName): void
+    {
+        $this->s3->putObject([
+            'Bucket' => $this->awsBucket,
+            'Key' => $fileName,
+            'Body' => fopen($filePath, 'r'),
+            'ContentType' => self::CSV_CONTENT_TYPE,
+        ]);
+        $this->logger->info(__('messages.csv_uploaded'), ['bucket' => $this->awsBucket, 'file' => $fileName]);
+    }
+
+    /**
+     * @param string $filePath
+     *
+     * @return void
+     */
+    private function deleteLocalFile(string $filePath): void
+    {
+        unlink($filePath);
+        $this->logger->info(__('messages.csv_deleted_locally'), ['path' => $filePath]);
+    }
+
+    /**
+     * @param string $fileName
+     *
+     * @return void
+     */
+    private function sendConfirmationEmail(string $fileName): void
+    {
+        try {
+            $emailContent = "The product catalog {$fileName} has been exported to S3:{$this->awsBucket}/{$fileName}";
+            $this->logger->info(__('messages.preparing_to_send_email'), [
+                'to' => $this->adminEmail,
+                'from' => $this->fromEmail,
+                'mailer' => config('mail.mailer'),
+                'endpoint' => $this->awsEndpoint,
+            ]);
+            $this->mailer->raw($emailContent, function ($message) {
+                $message->to($this->adminEmail)
+                    ->subject(self::EMAIL_SUBJECT)
+                    ->from($this->fromEmail, $this->fromName);
+            });
+            $this->logger->info(__('messages.confirmation_mail_sent'), ['email' => $this->adminEmail, 'content' => $emailContent]);
+            $this->info('Sent email to: ' . $this->adminEmail);
+        } catch (\Exception $e) {
+            $this->logger->warning(__('errors.confirmation_email_sending_failed'), [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->error(__('errors.email_sending_failed') . $e->getMessage());
+            $this->logger->info(__('messages.email_content'), [
+                'to' => $this->adminEmail,
+                'subject' => self::EMAIL_SUBJECT,
+                'from' => $this->fromEmail,
+                'content' => $emailContent,
+            ]);
+        }
+    }
+
+    /**
+     * @param \Exception $e
+     * @param string $messageContent
+     *
+     * @return void
+     */
+    private function logMessageError(\Exception $e, string $messageContent): void
+    {
+        $this->logger->error(__('errors.rabbitmq_process_failed'), [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'message' => $messageContent,
+        ]);
+    }
+
+    /**
+     * @param string $message
+     * @param \Exception $e
+     *
+     * @return void
+     */
+    private function logError(string $message, \Exception $e): void
+    {
+        $this->logger->error($message, [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+    }
+
+    /**
+     * @param AMQPChannel $channel
+     * @param AMQPStreamConnection $connection
+     *
+     * @return void
+     * @throws \Exception
+     */
+    private function closeConnection(AMQPChannel $channel, AMQPStreamConnection $connection): void
+    {
+        $channel->close();
+        $connection->close();
     }
 }
