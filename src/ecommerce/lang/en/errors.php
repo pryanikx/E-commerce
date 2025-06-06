@@ -14,5 +14,6 @@ return [
     'invalid_message_format' => 'Invalid message format',
     'confirmation_email_sending_failed' => 'Failed to send confirmation email',
     'email_sending_failed' => 'Failed to send email',
-    'rabbitmq_process_failed' => 'Failed to process RabbitMQ'
+    'rabbitmq_process_failed' => 'Failed to process RabbitMQ',
+    'publishcatalogjob_failed' => 'PublishCatalogJob failed',
 ];
