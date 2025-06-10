@@ -6,6 +6,7 @@ namespace App\DTO\Product;
 
 use App\Models\Product;
 use App\Services\Currency\CurrencyCalculator;
+use Illuminate\Support\Facades\Storage;
 
 readonly class ProductListDTO
 {
@@ -36,9 +37,9 @@ readonly class ProductListDTO
     public array $prices;
 
     /**
-     * @var string $image_url
+     * @var string|null $image_url
      */
-    public string $image_url;
+    public ?string $image_url;
 
     /**
      * @param Product $product
@@ -51,7 +52,7 @@ readonly class ProductListDTO
         $this->article = $product->article;
         $this->manufacturer_name = $product->manufacturer->name;
         $this->prices = $product->price ? $calculator->convert((float) $product->price) : null;
-        $this->image_url = asset($product->image_path);
+        $this->image_url = $product->image_path ? asset($product->image_path) : null;
     }
 
     /**

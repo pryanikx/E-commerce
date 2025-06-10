@@ -35,7 +35,12 @@ class ProductService
     public function getAll(): ?array
     {
         $products = $this->productRepository->all();
-        return $products->map(fn($product) => (new ProductListDTO($product, $this->currencyCalculator))->toArray())->toArray();
+        return $products->map(function ($product) {
+            $dto = new ProductListDTO($product, $this->currencyCalculator);
+            $dtoArray = $dto->toArray();
+            $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
+            return $dtoArray;
+        })->toArray();
     }
 
     /**
@@ -49,14 +54,17 @@ class ProductService
     {
         try {
             $product = $this->productRepository->find($id);
+            $dto = new ProductShowDTO($product, $this->currencyCalculator);
+            $dtoArray = $dto->toArray();
+            $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
+            return $dtoArray;
         } catch (ModelNotFoundException $e) {
             return null;
         }
-        return (new ProductShowDTO($product, $this->currencyCalculator))->toArray();
     }
 
     /**
-     * delete an existing product by ID.
+     * Delete an existing product by ID.
      *
      * @param int $id
      *
@@ -149,9 +157,45 @@ class ProductService
             if (Storage::disk('public')->exists(str_replace('storage/', '', $oldPath))) {
                 Storage::disk('public')->delete(str_replace('storage/', '', $oldPath));
             }
-            return null;
+            return $this->getImagePathWithFallback(null);
         }
 
-        return $oldPath;
+        return $this->getImagePathWithFallback($oldPath);
+    }
+
+    /**
+     * Check if the image path exists and return its path or the fallback image path.
+     *
+     * @param string|null $imagePath
+     * @return string
+     */
+    private function getImagePathWithFallback(?string $imagePath): string
+    {
+        $fallbackPath = 'storage/products/fallback_image1.png';
+        if ($imagePath && Storage::disk('public')->exists(str_replace('storage/', '', $imagePath))) {
+            return $imagePath;
+        }
+        return $fallbackPath;
+    }
+
+    /**
+     * Check if the image path exists and return its URL or the fallback image URL.
+     *
+     * @param string|null $imagePath
+     * @return string
+     */
+    /**
+     * Check if the image path exists and return its URL or the fallback image URL.
+     *
+     * @param string|null $imagePath
+     * @return string
+     */
+    private function getImageUrlWithFallback(?string $imagePath): string
+    {
+        $fallbackUrl = asset('storage/products/fallback_image1.png');
+        if ($imagePath && $imagePath !== '/' && Storage::disk('public')->exists(str_replace('storage/', '', $imagePath))) {
+            return asset($imagePath);
+        }
+        return $fallbackUrl;
     }
 }

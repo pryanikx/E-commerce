@@ -6,6 +6,7 @@ namespace App\DTO\Product;
 
 use App\Models\Product;
 use App\Services\Currency\CurrencyCalculator;
+use Illuminate\Support\Facades\Storage;
 
 readonly class ProductShowDTO
 {
