@@ -10,6 +10,9 @@ use App\Http\Controllers\User\CategoryController;
 use App\Http\Controllers\User\ProductController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/test', function () {
+    return response()->json(['message' => 'API is working']);
+});
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

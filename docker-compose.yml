@@ -11,26 +11,43 @@ services:
     ports:
       - "80:80"
     depends_on:
-      php:
-        condition: service_healthy
+      - php
+      - frontend
     networks:
       - ecommerce_network
 
+  frontend:
+    build:
+      context: ./src/front
+      dockerfile: ../../docker/frontend/Dockerfile
+    container_name: ecommerce_front
+    volumes:
+      - ./src/front:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost/api
+    ports:
+      - "5173:5173"
+    networks:
+      - ecommerce_network
+    stdin_open: true
+    tty: true
+
   php:
     build:
-      context: ./docker/php
+      context: .
+      dockerfile: docker/php/Dockerfile
       args:
         - DB_HOST=${DB_HOST}
         - DB_DATABASE=${DB_DATABASE}
         - DB_USERNAME=${DB_USERNAME}
         - DB_PASSWORD=${DB_PASSWORD}
+        - OPEN_EXCHANGE_RATES_API_KEY=${OPEN_EXCHANGE_RATES_API_KEY}
     container_name: ecommerce_php
     volumes:
       - ./src/ecommerce:/var/www/html
     networks:
       - ecommerce_network
-    expose:
-      - "9000"
     depends_on:
       mysql:
         condition: service_healthy
@@ -45,7 +62,6 @@ services:
       context: ./docker/mysql
     container_name: ecommerce_mysql
     environment:
-      # MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DB}
       MYSQL_USER: ${MYSQL_USER}
@@ -65,7 +81,6 @@ services:
 
 volumes:
   mysql_data:
-  app:
 
 networks:
   ecommerce_network:
