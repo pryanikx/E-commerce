@@ -2,9 +2,7 @@
 
 set -e
 
-if [ ! -d "vendor" ]; then
-    composer install --no-dev --optimize-autoloader
-fi
+composer install --no-dev --optimize-autoloader
 
 cp .env.example .env
 
@@ -24,3 +22,4 @@ php artisan key:generate
 chown -R www-data:www-data /var/www/html
 
 php-fpm
+#php artisan serve --host 0.0.0.0 --port 80

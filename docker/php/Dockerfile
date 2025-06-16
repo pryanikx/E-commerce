@@ -21,8 +21,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
     libpng-dev \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs
+    libsodium-dev
 
 RUN docker-php-ext-install \
     pdo \
@@ -30,7 +29,9 @@ RUN docker-php-ext-install \
     mysqli \
     zip \
     bcmath \
-    gd
+    gd \
+    sodium \
+    sockets
 
 RUN curl -sS https://getcomposer.org/installer | php -- \
      --install-dir=/usr/local/bin --filename=composer
