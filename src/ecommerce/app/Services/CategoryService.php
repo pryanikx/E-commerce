@@ -15,6 +15,8 @@ use Illuminate\Support\Str;
 
 class CategoryService
 {
+    private const CACHE_KEY = 'categories';
+
     /**
      * @param CategoryRepositoryInterface $categoryRepository
      * @param CurrencyCalculator $currencyCalculator
@@ -33,10 +35,11 @@ class CategoryService
      */
     public function getAll(): ?array
     {
-        $categories = $this->categoryRepository->all();
+        return cache()->rememberForever(self::CACHE_KEY, function () {
+            $categories = $this->categoryRepository->all();
 
-        return $categories->map(fn ($category)
-            => (new CategoryListDTO($category))->toArray())->toArray();
+            return $categories->map(fn($category) => (new CategoryListDTO($category))->toArray())->toArray();
+        });
     }
 
     /**
@@ -45,16 +48,16 @@ class CategoryService
      * @param int $id
      * @param array $filters
      * @param array $sort
+     * @param int $page
      *
      * @return array
      */
-    public function getProductsForCategory(int $id, array $filters = [], array $sort = []): array
+    public function getProductsForCategory(int $id, array $filters = [], array $sort = [], int $page = 1): array
     {
-        $products = $this->categoryRepository->getProductsForCategory($id, $filters, $sort);
+        $products = $this->categoryRepository->getProductsForCategory($id, $filters, $sort, $page);
 
         return [
-            'data' => $products->map(fn ($product)
-                => (new ProductListDTO($product, $this->currencyCalculator))->toArray())->toArray(),
+            'data' => $products->map(fn($product) => (new ProductListDTO($product, $this->currencyCalculator))->toArray())->toArray(),
             'meta' => [
                 'current_page' => $products->currentPage(),
                 'per_page' => $products->perPage(),
@@ -75,10 +78,14 @@ class CategoryService
     {
         $dto = new CategoryStoreDTO($request_validated);
 
-        return $this->categoryRepository->create([
+        $category =  $this->categoryRepository->create([
             'name' => $dto->name,
             'alias' => $dto->alias,
         ]);
+
+        $this->cacheCategories();
+
+        return $category;
     }
 
     /**
@@ -101,6 +108,8 @@ class CategoryService
         ];
         $this->categoryRepository->update($category, $data);
 
+        $this->cacheCategories();
+
         return $category->refresh();
     }
 
@@ -113,7 +122,11 @@ class CategoryService
      */
     public function deleteCategory(int $id): bool
     {
-        return $this->categoryRepository->delete($id);
+        $is_deleted =  $this->categoryRepository->delete($id);
+
+        $this->cacheCategories();
+
+        return $is_deleted;
     }
 
     /**
@@ -126,5 +139,19 @@ class CategoryService
     public function find(int $id): Category
     {
         return $this->categoryRepository->find($id);
+    }
+
+    /**
+     * Save categories in cache
+     *
+     * @return void
+     */
+    private function cacheCategories(): void
+    {
+        $categories = $this->categoryRepository->all();
+        $data = $categories->map(fn($category) =>
+            (new CategoryListDTO($category))->toArray())->toArray();
+
+        cache()->put(self::CACHE_KEY, $data);
     }
 }

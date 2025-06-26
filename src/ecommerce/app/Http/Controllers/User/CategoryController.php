@@ -55,7 +55,9 @@ class CategoryController extends Controller
             'sort_order' => $request->validated('sort_order', 'asc'),
         ];
 
-        $products = $this->categoryService->getProductsForCategory($id, $filters, $sort);
+        $page = $request->validated()['page'] ?? 1;
+
+        $products = $this->categoryService->getProductsForCategory($id, $filters, $sort, $page);
 
         return response()->json($products);
     }

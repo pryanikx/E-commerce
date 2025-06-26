@@ -12,6 +12,8 @@ use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 
 class MaintenanceService
 {
+    private const CACHE_KEY = 'maintenances';
+
     /**
      * @param MaintenanceRepositoryInterface $maintenanceRepository
      */
@@ -26,10 +28,11 @@ class MaintenanceService
      */
     public function getAll(): ?array
     {
-        $maintenances = $this->maintenanceRepository->all();
+        return cache(self::CACHE_KEY, function () {
+            $maintenances = $this->maintenanceRepository->all();
 
-        return $maintenances->map(fn ($maintenance)
-            => (new MaintenanceListDTO($maintenance))->toArray())->toArray();
+            return $maintenances->map(fn($maintenance) => (new MaintenanceListDTO($maintenance))->toArray())->toArray();
+        });
     }
 
     /**
@@ -43,11 +46,15 @@ class MaintenanceService
     {
         $dto = new MaintenanceStoreDTO($request_validated);
 
-        return $this->maintenanceRepository->create([
+        $maintenance = $this->maintenanceRepository->create([
             'name' => $dto->name,
             'description' => $dto->description,
             'duration' => $dto->duration,
         ]);
+
+        $this->cacheMaintenances();
+
+        return $maintenance;
     }
 
     /**
@@ -72,6 +79,8 @@ class MaintenanceService
 
         $this->maintenanceRepository->update($maintenance, $data);
 
+        $this->cacheMaintenances();
+
         return $maintenance->refresh();
     }
 
@@ -84,6 +93,19 @@ class MaintenanceService
      */
     public function deleteMaintenance(int $id): bool
     {
-        return $this->maintenanceRepository->delete($id);
+        $is_deleted = $this->maintenanceRepository->delete($id);
+
+        $this->cacheMaintenances();
+
+        return $is_deleted;
+    }
+
+    private function cacheMaintenances(): void
+    {
+        $maintenances = $this->maintenanceRepository->all();
+        $data = $maintenances->map(fn($maintenance) =>
+        (new MaintenanceListDTO($maintenance))->toArray())->toArray();
+
+        cache()->put(self::CACHE_KEY, $data);
     }
 }

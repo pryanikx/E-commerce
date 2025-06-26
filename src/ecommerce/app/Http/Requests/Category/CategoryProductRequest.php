@@ -7,6 +7,10 @@ use Illuminate\Validation\Rule;
 
 class CategoryProductRequest extends FormRequest
 {
+    public const SORT_COLUMNS = ['id', 'price', 'release_date'];
+
+    public const SORT_ORDERS = ['asc', 'desc'];
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -23,11 +27,12 @@ class CategoryProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'manufacturer_id' => ['nullable', 'integer', 'exists:manufacturers,id'],
-            'price_min' => ['nullable', 'numeric', 'min:0'],
-            'price_max' => ['nullable', 'numeric', 'min:0', 'gte:price_min'],
-            'sort_by' => ['nullable', Rule::in(['id', 'price', 'release_date'])],
-            'sort_order' => ['nullable', Rule::in(['asc', 'desc'])],
+            'manufacturer_id' => 'nullable|integer|exists:manufacturers,id',
+            'price_min' => 'nullable|numeric|min:0',
+            'price_max' => 'nullable|numeric|min:0|gte:price_min',
+            'sort_by' => ['nullable', Rule::in(self::SORT_COLUMNS)],
+            'sort_order' => ['nullable', Rule::in(self::SORT_ORDERS)],
+            'page' => 'nullable|integer|min:1',
         ];
     }
 }

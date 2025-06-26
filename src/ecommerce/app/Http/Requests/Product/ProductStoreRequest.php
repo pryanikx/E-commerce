@@ -17,6 +17,25 @@ class ProductStoreRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('maintenance_ids') && is_array($this->maintenance_ids)) {
+            $maintenanceIds = [];
+            foreach ($this->maintenance_ids as $maintenance) {
+                if (is_array($maintenance) && isset($maintenance['id'], $maintenance['price'])) {
+                    $maintenanceIds[] = [
+                        'id' => (int) $maintenance['id'],
+                        'price' => (float) $maintenance['price']
+                    ];
+                }
+            }
+            $this->merge(['maintenance_ids' => $maintenanceIds]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
@@ -33,8 +52,8 @@ class ProductStoreRequest extends FormRequest
             'manufacturer_id' => 'required|exists:manufacturers,id',
             'category_id' => 'required|exists:categories,id',
             'maintenance_ids' => 'nullable|array',
-            'maintenance_ids.*.id' => 'required_with:maintenance_ids|exists:maintenances,id',
-            'maintenance_ids.*.price' => 'required_with:maintenance_ids|decimal:2|min:0|max:99999999.99',
+            'maintenance_ids.*.id' => 'required|exists:maintenances,id',
+            'maintenance_ids.*.price' => 'required|decimal:2|min:0|max:99999999.99',
         ];
     }
 }

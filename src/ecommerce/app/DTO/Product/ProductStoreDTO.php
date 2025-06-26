@@ -58,6 +58,11 @@ readonly class ProductStoreDTO
      */
     public function __construct(array $validated)
     {
+        \Log::info('ProductStoreDTO constructor', [
+            'has_image' => isset($validated['image']),
+            'image_type' => isset($validated['image']) ? get_class($validated['image']) : 'none'
+        ]);
+
         $this->name = $validated['name'];
         $this->article = $validated['article'];
         $this->description = $validated['description'];

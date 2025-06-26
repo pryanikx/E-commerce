@@ -6,15 +6,18 @@ namespace App\Repositories\Contracts;
 
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface ProductRepositoryInterface
 {
     /**
-     * Get all products from the database.
+     * Get all products paginated from the database.
      *
-     * @return Collection
+     * @param int $pageNumber
+     *
+     * @return LengthAwarePaginator
      */
-    public function all(): Collection;
+    public function all(int $pageNumber): LengthAwarePaginator;
 
     /**
      * Find a product by ID.
