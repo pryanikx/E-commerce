@@ -12,6 +12,8 @@ use App\Repositories\Contracts\ManufacturerRepositoryInterface;
 
 class ManufacturerService
 {
+    private const CACHE_KEY = 'manufacturers';
+
     /**
      * @param ManufacturerRepositoryInterface $manufacturerRepository
      */
@@ -26,10 +28,11 @@ class ManufacturerService
      */
     public function getAll(): ?array
     {
-        $manufacturers = $this->manufacturerRepository->all();
+        return cache()->rememberForever(self::CACHE_KEY, function () {
+            $manufacturers = $this->manufacturerRepository->all();
 
-        return $manufacturers->map(fn ($manufacturer)
-            => (new ManufacturerListDTO($manufacturer))->toArray())->toArray();
+            return $manufacturers->map(fn($manufacturer) => (new ManufacturerListDTO($manufacturer))->toArray())->toArray();
+        });
     }
 
     /**
@@ -43,9 +46,13 @@ class ManufacturerService
     {
         $dto = new ManufacturerStoreDTO($request_validated);
 
-        return $this->manufacturerRepository->create([
+        $manufacturer = $this->manufacturerRepository->create([
             'name' => $dto->name,
         ]);
+
+        $this->cacheManufacturers();
+
+        return $manufacturer;
     }
 
     /**
@@ -68,6 +75,8 @@ class ManufacturerService
 
         $this->manufacturerRepository->update($manufacturer, $data);
 
+        $this->cacheManufacturers();
+
         return $manufacturer->refresh();
     }
 
@@ -80,6 +89,24 @@ class ManufacturerService
      */
     public function deleteManufacturer(int $id): ?bool
     {
-        return $this->manufacturerRepository->delete($id);
+        $is_deleted = $this->manufacturerRepository->delete($id);
+
+        $this->cacheManufacturers();
+
+        return $is_deleted;
+    }
+
+    /**
+     * Save manufacturers in cache
+     *
+     * @return void
+     */
+    private function cacheManufacturers(): void
+    {
+        $manufacturers = $this->manufacturerRepository->all();
+        $data = $manufacturers->map(fn($manufacturer) =>
+        (new ManufacturerListDTO($manufacturer))->toArray())->toArray();
+
+        cache()->put(self::CACHE_KEY, $data);
     }
 }

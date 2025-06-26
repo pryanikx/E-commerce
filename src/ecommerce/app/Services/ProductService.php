@@ -14,8 +14,13 @@ use App\Services\Currency\CurrencyCalculator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ *
+ */
 class ProductService
 {
+     private const CACHE_TTL_MINUTES = 30;
+
     /**
      * @param ProductRepositoryInterface $productRepository
      * @param CurrencyCalculator $currencyCalculator
@@ -28,19 +33,29 @@ class ProductService
     }
 
     /**
-     * Get all products.
+     * Get all products with caching.
+     *
+     * @param int $pageNumber
      *
      * @return array|null
      */
-    public function getAll(): ?array
+    public function getAll(int $pageNumber): ?array
     {
-        $products = $this->productRepository->all();
-        return $products->map(function ($product) {
-            $dto = new ProductListDTO($product, $this->currencyCalculator);
-            $dtoArray = $dto->toArray();
-            $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
-            return $dtoArray;
-        })->toArray();
+        $products = $this->productRepository->all($pageNumber);
+
+        return [
+            'data' => $products->map(function ($product) {
+                $dto = (new ProductListDTO($product, $this->currencyCalculator))->toArray();
+                $dto['image_url'] = $this->getImageUrlWithFallback($product->image_path);
+                return $dto;
+            })->toArray(),
+            'meta' => [
+                'current_page' => $products->currentPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+                'last_page' => $products->lastPage(),
+            ],
+        ];
     }
 
     /**
@@ -52,15 +67,20 @@ class ProductService
      */
     public function getProduct(int $id): ?array
     {
-        try {
-            $product = $this->productRepository->find($id);
-            $dto = new ProductShowDTO($product, $this->currencyCalculator);
-            $dtoArray = $dto->toArray();
-            $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
-            return $dtoArray;
-        } catch (ModelNotFoundException $e) {
-            return null;
-        }
+        $cacheKey = $this->getProductCacheKey($id);
+
+        return cache()->remember($cacheKey, now()->addMinutes(self::CACHE_TTL_MINUTES),
+            function () use ($id) {
+            try {
+                $product = $this->productRepository->find($id);
+                $dto = new ProductShowDTO($product, $this->currencyCalculator);
+                $dtoArray = $dto->toArray();
+                $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
+                return $dtoArray;
+            } catch (ModelNotFoundException $e) {
+                return null;
+            }
+        });
     }
 
     /**
@@ -72,6 +92,8 @@ class ProductService
      */
     public function deleteProduct(int $id): bool
     {
+        cache()->forget($this->getProductCacheKey($id));
+
         return $this->productRepository->delete($id);
     }
 
@@ -86,17 +108,21 @@ class ProductService
     {
         $dto = new ProductStoreDTO($request_validated);
         $image_path = $this->handleImagePath($dto->image);
+
         $created_product = $this->productRepository->create([
             'name' => $dto->name,
             'article' => $dto->article,
             'description' => $dto->description,
             'release_date' => $dto->release_date,
             'price' => $dto->price,
-            'image_path' => $image_path,
+            'image_path' => $image_path ?? 'storage/products/fallback_image1.png',
             'manufacturer_id' => $dto->manufacturer_id,
             'category_id' => $dto->category_id,
         ]);
         $this->productRepository->attachMaintenances($created_product, $dto->maintenances);
+
+        $this->cacheProduct($created_product->id);
+
         return $created_product;
     }
 
@@ -123,7 +149,7 @@ class ProductService
             'price' => $dto->price,
             'manufacturer_id' => $dto->manufacturer_id,
             'category_id' => $dto->category_id,
-            'image_path' => $image_path,
+            'image_path' => $image_path ?? 'storage/products/fallback_image1.png',
         ], fn($value) => $value !== null);
 
         $this->productRepository->update($product, $data);
@@ -131,6 +157,10 @@ class ProductService
         if ($dto->maintenances !== null) {
             $this->productRepository->attachMaintenances($product, $dto->maintenances);
         }
+
+        $product = $product->refresh();
+
+        $this->cacheProduct($product->id);
 
         return $product->refresh();
     }
@@ -146,44 +176,40 @@ class ProductService
     private function handleImagePath(?\Illuminate\Http\UploadedFile $image, ?string $oldPath = null): ?string
     {
         if ($image && $image->isValid()) {
-            if ($oldPath && Storage::disk('public')->exists(str_replace('storage/', '', $oldPath))) {
-                Storage::disk('public')->delete(str_replace('storage/', '', $oldPath));
+            try {
+                if ($oldPath && Storage::disk('public')->exists(str_replace('storage/', '', $oldPath))) {
+                    Storage::disk('public')->delete(str_replace('storage/', '', $oldPath));
+                }
+
+                $filename = uniqid() . '.' . $image->getClientOriginalExtension();
+
+                $path = $image->storeAs('products', $filename, 'public');
+
+                if (!$path) {
+
+                    return $oldPath ?? 'storage/products/fallback_image1.png';
+                }
+
+                return 'storage/' . $path;
+            } catch (\Exception $e) {
+                return $oldPath ?? 'storage/products/fallback_image1.png';
             }
-            $filename = uniqid() . '.' . $image->getClientOriginalExtension();
-            $path = $image->storeAs('products', $filename, 'public');
-            return 'storage/' . $path;
         }
+
         if ($image === null && $oldPath) {
             if (Storage::disk('public')->exists(str_replace('storage/', '', $oldPath))) {
                 Storage::disk('public')->delete(str_replace('storage/', '', $oldPath));
             }
-            return $this->getImagePathWithFallback(null);
+            return 'storage/products/fallback_image1.png';
         }
 
-        return $this->getImagePathWithFallback($oldPath);
-    }
-
-    /**
-     * Check if the image path exists and return its path or the fallback image path.
-     *
-     * @param string|null $imagePath
-     * @return string
-     */
-    private function getImagePathWithFallback(?string $imagePath): string
-    {
-        $fallbackPath = 'storage/products/fallback_image1.png';
-        if ($imagePath && Storage::disk('public')->exists(str_replace('storage/', '', $imagePath))) {
-            return $imagePath;
+        if ($image === null && !$oldPath) {
+            return 'storage/products/fallback_image1.png';
         }
-        return $fallbackPath;
+
+        return $oldPath;
     }
 
-    /**
-     * Check if the image path exists and return its URL or the fallback image URL.
-     *
-     * @param string|null $imagePath
-     * @return string
-     */
     /**
      * Check if the image path exists and return its URL or the fallback image URL.
      *
@@ -197,5 +223,37 @@ class ProductService
             return asset($imagePath);
         }
         return $fallbackUrl;
+    }
+
+    /**
+     * Save product in cache
+     *
+     * @param int $id
+     *
+     * @return void
+     */
+    private function cacheProduct(int $id): void
+    {
+        try {
+            $product = $this->productRepository->find($id);
+            $dto = new ProductShowDTO($product, $this->currencyCalculator);
+            $dtoArray = $dto->toArray();
+            $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
+
+            cache()->put($this->getProductCacheKey($id), $dtoArray, now()->addMinutes(self::CACHE_TTL_MINUTE));
+        } catch (\Exception $e) {
+        }
+    }
+
+    /**
+     * Get cache key for one product
+     *
+     * @param int $id
+     *
+     * @return string
+     */
+    private function getProductCacheKey(int $id): string
+    {
+        return "product_{$id}";
     }
 }

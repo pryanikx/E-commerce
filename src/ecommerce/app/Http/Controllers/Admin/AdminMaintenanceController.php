@@ -73,8 +73,9 @@ class AdminMaintenanceController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        $this->maintenanceService->deleteMaintenance($id);
-
-        return response()->json(['message' => __('messages.deleted')], 200);
+        if ($this->maintenanceService->deleteMaintenance($id)) {
+            return response()->json(['message' => __('messages.deleted')], 200);
+        }
+        return response()->json(['message' => __('messages.empty_maintenances')], 200);
     }
 }

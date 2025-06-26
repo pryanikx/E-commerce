@@ -9,8 +9,23 @@ use App\Repositories\Contracts\CategoryRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
+/**
+ *
+ */
 class CategoryRepository implements CategoryRepositoryInterface
 {
+    public const PER_PAGE = 15;
+
+    public const DEFAULT_PAGE = 1;
+
+    public const DEFAULT_SORT_COLUMN = 'id';
+
+    public const SORT_COLUMNS = ['price', 'release_date', 'id'];
+
+    public const DEFAULT_SORT_ORDER = 'asc';
+
+    public const SORT_ORDERS = ['asc', 'desc'];
+
     /**
      * Get all categories from the database.
      *
@@ -76,15 +91,63 @@ class CategoryRepository implements CategoryRepositoryInterface
      * @param int $id
      * @param array $filters
      * @param array $sort
+     * @param int $page
      *
      * @return LengthAwarePaginator
      */
-    public function getProductsForCategory(int $id, array $filters = [], array $sort = []): LengthAwarePaginator
+    public function getProductsForCategory(
+        int $id,
+        array $filters = [],
+        array $sort = [],
+        int $page = self::DEFAULT_PAGE
+    ): LengthAwarePaginator
     {
         $category = $this->find($id);
 
         $query = $category->products();
 
+        $query = $this->filter($query, $filters);
+
+        $query = $this->sort($query, $sort);
+
+        return $query->paginate(self::PER_PAGE, ['*'], 'page', $page);
+    }
+
+    /**
+     * Apply sorters to the query
+     *
+     * @param $query
+     * @param array $sort
+     *
+     * @return mixed
+     */
+    public function sort($query, array $sort): mixed
+    {
+        $sortBy = in_array(
+            $sort['sort_by'] ?? self::DEFAULT_SORT_COLUMN,
+            self::SORT_COLUMNS
+        ) ? $sort['sort_by'] : self::DEFAULT_SORT_COLUMN;
+
+        $sortOrder = in_array(
+            $sort['sort_order'] ?? self::DEFAULT_SORT_ORDER,
+            self::SORT_ORDERS
+        ) ? $sort['sort_order'] : self::DEFAULT_SORT_ORDER;
+
+        $query->orderBy($sortBy, $sortOrder);
+
+        return $query;
+    }
+
+    /**
+     * Apply filters to the query
+     *
+     * @param $query
+     * @param array $filters
+     *
+     * @return mixed
+     */
+    public function filter($query, array $filters): mixed
+    {
         if (!empty($filters['manufacturer_id'])) {
             $query->where('manufacturer_id', (int) $filters['manufacturer_id']);
         }
@@ -97,10 +160,6 @@ class CategoryRepository implements CategoryRepositoryInterface
             $query->where('price', '<=', (float) $filters['price_max']);
         }
 
-        $sortBy = in_array($sort['sort_by'] ?? 'id', ['price', 'release_date', 'id']) ? $sort['sort_by'] : 'id';
-        $sortOrder = in_array($sort['sort_order'] ?? 'asc', ['asc', 'desc']) ? $sort['sort_order'] : 'asc';
-        $query->orderBy($sortBy, $sortOrder);
-
-        return $query->paginate(15);
+        return $query;
     }
 }

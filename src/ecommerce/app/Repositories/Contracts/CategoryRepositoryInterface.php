@@ -11,7 +11,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 interface CategoryRepositoryInterface
 {
     /**
-     * Get all categoriesfrom the database.
+     * Get all categories from the database.
      *
      * @return Collection<int, Category>
      */
@@ -60,8 +60,29 @@ interface CategoryRepositoryInterface
      * @param int $id
      * @param array $filters
      * @param array $sort
+     * @param int $page
      *
      * @return LengthAwarePaginator
      */
-    public function getProductsForCategory(int $id, array $filters = [], array $sort = []): LengthAwarePaginator;
+    public function getProductsForCategory(int $id, array $filters = [], array $sort = [], int $page = 1): LengthAwarePaginator;
+
+    /**
+     * Apply sorters to the query
+     *
+     * @param $query
+     * @param array $sort
+     *
+     * @return mixed
+     */
+    public function sort($query, array $sort): mixed;
+
+    /**
+     * Apply filters to the query
+     *
+     * @param $query
+     * @param array $filters
+     *
+     * @return mixed
+     */
+    public function filter($query, array $filters): mixed;
 }

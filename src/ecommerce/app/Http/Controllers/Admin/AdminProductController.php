@@ -49,8 +49,9 @@ class AdminProductController extends ProductController
      */
     public function destroy(int $id): JsonResponse
     {
-        $this->productService->deleteProduct($id);
-
-        return response()->json(['message' => __('messages.deleted')], 200);
+        if ($this->productService->deleteProduct($id)) {
+            return response()->json(['message' => __('messages.deleted')], 200);
+        }
+        return response()->json(['message' => __('messages.no_product')], 200);
     }
 }

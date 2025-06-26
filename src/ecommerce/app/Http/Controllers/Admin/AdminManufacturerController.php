@@ -12,6 +12,8 @@ use Illuminate\Http\JsonResponse;
 
 class AdminManufacturerController extends Controller
 {
+
+
     /**
      * @param ManufacturerService $manufacturerService
      */
@@ -73,8 +75,9 @@ class AdminManufacturerController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        $this->manufacturerService->deleteManufacturer($id);
-
-        return response()->json(['message' => __('messages.deleted')], 200);
+        if ($this->manufacturerService->deleteManufacturer($id)) {
+            return response()->json(['message' => __('messages.deleted')], 200);
+        }
+        return response()->json(['message' => __('messages.empty_manufacturers')], 200);
     }
 }

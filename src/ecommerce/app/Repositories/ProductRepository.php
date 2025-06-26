@@ -7,17 +7,20 @@ namespace App\Repositories;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductRepository implements ProductRepositoryInterface
 {
     /**
-     * Get all products from the database.
+     * Get all products paginated from the database.
      *
-     * @return Collection
+     * @param int $pageNumber
+     *
+     * @return LengthAwarePaginator;
      */
-    public function all(): Collection
+    public function all(int $pageNumber): LengthAwarePaginator
     {
-        return Product::with(['manufacturer'])->get();
+        return Product::with(['manufacturer'])->paginate(20, ['*'], 'page', $pageNumber);
     }
 
     /**

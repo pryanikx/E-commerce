@@ -6,7 +6,9 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Services\ProductService;
+
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -18,13 +20,17 @@ class ProductController extends Controller
     }
 
     /**
-     * List all products.
+     * List all products paginated.
+     *
+     * @param Request $request
      *
      * @return JsonResponse
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $products = $this->productService->getAll();
+        $page = (int) $request->query('page', 1);
+
+        $products = $this->productService->getAll($page);
 
         if (empty($products)) {
             return response()->json(['message' => __('messages.empty_products')], 200);
