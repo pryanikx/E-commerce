@@ -82,7 +82,6 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                 })),
         };
 
-        // Если есть файл, отправляем FormData
         let dataToSend;
         let headers = { 'Content-Type': 'application/json' };
         if (formData.image) {

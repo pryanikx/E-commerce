@@ -10,14 +10,16 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "aws/aws-sdk-php": "^3.343",
+        "aws/aws-sdk-php": "^3.348",
+        "fakerphp/faker": "^1.24",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.1",
         "laravel/tinker": "^2.10.1",
+        "league/csv": "^9.24",
+        "league/flysystem-aws-s3-v3": "^3.29",
         "vladimir-yuldashev/laravel-queue-rabbitmq": "^14.2"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.23",
         "friendsofphp/php-cs-fixer": "^3.75",
         "larastan/larastan": "^3.0",
         "laravel/pail": "^1.2.2",

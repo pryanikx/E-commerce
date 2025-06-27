@@ -5,6 +5,7 @@ import ProductCard from './ProductCard';
 const CategoryProductList = ({ categoryId }) => {
     const [products, setProducts] = useState([]);
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const [filterInputs, setFilterInputs] = useState({
         manufacturer_id: '',
         price_min: '',
@@ -19,24 +20,45 @@ const CategoryProductList = ({ categoryId }) => {
         sort_by: 'id',
         sort_order: 'asc',
     });
+    const [pagination, setPagination] = useState({
+        current_page: 1,
+        per_page: 20,
+        total: 0,
+        last_page: 1,
+    });
 
     const fetchProducts = async () => {
+        setIsLoading(true);
         try {
             const response = await api.get(`/categories/${categoryId}/products`, {
-                params: filters,
+                params: {
+                    ...filters,
+                    page: pagination.current_page,
+                },
+                headers: { 'Cache-Control': 'no-cache' },
             });
+            console.log('Request URL:', response.config.url + '?' + new URLSearchParams(response.config.params).toString());
+            console.log('API Response for products:', response.data);
             setProducts(response.data.data || []);
+            if (response.data.meta) {
+                setPagination((prev) => ({
+                    ...prev,
+                    ...response.data.meta,
+                }));
+            }
             setError('');
         } catch (err) {
             console.error('Failed to fetch products:', err);
             setError('Failed to load products. Please try again.');
             setProducts([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     useEffect(() => {
         fetchProducts();
-    }, [categoryId]);
+    }, [categoryId, filters, pagination.current_page]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -48,11 +70,57 @@ const CategoryProductList = ({ categoryId }) => {
 
     const handleApplyFilters = () => {
         setFilters(filterInputs);
-        fetchProducts();
+        setPagination((prev) => ({ ...prev, current_page: 1 })); // Reset to page 1 on filter change
+    };
+
+    const handlePageChange = (page) => {
+        console.log('Changing page to:', page);
+        setPagination((prev) => ({ ...prev, current_page: page }));
+    };
+
+    const renderPagination = () => {
+        const pages = [];
+        for (let i = 1; i <= pagination.last_page; i++) {
+            pages.push(
+                <button
+                    key={i}
+                    onClick={() => handlePageChange(i)}
+                    disabled={isLoading}
+                    className={`px-4 py-2 mx-1 border rounded ${
+                        pagination.current_page === i ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'
+                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                    {i}
+                </button>
+            );
+        }
+        return (
+            <div className="flex justify-center mt-4 gap-2">
+                <button
+                    onClick={() => handlePageChange(pagination.current_page - 1)}
+                    disabled={pagination.current_page === 1 || isLoading}
+                    className={`px-4 py-2 border rounded bg-white text-blue-500 ${
+                        pagination.current_page === 1 || isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                >
+                    Previous
+                </button>
+                {pages}
+                <button
+                    onClick={() => handlePageChange(pagination.current_page + 1)}
+                    disabled={pagination.current_page === pagination.last_page || isLoading}
+                    className={`px-4 py-2 border rounded bg-white text-blue-500 ${
+                        pagination.current_page === pagination.last_page || isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                >
+                    Next
+                </button>
+            </div>
+        );
     };
 
     return (
-        <div>
+        <div className="container mx-auto p-4">
             <h2 className="text-2xl font-bold mb-4">Products</h2>
             {error && <p className="text-red-500 mb-4">{error}</p>}
             <div className="mb-6 p-4 bg-white rounded shadow">
@@ -89,7 +157,7 @@ const CategoryProductList = ({ categoryId }) => {
                             value={filterInputs.price_max}
                             onChange={handleInputChange}
                             className="w-full p-1 border rounded"
-                            placeholder="Max price"
+                            placeholder="Price max"
                             min="0"
                         />
                     </div>
@@ -121,13 +189,14 @@ const CategoryProductList = ({ categoryId }) => {
                 </div>
                 <button
                     onClick={handleApplyFilters}
-                    className="mt-4 bg-primary text-white p-2 rounded"
+                    className="mt-4 bg-blue-500 text-white p-2 rounded"
                 >
                     Apply Filters & Sorting
                 </button>
             </div>
-            {products.length === 0 ? (
-                <p className="text-secondary">No products found.</p>
+            {isLoading && <div className="text-center my-4">Loading products...</div>}
+            {products.length === 0 && !isLoading ? (
+                <p className="text-gray-500">No products found.</p>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {products.map((product) => (
@@ -135,6 +204,7 @@ const CategoryProductList = ({ categoryId }) => {
                     ))}
                 </div>
             )}
+            {pagination.last_page > 1 && renderPagination()}
         </div>
     );
 };
