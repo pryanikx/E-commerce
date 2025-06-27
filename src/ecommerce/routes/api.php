@@ -4,7 +4,6 @@ use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminMaintenanceController;
 use App\Http\Controllers\Admin\AdminManufacturerController;
 use App\Http\Controllers\Admin\AdminProductController;
-use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\User\CategoryController;
 use App\Http\Controllers\User\ProductController;
@@ -21,9 +20,7 @@ Route::middleware(['auth:sanctum', 'role:user'])->name('user.')->group(function 
     Route::get('/categories/{id}/products', [CategoryController::class, 'products']);
 });
 
-Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->name('amdin.')->group(function () {
-    Route::get('/export-catalog', [ProductExportController::class, 'export']);
-
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::apiResource('products', AdminProductController::class);
 
     Route::apiResource('manufacturers', AdminManufacturerController::class)->except(['show']);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/api';
 import ResourceTable from './ResourceTable';
 import ProductForm from './ProductForm';
@@ -15,26 +15,75 @@ const AdminPanel = () => {
     const [editingCategory, setEditingCategory] = useState(null);
     const [editingManufacturer, setEditingManufacturer] = useState(null);
     const [editingMaintenance, setEditingMaintenance] = useState(null);
+    const [pagination, setPagination] = useState({
+        current_page: 1,
+        per_page: 20,
+        total: 0,
+        last_page: 1,
+    });
+    const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [prodRes, catRes, manRes, mainRes] = await Promise.all([
-                    api.get('/admin/products'),
-                    api.get('/admin/categories'),
-                    api.get('/admin/manufacturers'),
-                    api.get('/admin/maintenance'),
-                ]);
-                setProducts(prodRes.data.data || prodRes.data);
-                setCategories(catRes.data.data || catRes.data);
-                setManufacturers(manRes.data.data || manRes.data);
-                setMaintenances(mainRes.data.data || mainRes.data);
-            } catch (error) {
-                console.error('Failed to fetch data:', error);
+    // Memoized function to fetch products
+    const fetchProducts = useCallback(async (page = 1) => {
+        setIsLoading(true);
+        try {
+            console.log('Fetching products for page:', page);
+            const response = await api.get('/admin/products', {
+                params: { page },
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
+
+            console.log('Products API Response:', response.data);
+
+            if (response.data && response.data.data) {
+                setProducts(response.data.data);
+
+                if (response.data.meta) {
+                    setPagination(response.data.meta);
+                    console.log('Updated pagination:', response.data.meta);
+                }
+            } else {
+                console.error('Unexpected API response structure:', response.data);
             }
-        };
-        fetchData();
+        } catch (error) {
+            console.error('Failed to fetch products:', error);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
+
+    // Fetch other resources
+    const fetchOtherResources = useCallback(async () => {
+        try {
+            const [catRes, manRes, mainRes] = await Promise.all([
+                api.get('/admin/categories'),
+                api.get('/admin/manufacturers'),
+                api.get('/admin/maintenance'),
+            ]);
+
+            setCategories(catRes.data.data || []);
+            setManufacturers(manRes.data.data || []);
+            setMaintenances(mainRes.data.data || []);
+        } catch (error) {
+            console.error('Failed to fetch other resources:', error);
+        }
+    }, []);
+
+    // Initial data fetch
+    useEffect(() => {
+        fetchProducts(pagination.current_page);
+        fetchOtherResources();
+    }, []);
+
+    // Handle page changes
+    useEffect(() => {
+        if (pagination.current_page > 1) {
+            fetchProducts(pagination.current_page);
+        }
+    }, [pagination.current_page, fetchProducts]);
 
     const handleCreateProduct = async (data, headers) => {
         if (!data) {
@@ -43,8 +92,8 @@ const AdminPanel = () => {
         }
         try {
             await api.post('/admin/products', data, { headers });
-            const productsRes = await api.get('/admin/products');
-            setProducts(productsRes.data.data || productsRes.data);
+            // Refresh products after creation
+            await fetchProducts(pagination.current_page);
             setEditingProduct(null);
         } catch (error) {
             console.error('Failed to create product:', {
@@ -63,8 +112,8 @@ const AdminPanel = () => {
         }
         try {
             await api.put(`/admin/products/${editingProduct.id}`, data, { headers });
-            const productsRes = await api.get('/admin/products');
-            setProducts(productsRes.data.data || productsRes.data);
+            // Refresh products after update
+            await fetchProducts(pagination.current_page);
             setEditingProduct(null);
         } catch (error) {
             console.error('Failed to update product:', {
@@ -79,7 +128,8 @@ const AdminPanel = () => {
     const handleDeleteProduct = async (id) => {
         try {
             await api.delete(`/admin/products/${id}`);
-            setProducts(products.filter((p) => p.id !== id));
+            // Refresh products after deletion
+            await fetchProducts(pagination.current_page);
         } catch (error) {
             console.error('Failed to delete product:', error);
         }
@@ -93,7 +143,7 @@ const AdminPanel = () => {
         try {
             await api.post('/admin/categories', data);
             const response = await api.get('/admin/categories');
-            setCategories(response.data.data || response.data);
+            setCategories(response.data.data || []);
             setEditingCategory(null);
         } catch (error) {
             console.error('Failed to create category:', error);
@@ -109,7 +159,7 @@ const AdminPanel = () => {
         try {
             await api.put(`/admin/categories/${editingCategory.id}`, data);
             const response = await api.get('/admin/categories');
-            setCategories(response.data.data || response.data);
+            setCategories(response.data.data || []);
             setEditingCategory(null);
         } catch (error) {
             console.error('Failed to update category:', error);
@@ -134,7 +184,7 @@ const AdminPanel = () => {
         try {
             await api.post('/admin/manufacturers', data);
             const response = await api.get('/admin/manufacturers');
-            setManufacturers(response.data.data || response.data);
+            setManufacturers(response.data.data || []);
             setEditingManufacturer(null);
         } catch (error) {
             console.error('Failed to create manufacturer:', error);
@@ -150,7 +200,7 @@ const AdminPanel = () => {
         try {
             await api.put(`/admin/manufacturers/${editingManufacturer.id}`, data);
             const response = await api.get('/admin/manufacturers');
-            setManufacturers(response.data.data || response.data);
+            setManufacturers(response.data.data || []);
             setEditingManufacturer(null);
         } catch (error) {
             console.error('Failed to update manufacturer:', error);
@@ -175,7 +225,7 @@ const AdminPanel = () => {
         try {
             await api.post('/admin/maintenance', data);
             const response = await api.get('/admin/maintenance');
-            setMaintenances(response.data.data || response.data);
+            setMaintenances(response.data.data || []);
             setEditingMaintenance(null);
         } catch (error) {
             console.error('Failed to create maintenance:', error);
@@ -191,7 +241,7 @@ const AdminPanel = () => {
         try {
             await api.put(`/admin/maintenance/${editingMaintenance.id}`, data);
             const response = await api.get('/admin/maintenance');
-            setMaintenances(response.data.data || response.data);
+            setMaintenances(response.data.data || []);
             setEditingMaintenance(null);
         } catch (error) {
             console.error('Failed to update maintenance:', error);
@@ -204,7 +254,7 @@ const AdminPanel = () => {
             await api.delete(`/admin/maintenance/${id}`);
             setMaintenances(maintenances.filter((m) => m.id !== id));
         } catch (error) {
-            console.error('Failed to delete maintenance:', error);
+            console.error('Error deleting maintenance:', error);
         }
     };
 
@@ -271,24 +321,132 @@ const AdminPanel = () => {
         setEditingMaintenance(null);
     };
 
+    const handlePageChange = (page) => {
+        console.log('Changing page to:', page);
+        setPagination((prev) => ({ ...prev, current_page: page }));
+    };
+
+    const renderPagination = () => {
+        const pages = [];
+        const maxPagesToShow = 10;
+        let startPage = Math.max(1, pagination.current_page - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(pagination.last_page, startPage + maxPagesToShow - 1);
+
+        // Adjust startPage if we're near the end
+        if (endPage - startPage + 1 < maxPagesToShow) {
+            startPage = Math.max(1, endPage - maxPagesToShow + 1);
+        }
+
+        // Add first page and ellipsis if needed
+        if (startPage > 1) {
+            pages.push(
+                <button
+                    key={1}
+                    onClick={() => handlePageChange(1)}
+                    disabled={isLoading}
+                    className="px-4 py-2 mx-1 border rounded bg-white text-blue-500"
+                >
+                    1
+                </button>
+            );
+            if (startPage > 2) {
+                pages.push(<span key="ellipsis-start" className="px-2">...</span>);
+            }
+        }
+
+        // Page buttons
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(
+                <button
+                    key={i}
+                    onClick={() => handlePageChange(i)}
+                    disabled={isLoading}
+                    className={`px-4 py-2 mx-1 border rounded ${
+                        pagination.current_page === i
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-white text-blue-500'
+                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                    {i}
+                </button>
+            );
+        }
+
+        // Add last page and ellipsis if needed
+        if (endPage < pagination.last_page) {
+            if (endPage < pagination.last_page - 1) {
+                pages.push(<span key="ellipsis-end" className="px-2">...</span>);
+            }
+            pages.push(
+                <button
+                    key={pagination.last_page}
+                    onClick={() => handlePageChange(pagination.last_page)}
+                    disabled={isLoading}
+                    className="px-4 py-2 mx-1 border rounded bg-white text-blue-500"
+                >
+                    {pagination.last_page}
+                </button>
+            );
+        }
+
+        return (
+            <div className="flex justify-center mt-4 gap-2">
+                <button
+                    onClick={() => handlePageChange(pagination.current_page - 1)}
+                    disabled={pagination.current_page === 1 || isLoading}
+                    className={`px-4 py-2 border rounded bg-white text-blue-500 ${
+                        pagination.current_page === 1 || isLoading
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
+                    }`}
+                >
+                    Previous
+                </button>
+                {pages}
+                <button
+                    onClick={() => handlePageChange(pagination.current_page + 1)}
+                    disabled={pagination.current_page === pagination.last_page || isLoading}
+                    className={`px-4 py-2 border rounded bg-white text-blue-500 ${
+                        pagination.current_page === pagination.last_page || isLoading
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
+                    }`}
+                >
+                    Next
+                </button>
+            </div>
+        );
+    };
+
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-3xl font-bold mb-8">Admin Panel</h1>
-
             <h2 className="text-2xl font-bold mb-4">Products</h2>
-            <button
-                onClick={handleCreateProductClick}
-                className="bg-primary text-white p-2 rounded mb-4"
-            >
-                Create Product
-            </button>
+            <div className="mb-4 flex justify-between items-center">
+                <button
+                    onClick={handleCreateProductClick}
+                    className="bg-blue-500 text-white p-2 rounded"
+                >
+                    Create Product
+                </button>
+                <div className="text-sm text-gray-600">
+                    Total Products: {pagination.total} | Page {pagination.current_page} of {pagination.last_page}
+                </div>
+            </div>
+
             {editingProduct !== null && (
                 <ProductForm
                     product={editingProduct}
                     onSubmit={editingProduct.id ? handleUpdateProduct : handleCreateProduct}
                     onCancel={handleCancel}
+                    categories={categories}
+                    manufacturers={manufacturers}
+                    maintenances={maintenances}
                 />
             )}
+
+            {isLoading && <div className="text-center my-4">Loading products...</div>}
+
             <ResourceTable
                 title="Products"
                 data={products.map((product) => ({
@@ -304,9 +462,11 @@ const AdminPanel = () => {
                 onDelete={handleDeleteProduct}
             />
 
-            <h2 className="text-2xl font-bold mb-4">Categories</h2>
+            {pagination.last_page > 1 && renderPagination()}
+
+            <h2 className="text-2xl font-bold mb-4 mt-8">Categories</h2>
             <button
-                className="bg-primary text-white p-2 rounded mb-4"
+                className="bg-blue-500 text-white p-2 rounded mb-4"
                 onClick={handleCreateCategoryClick}
             >
                 Create Category
@@ -326,9 +486,9 @@ const AdminPanel = () => {
                 onDelete={handleDeleteCategory}
             />
 
-            <h2 className="text-2xl font-bold mb-4">Manufacturers</h2>
+            <h2 className="text-2xl font-bold mb-4 mt-8">Manufacturers</h2>
             <button
-                className="bg-primary text-white p-2 rounded mb-4"
+                className="bg-blue-500 text-white p-2 rounded mb-4"
                 onClick={handleCreateManufacturerClick}
             >
                 Create Manufacturer
@@ -348,9 +508,9 @@ const AdminPanel = () => {
                 onDelete={handleDeleteManufacturer}
             />
 
-            <h2 className="text-2xl font-bold mb-4">Maintenances</h2>
+            <h2 className="text-2xl font-bold mb-4 mt-8">Maintenances</h2>
             <button
-                className="bg-primary text-white p-2 rounded mb-4"
+                className="bg-blue-500 text-white p-2 rounded mb-4"
                 onClick={handleCreateMaintenanceClick}
             >
                 Create Maintenance
