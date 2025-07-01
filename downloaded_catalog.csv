@@ -1,2 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<Error><Code>NoSuchBucket</Code><Message>The specified bucket does not exist</Message><RequestId>734098fa-ab55-406c-bdec-80b559e963d0</RequestId><BucketName>product-catalog</BucketName></Error>

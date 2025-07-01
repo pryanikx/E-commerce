@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 
 class CategoryService
 {
+    private const DEFAULT_PAGE_NUMBER = 1;
     private const CACHE_KEY = 'categories';
 
     /**
@@ -38,7 +39,8 @@ class CategoryService
         return cache()->rememberForever(self::CACHE_KEY, function () {
             $categories = $this->categoryRepository->all();
 
-            return $categories->map(fn($category) => (new CategoryListDTO($category))->toArray())->toArray();
+            return $categories->map(fn($category)
+                => (new CategoryListDTO($category))->toArray())->toArray();
         });
     }
 
@@ -47,17 +49,23 @@ class CategoryService
      *
      * @param int $id
      * @param array $filters
-     * @param array $sort
+     * @param array $sorters
      * @param int $page
      *
      * @return array
      */
-    public function getProductsForCategory(int $id, array $filters = [], array $sort = [], int $page = 1): array
+    public function getProductsForCategory(
+        int $id,
+        array $filters = [],
+        array $sorters = [],
+        int $page = self::DEFAULT_PAGE_NUMBER
+    ): array
     {
-        $products = $this->categoryRepository->getProductsForCategory($id, $filters, $sort, $page);
+        $products = $this->categoryRepository->getProductsForCategory($id, $filters, $sorters, $page);
 
         return [
-            'data' => $products->map(fn($product) => (new ProductListDTO($product, $this->currencyCalculator))->toArray())->toArray(),
+            'data' => $products->map(fn($product)
+                => (new ProductListDTO($product, $this->currencyCalculator))->toArray())->toArray(),
             'meta' => [
                 'current_page' => $products->currentPage(),
                 'per_page' => $products->perPage(),

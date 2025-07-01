@@ -31,7 +31,8 @@ class MaintenanceService
         return cache(self::CACHE_KEY, function () {
             $maintenances = $this->maintenanceRepository->all();
 
-            return $maintenances->map(fn($maintenance) => (new MaintenanceListDTO($maintenance))->toArray())->toArray();
+            return $maintenances->map(fn($maintenance)
+                => (new MaintenanceListDTO($maintenance))->toArray())->toArray();
         });
     }
 

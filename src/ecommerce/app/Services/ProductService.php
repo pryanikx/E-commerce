@@ -35,13 +35,11 @@ class ProductService
     /**
      * Get all products with caching.
      *
-     * @param int $pageNumber
-     *
      * @return array|null
      */
-    public function getAll(int $pageNumber): ?array
+    public function getAll(): ?array
     {
-        $products = $this->productRepository->all($pageNumber);
+        $products = $this->productRepository->all();
 
         return [
             'data' => $products->map(function ($product) {
@@ -177,7 +175,10 @@ class ProductService
     {
         if ($image && $image->isValid()) {
             try {
-                if ($oldPath && Storage::disk('public')->exists(str_replace('storage/', '', $oldPath))) {
+                if (
+                    $oldPath &&
+                    Storage::disk('public')->exists(str_replace('storage/', '', $oldPath))
+                ) {
                     Storage::disk('public')->delete(str_replace('storage/', '', $oldPath));
                 }
 
@@ -219,7 +220,10 @@ class ProductService
     private function getImageUrlWithFallback(?string $imagePath): string
     {
         $fallbackUrl = asset('storage/products/fallback_image1.png');
-        if ($imagePath && $imagePath !== '/' && Storage::disk('public')->exists(str_replace('storage/', '', $imagePath))) {
+        if (
+            $imagePath && $imagePath !== '/' &&
+            Storage::disk('public')->exists(str_replace('storage/', '', $imagePath))
+        ) {
             return asset($imagePath);
         }
         return $fallbackUrl;
@@ -240,7 +244,10 @@ class ProductService
             $dtoArray = $dto->toArray();
             $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
 
-            cache()->put($this->getProductCacheKey($id), $dtoArray, now()->addMinutes(self::CACHE_TTL_MINUTE));
+            cache()->put(
+                $this->getProductCacheKey($id),
+                $dtoArray, now()->addMinutes(self::CACHE_TTL_MINUTES)
+            );
         } catch (\Exception $e) {
         }
     }

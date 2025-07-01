@@ -6,9 +6,17 @@ namespace App\Services;
 
 use App\DTO\Auth\RegisterDTO;
 use App\Models\User;
+use App\Repositories\Contracts\RegisterRepositoryInterface;
 
 class RegisterService
 {
+
+    public function __construct(
+        protected RegisterRepositoryInterface $registerRepository,
+    )
+    {
+    }
+
     /**
      * Register a new user.
      *
@@ -20,13 +28,11 @@ class RegisterService
     {
         $dto = new RegisterDTO($request_validated);
 
-        $user = User::create($dto->toArray());
-
-        $token = $user->createToken('token')->plainTextToken;
+        $created_user = $this->registerRepository->register($dto->toArray());
 
         return [
-            'user' => $user,
-            'token' => $token,
+            'user' => $created_user['user'],
+            'token' => $created_user['token'],
         ];
     }
 }

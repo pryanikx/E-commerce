@@ -22,15 +22,11 @@ class ProductController extends Controller
     /**
      * List all products paginated.
      *
-     * @param Request $request
-     *
      * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
-        $page = (int) $request->query('page', 1);
-
-        $products = $this->productService->getAll($page);
+        $products = $this->productService->getAll();
 
         if (empty($products)) {
             return response()->json(['message' => __('messages.empty_products')], 200);
