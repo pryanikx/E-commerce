@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace App\Repositories\Contracts;
 
 use App\Models\Category;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface CategoryRepositoryInterface
 {
+    const PER_PAGE = 15;
+    const DEFAULT_PAGE_NUMBER = 1;
+
     /**
      * Get all categories from the database.
      *
@@ -59,30 +64,35 @@ interface CategoryRepositoryInterface
      *
      * @param int $id
      * @param array $filters
-     * @param array $sort
+     * @param array $sorters
      * @param int $page
      *
      * @return LengthAwarePaginator
      */
-    public function getProductsForCategory(int $id, array $filters = [], array $sort = [], int $page = 1): LengthAwarePaginator;
+    public function getProductsForCategory(
+        int $id,
+        array $filters = [],
+        array $sorters = [],
+        int $page = self::DEFAULT_PAGE_NUMBER
+    ): LengthAwarePaginator;
 
     /**
      * Apply sorters to the query
      *
-     * @param $query
-     * @param array $sort
+     * @param Builder|HasMany $query
+     * @param array $sorters
      *
-     * @return mixed
+     * @return Builder|HasMany
      */
-    public function sort($query, array $sort): mixed;
+    public function sort(Builder|HasMany $query, array $sorters): Builder|HasMany;
 
     /**
      * Apply filters to the query
      *
-     * @param $query
+     * @param Builder|HasMany $query
      * @param array $filters
      *
-     * @return mixed
+     * @return Builder|HasMany
      */
-    public function filter($query, array $filters): mixed;
+    public function filter(Builder|HasMany $query, array $filters): Builder|HasMany;
 }

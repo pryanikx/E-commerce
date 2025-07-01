@@ -18,7 +18,10 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!$request->user() || ($request->user()->role !== $role && $request->user()->role !== UserRole::ADMIN->value)) {
+        if (
+            !$request->user() ||
+            ($request->user()->role !== $role && $request->user()->role !== UserRole::ADMIN->value)
+        ) {
             return response()->json(['error' => __('errors.access_denied')], 403);
         }
 

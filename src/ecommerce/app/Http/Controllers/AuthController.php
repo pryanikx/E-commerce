@@ -49,7 +49,7 @@ class AuthController extends Controller
         try {
             $result = $this->loginService->login($request->validated());
 
-            return response()->json($result);
+            return response()->json($result, 200);
         } catch (\Exception $exception) {
             return response()->json(['error' => $exception->getMessage()], 401);
         }

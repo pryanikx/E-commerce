@@ -10,14 +10,14 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 interface ProductRepositoryInterface
 {
+    const PER_PAGE = 20;
+
     /**
      * Get all products paginated from the database.
      *
-     * @param int $pageNumber
-     *
      * @return LengthAwarePaginator
      */
-    public function all(int $pageNumber): LengthAwarePaginator;
+    public function all(): LengthAwarePaginator;
 
     /**
      * Find a product by ID.

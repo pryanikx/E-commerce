@@ -6,25 +6,25 @@ namespace App\Repositories;
 
 use App\Models\Category;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
+use App\Services\Filters\ProductFilter;
+use App\Services\Filters\ProductSorter;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-/**
- *
- */
+
 class CategoryRepository implements CategoryRepositoryInterface
 {
-    public const PER_PAGE = 15;
-
-    public const DEFAULT_PAGE = 1;
-
-    public const DEFAULT_SORT_COLUMN = 'id';
-
-    public const SORT_COLUMNS = ['price', 'release_date', 'id'];
-
-    public const DEFAULT_SORT_ORDER = 'asc';
-
-    public const SORT_ORDERS = ['asc', 'desc'];
+    /**
+     * @param ProductFilter $productFilter
+     * @param ProductSorter $productSorter
+     */
+    public function __construct(
+        protected ProductFilter $productFilter,
+        protected ProductSorter $productSorter
+    ) {
+    }
 
     /**
      * Get all categories from the database.
@@ -90,7 +90,7 @@ class CategoryRepository implements CategoryRepositoryInterface
      *
      * @param int $id
      * @param array $filters
-     * @param array $sort
+     * @param array $sorters
      * @param int $page
      *
      * @return LengthAwarePaginator
@@ -98,17 +98,17 @@ class CategoryRepository implements CategoryRepositoryInterface
     public function getProductsForCategory(
         int $id,
         array $filters = [],
-        array $sort = [],
-        int $page = self::DEFAULT_PAGE
+        array $sorters = [],
+        int $page = self::DEFAULT_PAGE_NUMBER
     ): LengthAwarePaginator
     {
         $category = $this->find($id);
 
         $query = $category->products();
 
-        $query = $this->filter($query, $filters);
+        $query = $this->productFilter->applyFilters($query, $filters);
 
-        $query = $this->sort($query, $sort);
+        $query = $this->productSorter->applySorters($query, $sorters);
 
         return $query->paginate(self::PER_PAGE, ['*'], 'page', $page);
     }
@@ -116,50 +116,26 @@ class CategoryRepository implements CategoryRepositoryInterface
     /**
      * Apply sorters to the query
      *
-     * @param $query
-     * @param array $sort
+     * @param Builder|HasMany $query
+     * @param array $sorters
      *
-     * @return mixed
+     * @return Builder|HasMany
      */
-    public function sort($query, array $sort): mixed
+    public function sort(Builder|HasMany $query, array $sorters): Builder|HasMany
     {
-        $sortBy = in_array(
-            $sort['sort_by'] ?? self::DEFAULT_SORT_COLUMN,
-            self::SORT_COLUMNS
-        ) ? $sort['sort_by'] : self::DEFAULT_SORT_COLUMN;
-
-        $sortOrder = in_array(
-            $sort['sort_order'] ?? self::DEFAULT_SORT_ORDER,
-            self::SORT_ORDERS
-        ) ? $sort['sort_order'] : self::DEFAULT_SORT_ORDER;
-
-        $query->orderBy($sortBy, $sortOrder);
-
-        return $query;
+        return $this->productSorter->applySorters($query, $sorters);
     }
 
     /**
      * Apply filters to the query
      *
-     * @param $query
+     * @param Builder|HasMany $query
      * @param array $filters
      *
-     * @return mixed
+     * @return Builder|HasMany
      */
-    public function filter($query, array $filters): mixed
+    public function filter(Builder|HasMany $query, array $filters): Builder|HasMany
     {
-        if (!empty($filters['manufacturer_id'])) {
-            $query->where('manufacturer_id', (int) $filters['manufacturer_id']);
-        }
-
-        if (!empty($filters['price_min'])) {
-            $query->where('price', '>=', (float) $filters['price_min']);
-        }
-
-        if (!empty($filters['price_max'])) {
-            $query->where('price', '<=', (float) $filters['price_max']);
-        }
-
-        return $query;
+        return $this->productFilter->applyFilters($query, $filters);
     }
 }

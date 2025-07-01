@@ -7,7 +7,11 @@ namespace App\Services\Currency;
 class CurrencyCalculator
 {
     private const SUPPORTED_CURRENCIES = ['BYN', 'USD', 'EUR', 'RUB'];
-    PRIVATE const BASE_CURRENCY = 'USD';
+    private const BASE_CURRENCY = 'USD';
+
+    private const DEFAULT_RATE = 1.0;
+
+    private const PRECISION = 2;
 
     /**
      * @var CurrencySource $source
@@ -42,8 +46,8 @@ class CurrencyCalculator
         $converted = [];
 
         foreach ($targetCurrencies as $currency) {
-            $rate = $rates[$currency] ?? 1.0;
-            $converted[$currency] = round($price * $rate, 2);
+            $rate = $rates[$currency] ?? self::DEFAULT_RATE;
+            $converted[$currency] = round($price * $rate, self::PRECISION);
         }
 
         return $converted;

@@ -14,13 +14,11 @@ class ProductRepository implements ProductRepositoryInterface
     /**
      * Get all products paginated from the database.
      *
-     * @param int $pageNumber
-     *
      * @return LengthAwarePaginator;
      */
-    public function all(int $pageNumber): LengthAwarePaginator
+    public function all(): LengthAwarePaginator
     {
-        return Product::with(['manufacturer'])->paginate(20, ['*'], 'page', $pageNumber);
+        return Product::with(['manufacturer'])->paginate(self::PER_PAGE);
     }
 
     /**

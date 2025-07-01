@@ -1,4 +1,5 @@
 <?php
+// lang/en/messages.php
 
 return [
     'deleted' => 'Successfully deleted!',
@@ -28,4 +29,22 @@ return [
     'starting_publishcatalogjob' => 'Starting PublishCatalogJob',
     'csv_headers_written' => 'CSV headers written',
     'products_retrieved' => 'Products retrieved',
+    'export_started' => 'Starting catalog export',
+    'export_completed' => 'Catalog export completed successfully',
+    'export_failed' => 'Catalog export failed',
+    'export_failed_permanently' => 'Catalog export job failed permanently',
+    'csv_file_generated' => 'CSV file generated successfully',
+    'file_uploaded_to_s3' => 'File uploaded to S3 successfully',
+    'success_notification_sent' => 'Success notification sent',
+    'failure_notification_sent' => 'Failure notification sent',
+    'failure_notification_failed' => 'Failed to send failure notification',
+    'temp_file_cleaned' => 'Temporary file cleaned up',
+    'email_notification_saved' => 'Email notification saved',
+    'error_email_saved' => '📧 Error email saved',
+    'catalog_export_completed' => 'Catalog export completed',
+    'user_unauthorized' => 'User unauthorized',
+    'catalog_export_started' => 'Catalog export has been started. You will receive an email notification after completion.',
+    'catalog_export_start_failed' => 'Failed to start catalog export',
+    'export_processing_check_email' => 'Export is being processed. Check your email for notifications.',
+    'export_status_fetch_failed' => 'Failed to fetch export status',
 ];

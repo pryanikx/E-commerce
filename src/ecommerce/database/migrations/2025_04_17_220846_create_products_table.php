@@ -22,8 +22,10 @@ return new class () extends Migration {
             $table->string('image_path')->nullable();
             $table->timestamps();
 
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
-            $table->foreign('manufacturer_id')->references('id')->on('manufacturers')->onDelete('cascade');
+            $table->foreign('category_id')->references('id')->on('categories')
+                ->onDelete('cascade');
+            $table->foreign('manufacturer_id')->references('id')->on('manufacturers')
+                ->onDelete('cascade');
         });
     }
 

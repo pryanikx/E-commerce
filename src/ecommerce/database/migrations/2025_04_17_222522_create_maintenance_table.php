@@ -14,7 +14,7 @@ return new class () extends Migration {
             $table->id();
             $table->string('name')->unique();
             $table->text('description')->nullable();
-            $table->string('duration', 50)->nullable(); // TODO: change duration to FROM & TILL
+            $table->string('duration', 50)->nullable();
             $table->timestamps();
         });
     }

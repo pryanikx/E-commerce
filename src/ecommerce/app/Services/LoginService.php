@@ -6,10 +6,17 @@ namespace App\Services;
 
 use App\DTO\Auth\LoginDTO;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use App\Repositories\Contracts\LoginRepositoryInterface;
 
 class LoginService
 {
+
+    public function __construct(
+        protected LoginRepositoryInterface $loginRepository,
+    )
+    {
+    }
+
     /**
      * Login an existing user/admin.
      *
@@ -21,19 +28,12 @@ class LoginService
     public function login(array $request_validated): array
     {
         $dto = new LoginDTO($request_validated);
-        $credentials = $dto->toArray();
 
-        if (!Auth::attempt($credentials)) {
-            throw new \Exception(__('auth.failed'));
-        }
-
-        $user = Auth::user();
-
-        $token = $user->createToken('token')->plainTextToken;
+        $user_data = $this->loginRepository->login($dto->toArray());
 
         return [
-            'token' => $token,
-            'user' => $user,
+            'token' => $user_data['token'],
+            'user' => $user_data['user'],
         ];
     }
 
@@ -46,6 +46,6 @@ class LoginService
      */
     public function logout(User $user): void
     {
-        $user->currentAccessToken()->delete();
+        $this->loginRepository->logout($user);
     }
 }

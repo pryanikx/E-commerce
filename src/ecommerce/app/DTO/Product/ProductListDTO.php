@@ -51,8 +51,8 @@ readonly class ProductListDTO
         $this->name = $product->name;
         $this->article = $product->article;
         $this->manufacturer_name = $product->manufacturer->name;
-        $this->prices = $product->price ? $calculator->convert((float) $product->price) : null;
-        $this->image_url = $product->image_path ? asset($product->image_path) : null;
+        $this->prices = $product->price ?? $calculator->convert((float) $product->price);
+        $this->image_url = $product->image_path ?? asset($product->image_path);
     }
 
     /**

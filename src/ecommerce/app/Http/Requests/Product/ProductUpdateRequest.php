@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Product;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class ProductUpdateRequest extends FormRequest
+class ProductUpdateRequest extends BaseProductRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -14,25 +12,6 @@ class ProductUpdateRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
-    }
-
-    /**
-     * Prepare the data for validation.
-     */
-    protected function prepareForValidation(): void
-    {
-        if ($this->has('maintenance_ids') && is_array($this->maintenance_ids)) {
-            $maintenanceIds = [];
-            foreach ($this->maintenance_ids as $maintenance) {
-                if (is_array($maintenance) && isset($maintenance['id'], $maintenance['price'])) {
-                    $maintenanceIds[] = [
-                        'id' => (int) $maintenance['id'],
-                        'price' => (float) $maintenance['price']
-                    ];
-                }
-            }
-            $this->merge(['maintenance_ids' => $maintenanceIds]);
-        }
     }
 
     /**

@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Http;
 
 class OpenExchangeRatesSource implements CurrencySource
 {
+    private const CACHE_DURATION_H = 24;
+
+    private const DEFAULT_RATE = 1.0;
+
     /**
      * @var string $apiKey
      */
@@ -33,7 +37,7 @@ class OpenExchangeRatesSource implements CurrencySource
     public function getExchangeRates(string $baseCurrency): array
     {
         $cacheKey = "exchange_rates_{$baseCurrency}";
-        $cacheDuration = now()->addHours(24);
+        $cacheDuration = now()->addHours(self::CACHE_DURATION_H);
 
         return cache()->remember($cacheKey, $cacheDuration, function () use ($baseCurrency) {
             try {
@@ -59,10 +63,10 @@ class OpenExchangeRatesSource implements CurrencySource
                     'base_currency' => $baseCurrency,
                 ]);
                 return [
-                    'BYN' => 1.0,
-                    'USD' => 1.0,
-                    'EUR' => 1.0,
-                    'RUB' => 1.0,
+                    'BYN' => self::DEFAULT_RATE,
+                    'USD' => self::DEFAULT_RATE,
+                    'EUR' => self::DEFAULT_RATE,
+                    'RUB' => self::DEFAULT_RATE,
                 ];
             }
         });

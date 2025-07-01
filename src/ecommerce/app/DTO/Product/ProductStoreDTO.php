@@ -58,11 +58,6 @@ readonly class ProductStoreDTO
      */
     public function __construct(array $validated)
     {
-        \Log::info('ProductStoreDTO constructor', [
-            'has_image' => isset($validated['image']),
-            'image_type' => isset($validated['image']) ? get_class($validated['image']) : 'none'
-        ]);
-
         $this->name = $validated['name'];
         $this->article = $validated['article'];
         $this->description = $validated['description'];
@@ -72,7 +67,8 @@ readonly class ProductStoreDTO
         $this->manufacturer_id = (int) $validated['manufacturer_id'];
         $this->category_id = (int) $validated['category_id'];
         $this->maintenances = !empty($validated['maintenance_ids'])
-            ? collect($validated['maintenance_ids'])->mapWithKeys(fn ($m) => [$m['id'] => ['price' => (float) $m['price']]])->toArray()
+            ? collect($validated['maintenance_ids'])
+                ->mapWithKeys(fn ($m) => [$m['id'] => ['price' => (float) $m['price']]])->toArray()
             : [];
     }
 }

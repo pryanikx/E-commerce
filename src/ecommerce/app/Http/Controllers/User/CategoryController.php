@@ -42,22 +42,14 @@ class CategoryController extends Controller
      *
      * @return JsonResponse
      */
-    public function products(CategoryProductRequest $request, int $id): JsonResponse
+    public function show(CategoryProductRequest $request, int $id): JsonResponse
     {
-        $filters = [
-            'manufacturer_id' => $request->validated('manufacturer_id'),
-            'price_min' => $request->validated('price_min'),
-            'price_max' => $request->validated('price_max'),
-        ];
-
-        $sort = [
-            'sort_by' => $request->validated('sort_by', 'id'),
-            'sort_order' => $request->validated('sort_order', 'asc'),
-        ];
-
-        $page = $request->validated()['page'] ?? 1;
-
-        $products = $this->categoryService->getProductsForCategory($id, $filters, $sort, $page);
+        $products = $this->categoryService->getProductsForCategory(
+            $id,
+            $request->getFilters(),
+            $request->getSortParams(),
+            $request->getPage()
+        );
 
         return response()->json($products);
     }

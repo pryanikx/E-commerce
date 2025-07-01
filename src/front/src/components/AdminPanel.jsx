@@ -22,6 +22,8 @@ const AdminPanel = () => {
         last_page: 1,
     });
     const [isLoading, setIsLoading] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportStatus, setExportStatus] = useState('');
 
     // Memoized function to fetch products
     const fetchProducts = useCallback(async (page = 1) => {
@@ -84,6 +86,30 @@ const AdminPanel = () => {
             fetchProducts(pagination.current_page);
         }
     }, [pagination.current_page, fetchProducts]);
+
+    // Функция для экспорта каталога
+    const handleExportCatalog = async () => {
+        setIsExporting(true);
+        setExportStatus('');
+
+        try {
+            const response = await api.post('/admin/export/catalog');
+
+            if (response.data.export_id) {
+                setExportStatus(`Экспорт запущен успешно! ID: ${response.data.export_id}. Проверьте email для получения уведомления.`);
+            } else {
+                setExportStatus('Экспорт запущен успешно! Проверьте email для получения уведомления.');
+            }
+        } catch (error) {
+            console.error('Failed to export catalog:', error);
+            setExportStatus(`Ошибка при экспорте: ${error.response?.data?.message || error.message}`);
+        } finally {
+            setIsExporting(false);
+
+            // Очистить статус через 10 секунд
+            setTimeout(() => setExportStatus(''), 10000);
+        }
+    };
 
     const handleCreateProduct = async (data, headers) => {
         if (!data) {
@@ -421,18 +447,55 @@ const AdminPanel = () => {
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-3xl font-bold mb-8">Admin Panel</h1>
+
             <h2 className="text-2xl font-bold mb-4">Products</h2>
+
             <div className="mb-4 flex justify-between items-center">
-                <button
-                    onClick={handleCreateProductClick}
-                    className="bg-blue-500 text-white p-2 rounded"
-                >
-                    Create Product
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleCreateProductClick}
+                        className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors"
+                    >
+                        Create Product
+                    </button>
+
+                    <button
+                        onClick={handleExportCatalog}
+                        disabled={isExporting}
+                        className={`p-2 rounded transition-colors ${
+                            isExporting
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-green-500 hover:bg-green-600'
+                        } text-white`}
+                    >
+                        {isExporting ? (
+                            <>
+                                <span className="inline-block animate-spin mr-2">⏳</span>
+                                Exporting...
+                            </>
+                        ) : (
+                            <>
+                                📤 Export Catalog
+                            </>
+                        )}
+                    </button>
+                </div>
+
                 <div className="text-sm text-gray-600">
                     Total Products: {pagination.total} | Page {pagination.current_page} of {pagination.last_page}
                 </div>
             </div>
+
+            {/* Статус экспорта */}
+            {exportStatus && (
+                <div className={`mb-4 p-3 rounded ${
+                    exportStatus.includes('Ошибка')
+                        ? 'bg-red-100 border border-red-400 text-red-700'
+                        : 'bg-green-100 border border-green-400 text-green-700'
+                }`}>
+                    {exportStatus}
+                </div>
+            )}
 
             {editingProduct !== null && (
                 <ProductForm

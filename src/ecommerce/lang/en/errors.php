@@ -16,4 +16,9 @@ return [
     'email_sending_failed' => 'Failed to send email',
     'rabbitmq_process_failed' => 'Failed to process RabbitMQ',
     'publishcatalogjob_failed' => 'PublishCatalogJob failed',
+    'csv_not_created' => 'CSV file was not created',
+    's3_upload_failed' => 'Failed to upload file to S3 storage',
+    'export_success_notification_failed' => 'Failed to send export success notification',
+    'export_failure_notification_failed' => 'Failed to send export failure notification',
+    'catalog_export_failed' => 'Catalog export failed',
 ];
