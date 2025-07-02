@@ -59,55 +59,91 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
         });
     };
 
+    const removeMaintenance = (index) => {
+        const newMaintenances = formData.maintenance_ids.filter((_, i) => i !== index);
+        setFormData({ ...formData, maintenance_ids: newMaintenances });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
         setIsLoading(true);
 
-        // Формируем JSON-объект
-        const jsonData = {
-            name: formData.name || null,
-            article: formData.article || null,
-            description: formData.description || null,
-            release_date: formData.release_date || null,
-            price: formData.price ? parseFloat(formData.price) : null,
-            image: null,
-            manufacturer_id: formData.manufacturer_id ? parseInt(formData.manufacturer_id) : null,
-            category_id: formData.category_id ? parseInt(formData.category_id) : null,
-            maintenance_ids: formData.maintenance_ids
-                .filter(m => m.id && m.price)
-                .map(m => ({
-                    id: parseInt(m.id),
-                    price: parseFloat(m.price),
-                })),
-        };
+        try {
+            let dataToSend;
+            let headers = {};
 
-        let dataToSend;
-        let headers = { 'Content-Type': 'application/json' };
-        if (formData.image) {
-            dataToSend = new FormData();
-            dataToSend.append('image', formData.image);
-            // Добавляем остальные поля как отдельные
-            Object.entries(jsonData).forEach(([key, value]) => {
-                if (key === 'maintenance_ids') {
-                    value.forEach((m, index) => {
+            console.log('Form data before submit:', formData);
+            console.log('Has image:', !!formData.image);
+            console.log('Is editing:', !!(product && product.id));
+
+            // Если есть изображение, ВСЕГДА используем FormData
+            if (formData.image) {
+                console.log('Using FormData for image upload');
+                dataToSend = new FormData();
+
+                // НЕ добавляем _method в FormData для обновления
+                // Это будет обработано в AdminPanel через query parameter
+
+                // Добавляем все поля (включая пустые для корректной работы Laravel)
+                dataToSend.append('name', formData.name || '');
+                dataToSend.append('article', formData.article || '');
+                dataToSend.append('description', formData.description || '');
+                dataToSend.append('release_date', formData.release_date || '');
+                dataToSend.append('price', formData.price || '');
+                dataToSend.append('manufacturer_id', formData.manufacturer_id || '');
+                dataToSend.append('category_id', formData.category_id || '');
+
+                // Добавляем изображение
+                dataToSend.append('image', formData.image);
+
+                // Добавляем услуги
+                formData.maintenance_ids
+                    .filter(m => m.id && m.price)
+                    .forEach((m, index) => {
                         dataToSend.append(`maintenance_ids[${index}][id]`, m.id);
                         dataToSend.append(`maintenance_ids[${index}][price]`, m.price);
                     });
-                } else if (value !== null) {
-                    dataToSend.append(key, value);
+
+                // Важно: НЕ устанавливаем Content-Type для FormData!
+                // Браузер сам установит правильный boundary
+                headers = {};
+
+                // Логируем FormData содержимое
+                for (let [key, value] of dataToSend.entries()) {
+                    console.log(`FormData ${key}:`, value);
                 }
-            });
-            headers = { 'Content-Type': 'multipart/form-data' };
-        } else {
-            dataToSend = jsonData;
-        }
+            } else {
+                console.log('Using JSON for data without image');
+                // Если изображения нет, отправляем JSON
+                dataToSend = {};
 
-        // Логируем данные
-        console.log('Submitting data:', formData.image ? Object.fromEntries(dataToSend) : jsonData);
+                // Добавляем только не пустые поля
+                if (formData.name) dataToSend.name = formData.name;
+                if (formData.article) dataToSend.article = formData.article;
+                if (formData.description) dataToSend.description = formData.description;
+                if (formData.release_date) dataToSend.release_date = formData.release_date;
+                if (formData.price) dataToSend.price = parseFloat(formData.price);
+                if (formData.manufacturer_id) dataToSend.manufacturer_id = parseInt(formData.manufacturer_id);
+                if (formData.category_id) dataToSend.category_id = parseInt(formData.category_id);
 
-        try {
+                const validMaintenances = formData.maintenance_ids.filter(m => m.id && m.price);
+                if (validMaintenances.length > 0) {
+                    dataToSend.maintenance_ids = validMaintenances.map(m => ({
+                        id: parseInt(m.id),
+                        price: parseFloat(m.price),
+                    }));
+                }
+
+                headers = { 'Content-Type': 'application/json' };
+            }
+
+            console.log('Final data to send:', dataToSend instanceof FormData ? 'FormData (see above logs)' : dataToSend);
+            console.log('Headers:', headers);
+
             await onSubmit(dataToSend, headers);
+
+            // Сброс формы после успешной отправки
             setFormData({
                 name: '',
                 article: '',
@@ -119,6 +155,11 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                 maintenance_ids: [],
                 image: null,
             });
+
+            // Сбрасываем input file
+            const fileInput = document.querySelector('input[type="file"]');
+            if (fileInput) fileInput.value = '';
+
             console.log('Form submitted successfully');
         } catch (error) {
             console.error('Form submission error:', {
@@ -126,10 +167,11 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                 response: error.response?.data,
                 status: error.response?.status,
             });
+
             if (error.response?.data?.errors) {
                 setErrors(error.response.data.errors);
             } else {
-                setErrors({ general: 'Failed to submit form. Please try again.' });
+                setErrors({ general: error.response?.data?.message || 'Failed to submit form. Please try again.' });
             }
         } finally {
             setIsLoading(false);
@@ -137,15 +179,26 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 max-w-md bg-white p-6 rounded shadow">
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl bg-white p-6 rounded shadow">
             <h2 className="text-xl font-bold">
                 {product && product.id ? 'Edit Product' : 'Create Product'}
             </h2>
-            {Object.keys(errors).map((key) => (
-                <p key={key} className="text-red-500">{errors[key][0] || errors[key]}</p>
+
+            {/* Показываем ошибки */}
+            {errors.general && (
+                <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {errors.general}
+                </div>
+            )}
+
+            {Object.keys(errors).filter(key => key !== 'general').map((key) => (
+                <p key={key} className="text-red-500 text-sm">
+                    {key}: {Array.isArray(errors[key]) ? errors[key][0] : errors[key]}
+                </p>
             ))}
+
             <div>
-                <label className="block text-sm font-medium">Name</label>
+                <label className="block text-sm font-medium">Name *</label>
                 <input
                     type="text"
                     name="name"
@@ -155,8 +208,9 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                     required
                 />
             </div>
+
             <div>
-                <label className="block text-sm font-medium">Article</label>
+                <label className="block text-sm font-medium">Article *</label>
                 <input
                     type="text"
                     name="article"
@@ -166,6 +220,7 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                     required
                 />
             </div>
+
             <div>
                 <label className="block text-sm font-medium">Description</label>
                 <textarea
@@ -173,10 +228,12 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                     value={formData.description}
                     onChange={handleChange}
                     className="w-full p-2 border rounded"
+                    rows="3"
                 />
             </div>
+
             <div>
-                <label className="block text-sm font-medium">Release Date</label>
+                <label className="block text-sm font-medium">Release Date *</label>
                 <input
                     type="date"
                     name="release_date"
@@ -186,8 +243,9 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                     required
                 />
             </div>
+
             <div>
-                <label className="block text-sm font-medium">Price</label>
+                <label className="block text-sm font-medium">Price *</label>
                 <input
                     type="number"
                     name="price"
@@ -195,9 +253,11 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                     onChange={handleChange}
                     className="w-full p-2 border rounded"
                     step="0.01"
+                    min="0"
                     required
                 />
             </div>
+
             <div>
                 <label className="block text-sm font-medium">Image</label>
                 <input
@@ -205,11 +265,25 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                     name="image"
                     onChange={handleChange}
                     className="w-full p-2 border rounded"
-                    accept="image/jpeg,image/png"
+                    accept="image/jpeg,image/png,image/jpg"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                    Max size: 2MB. Formats: JPEG, PNG, JPG
+                </p>
+                {product?.image_url && (
+                    <div className="mt-2">
+                        <p className="text-sm text-gray-600">Current image:</p>
+                        <img
+                            src={product.image_url}
+                            alt="Current product image"
+                            className="w-20 h-20 object-cover border rounded"
+                        />
+                    </div>
+                )}
             </div>
+
             <div>
-                <label className="block text-sm font-medium">Manufacturer</label>
+                <label className="block text-sm font-medium">Manufacturer *</label>
                 <select
                     name="manufacturer_id"
                     value={formData.manufacturer_id}
@@ -223,8 +297,9 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                     ))}
                 </select>
             </div>
+
             <div>
-                <label className="block text-sm font-medium">Category</label>
+                <label className="block text-sm font-medium">Category *</label>
                 <select
                     name="category_id"
                     value={formData.category_id}
@@ -238,6 +313,7 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                     ))}
                 </select>
             </div>
+
             <div>
                 <label className="block text-sm font-medium">Maintenances</label>
                 {formData.maintenance_ids.map((m, index) => (
@@ -245,7 +321,7 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                         <select
                             value={m.id}
                             onChange={(e) => handleMaintenanceChange(index, 'id', e.target.value)}
-                            className="w-full p-2 border rounded"
+                            className="flex-1 p-2 border rounded"
                         >
                             <option value="">Select Maintenance</option>
                             {maintenances.map((main) => (
@@ -257,9 +333,17 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                             value={m.price}
                             onChange={(e) => handleMaintenanceChange(index, 'price', e.target.value)}
                             placeholder="Price"
-                            className="w-full p-2 border rounded"
+                            className="flex-1 p-2 border rounded"
                             step="0.01"
+                            min="0"
                         />
+                        <button
+                            type="button"
+                            onClick={() => removeMaintenance(index)}
+                            className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                        >
+                            Remove
+                        </button>
                     </div>
                 ))}
                 <button
@@ -270,10 +354,11 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                     Add Maintenance
                 </button>
             </div>
+
             <div className="flex space-x-2">
                 <button
                     type="submit"
-                    className="bg-primary text-white p-2 rounded w-full"
+                    className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600 transition-colors"
                     disabled={isLoading}
                 >
                     {isLoading ? 'Saving...' : (product && product.id ? 'Update Product' : 'Create Product')}
@@ -281,7 +366,7 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="bg-secondary text-white p-2 rounded w-full"
+                    className="bg-gray-500 text-white p-2 rounded w-full hover:bg-gray-600 transition-colors"
                     disabled={isLoading}
                 >
                     Cancel
