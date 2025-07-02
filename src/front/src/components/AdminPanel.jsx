@@ -255,7 +255,21 @@ const AdminPanel = () => {
             return;
         }
         try {
-            await api.put(`/admin/products/${editingProduct.id}`, data, { headers });
+            // Для PUT запросов с FormData нужна специальная обработка
+            if (data instanceof FormData) {
+                console.log('Updating product with FormData via PUT - converting to POST with _method');
+                // Laravel не может обрабатывать файлы в PUT запросах
+                // Используем POST с _method=PUT (Laravel автоматически это обработает)
+                await api.post(`/admin/products/${editingProduct.id}?_method=PUT`, data, {
+                    headers: {
+                        ...headers,
+                        'X-HTTP-Method-Override': 'PUT'
+                    }
+                });
+            } else {
+                console.log('Updating product with JSON via PUT');
+                await api.put(`/admin/products/${editingProduct.id}`, data, { headers });
+            }
             // Refresh products after update
             await fetchProducts(pagination.current_page);
             setEditingProduct(null);

@@ -21,4 +21,6 @@ return [
     'export_success_notification_failed' => 'Failed to send export success notification',
     'export_failure_notification_failed' => 'Failed to send export failure notification',
     'catalog_export_failed' => 'Catalog export failed',
+    'cache_failed' => 'Failed to cache: :error',
+    'store_image_failed' => 'Failed to store image: :error',
 ];
