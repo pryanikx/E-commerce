@@ -7,7 +7,6 @@ const Navbar = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
     const navigate = useNavigate();
 
-    // Отслеживаем изменения в localStorage
     useEffect(() => {
         const handleStorageChange = () => {
             setRole(localStorage.getItem('role'));
@@ -15,7 +14,6 @@ const Navbar = () => {
         };
 
         window.addEventListener('storage', handleStorageChange);
-        // Проверяем при монтировании
         handleStorageChange();
 
         return () => {

@@ -27,12 +27,10 @@ const CategoryProductList = ({ categoryId }) => {
         last_page: 1,
     });
 
-    // Функция для очистки параметров от пустых значений
     const cleanParams = (params) => {
         const cleaned = {};
         Object.keys(params).forEach(key => {
             const value = params[key];
-            // Исключаем пустые строки, null и undefined, но оставляем 0 и false
             if (value !== '' && value !== null && value !== undefined) {
                 cleaned[key] = value;
             }
@@ -43,7 +41,6 @@ const CategoryProductList = ({ categoryId }) => {
     const fetchProducts = async () => {
         setIsLoading(true);
         try {
-            // Очищаем параметры от пустых значений перед отправкой
             const cleanedParams = cleanParams({
                 ...filters,
                 page: pagination.current_page,

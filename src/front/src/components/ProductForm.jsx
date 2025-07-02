@@ -77,15 +77,10 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
             console.log('Has image:', !!formData.image);
             console.log('Is editing:', !!(product && product.id));
 
-            // Если есть изображение, ВСЕГДА используем FormData
             if (formData.image) {
                 console.log('Using FormData for image upload');
                 dataToSend = new FormData();
 
-                // НЕ добавляем _method в FormData для обновления
-                // Это будет обработано в AdminPanel через query parameter
-
-                // Добавляем все поля (включая пустые для корректной работы Laravel)
                 dataToSend.append('name', formData.name || '');
                 dataToSend.append('article', formData.article || '');
                 dataToSend.append('description', formData.description || '');
@@ -94,10 +89,8 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                 dataToSend.append('manufacturer_id', formData.manufacturer_id || '');
                 dataToSend.append('category_id', formData.category_id || '');
 
-                // Добавляем изображение
                 dataToSend.append('image', formData.image);
 
-                // Добавляем услуги
                 formData.maintenance_ids
                     .filter(m => m.id && m.price)
                     .forEach((m, index) => {
@@ -105,20 +98,15 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                         dataToSend.append(`maintenance_ids[${index}][price]`, m.price);
                     });
 
-                // Важно: НЕ устанавливаем Content-Type для FormData!
-                // Браузер сам установит правильный boundary
                 headers = {};
 
-                // Логируем FormData содержимое
                 for (let [key, value] of dataToSend.entries()) {
                     console.log(`FormData ${key}:`, value);
                 }
             } else {
                 console.log('Using JSON for data without image');
-                // Если изображения нет, отправляем JSON
                 dataToSend = {};
 
-                // Добавляем только не пустые поля
                 if (formData.name) dataToSend.name = formData.name;
                 if (formData.article) dataToSend.article = formData.article;
                 if (formData.description) dataToSend.description = formData.description;
@@ -143,7 +131,6 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
 
             await onSubmit(dataToSend, headers);
 
-            // Сброс формы после успешной отправки
             setFormData({
                 name: '',
                 article: '',
@@ -156,7 +143,6 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                 image: null,
             });
 
-            // Сбрасываем input file
             const fileInput = document.querySelector('input[type="file"]');
             if (fileInput) fileInput.value = '';
 
@@ -184,7 +170,6 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                 {product && product.id ? 'Edit Product' : 'Create Product'}
             </h2>
 
-            {/* Показываем ошибки */}
             {errors.general && (
                 <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                     {errors.general}

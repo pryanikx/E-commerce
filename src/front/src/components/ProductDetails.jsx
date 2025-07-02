@@ -14,7 +14,6 @@ const ProductDetails = () => {
             try {
                 const response = await api.get(`/products/${id}`);
                 setProduct(response.data);
-                // Set default currency to first available currency
                 if (response.data.prices) {
                     setSelectedCurrency(Object.keys(response.data.prices)[0]);
                 }

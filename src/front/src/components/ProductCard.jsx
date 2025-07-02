@@ -9,9 +9,9 @@ const ProductCard = ({ product }) => (
             <img
                 src={product.image_url || '/storage/products/fallback_image1.png'}
                 alt={product.name}
-                className="w-full h-full object-contain" // Изменено с object-cover на object-contain
+                className="w-full h-full object-contain"
                 onError={(e) => {
-                    e.target.src = '/storage/products/fallback_image1.png'; // Fallback при ошибке загрузки
+                    e.target.src = '/storage/products/fallback_image1.png';
                 }}
             />
         </div>
