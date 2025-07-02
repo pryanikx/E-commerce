@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\DTO\Maintenance;
 
+/**
+ * Data transfer object for updating a maintenance.
+ */
 class MaintenanceUpdateDTO
 {
     /**

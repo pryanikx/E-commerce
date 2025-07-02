@@ -6,6 +6,9 @@ namespace App\DTO\Category;
 
 use App\Models\Category;
 
+/**
+ * Data transfer object for listing categories.
+ */
 readonly class CategoryListDTO
 {
     /**

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\DTO\Category;
 
+/**
+ * Data transfer object for updating a category.
+ */
 readonly class CategoryUpdateDTO
 {
     /**

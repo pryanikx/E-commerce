@@ -11,7 +11,7 @@ use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\RegisterRepositoryInterface;
-use App\Repositories\LoginRepository;
+use app\Repositories\LoginRepository;
 use App\Repositories\MaintenanceRepository;
 use App\Repositories\ManufacturerRepository;
 use App\Repositories\ProductRepository;

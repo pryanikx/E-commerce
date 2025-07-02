@@ -15,6 +15,7 @@ abstract class BaseProductRequest extends FormRequest
     {
         if ($this->has('maintenance_ids') && is_array($this->maintenance_ids)) {
             $maintenanceIds = [];
+
             foreach ($this->maintenance_ids as $maintenance) {
                 if (is_array($maintenance) && isset($maintenance['id'], $maintenance['price'])) {
                     $maintenanceIds[] = [
@@ -23,6 +24,7 @@ abstract class BaseProductRequest extends FormRequest
                     ];
                 }
             }
+
             $this->merge(['maintenance_ids' => $maintenanceIds]);
         }
     }

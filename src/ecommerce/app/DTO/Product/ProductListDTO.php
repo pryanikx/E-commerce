@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\DTO\Product;
 
 use App\Models\Product;
-use App\Services\Currency\CurrencyCalculator;
+use App\Services\Currency\CurrencyCalculatorService;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Data transfer object for listing products.
+ */
 readonly class ProductListDTO
 {
 
@@ -43,9 +46,9 @@ readonly class ProductListDTO
 
     /**
      * @param Product $product
-     * @param CurrencyCalculator $calculator
+     * @param CurrencyCalculatorService $calculator
      */
-    public function __construct(Product $product, CurrencyCalculator $calculator)
+    public function __construct(Product $product, CurrencyCalculatorService $calculator)
     {
         $this->id = $product->id;
         $this->name = $product->name;

@@ -20,11 +20,12 @@ class OpenExchangeRatesSource implements CurrencySource
     /**
      * @var string $apiUrl
      */
-    protected string $apiUrl = 'https://openexchangerates.org/api/latest.json';
+    protected string $apiUrl;
 
     public function __construct()
     {
         $this->apiKey = config('services.open_exchange_rates.api_key');
+        $this->apiUrl = config('services.open_exchange_rates.api_url', 'https://openexchangerates.org/api/latest.json');
     }
 
     /**
@@ -57,20 +58,25 @@ class OpenExchangeRatesSource implements CurrencySource
 
                 $data = $response->json();
 
-                return $data['rates'] ?? [];
+                return $data['rates'] ?? array_map(fn() => self::DEFAULT_RATE, array_combine($this->getSupportedCurrencies(), $this->getSupportedCurrencies()));
             } catch (\Exception $e) {
                 logger()->error(__('errors.fetch_exchange_rates_failed'), [
                     'message' => $e->getMessage(),
                     'base_currency' => $baseCurrency,
                 ]);
 
-                return [
-                    'BYN' => self::DEFAULT_RATE,
-                    'USD' => self::DEFAULT_RATE,
-                    'EUR' => self::DEFAULT_RATE,
-                    'RUB' => self::DEFAULT_RATE,
-                ];
+                return array_map(fn() => self::DEFAULT_RATE, array_combine($this->getSupportedCurrencies(), $this->getSupportedCurrencies()));
             }
         });
+    }
+
+    public function getSupportedCurrencies(): array
+    {
+        return config('services.open_exchange_rates.supported_currencies', ['BYN', 'USD', 'EUR', 'RUB']);
+    }
+
+    public function getBaseCurrency(): string
+    {
+        return config('services.open_exchange_rates.base_currency', 'USD');
     }
 }

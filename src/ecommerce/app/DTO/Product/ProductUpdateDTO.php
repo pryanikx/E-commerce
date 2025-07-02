@@ -6,6 +6,9 @@ namespace App\DTO\Product;
 
 use Illuminate\Http\UploadedFile;
 
+/**
+ * Data transfer object for updating a product.
+ */
 readonly class ProductUpdateDTO
 {
     /**

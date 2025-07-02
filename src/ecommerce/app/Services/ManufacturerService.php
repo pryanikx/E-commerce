@@ -70,7 +70,7 @@ class ManufacturerService
         $dto = new ManufacturerUpdateDTO($request_validated);
 
         $data = [
-            'name' => $dto->name !== null ? $dto->name : $manufacturer->name,
+            'name' => $dto->name ?? $manufacturer->name,
         ];
 
         $this->manufacturerRepository->update($manufacturer, $data);

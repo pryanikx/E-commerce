@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\DTO\Auth;
 
+/**
+ * Data transfer object for login.
+ */
 readonly class LoginDTO
 {
     /**

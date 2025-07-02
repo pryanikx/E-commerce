@@ -7,6 +7,9 @@ namespace App\DTO\Auth;
 use App\Enums\UserRole;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * Data transfer object for registration.
+ */
 readonly class RegisterDTO
 {
     /**

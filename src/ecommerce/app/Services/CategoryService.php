@@ -10,7 +10,7 @@ use App\DTO\Category\CategoryUpdateDTO;
 use App\DTO\Product\ProductListDTO;
 use App\Models\Category;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
-use App\Services\Currency\CurrencyCalculator;
+use App\Services\Currency\CurrencyCalculatorService;
 use Illuminate\Support\Str;
 
 class CategoryService
@@ -20,11 +20,11 @@ class CategoryService
 
     /**
      * @param CategoryRepositoryInterface $categoryRepository
-     * @param CurrencyCalculator $currencyCalculator
+     * @param CurrencyCalculatorService $currencyCalculator
      */
     public function __construct(
         protected CategoryRepositoryInterface $categoryRepository,
-        protected CurrencyCalculator $currencyCalculator
+        protected CurrencyCalculatorService $currencyCalculator
     )
     {
     }
