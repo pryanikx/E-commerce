@@ -76,6 +76,7 @@ class AdminMaintenanceController extends Controller
         if ($this->maintenanceService->deleteMaintenance($id)) {
             return response()->json(['message' => __('messages.deleted')], 200);
         }
+
         return response()->json(['message' => __('messages.empty_maintenances')], 200);
     }
 }

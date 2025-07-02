@@ -68,6 +68,7 @@ class EmailNotificationService
                 'admin_email' => $adminEmail,
                 'error' => $e->getMessage()
             ]);
+
             return false;
         }
     }
@@ -108,6 +109,7 @@ class EmailNotificationService
                 'admin_email' => $adminEmail,
                 'error' => $e->getMessage()
             ]);
+
             return false;
         }
     }
