@@ -114,6 +114,7 @@ class CategoryService
             'name' => $dto->name ?? $category->name,
             'alias' => $dto->alias ?? ($dto->name ? Str::slug($dto->name) : $category->alias),
         ];
+
         $this->categoryRepository->update($category, $data);
 
         $this->cacheCategories();
@@ -157,6 +158,7 @@ class CategoryService
     private function cacheCategories(): void
     {
         $categories = $this->categoryRepository->all();
+
         $data = $categories->map(fn($category) =>
             (new CategoryListDTO($category))->toArray())->toArray();
 

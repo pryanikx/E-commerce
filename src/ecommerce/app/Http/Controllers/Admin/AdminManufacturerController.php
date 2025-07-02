@@ -78,6 +78,7 @@ class AdminManufacturerController extends Controller
         if ($this->manufacturerService->deleteManufacturer($id)) {
             return response()->json(['message' => __('messages.deleted')], 200);
         }
+
         return response()->json(['message' => __('messages.empty_manufacturers')], 200);
     }
 }

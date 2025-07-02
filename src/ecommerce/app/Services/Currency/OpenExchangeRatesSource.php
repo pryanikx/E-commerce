@@ -51,6 +51,7 @@ class OpenExchangeRatesSource implements CurrencySource
                         'status' => $response->status(),
                         'body' => $response->body(),
                     ]);
+
                     throw new \RuntimeException(__('errors.fetch_exchange_rates_failed'));
                 }
 
@@ -62,6 +63,7 @@ class OpenExchangeRatesSource implements CurrencySource
                     'message' => $e->getMessage(),
                     'base_currency' => $baseCurrency,
                 ]);
+
                 return [
                     'BYN' => self::DEFAULT_RATE,
                     'USD' => self::DEFAULT_RATE,

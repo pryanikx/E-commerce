@@ -67,6 +67,7 @@ class ExportCatalogJob implements ShouldQueue
 
         } catch (\Throwable $exception) {
             $this->handleExportFailure($exception, $emailService);
+
             throw $exception;
         }
     }

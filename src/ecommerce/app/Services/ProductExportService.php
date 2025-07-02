@@ -62,6 +62,7 @@ class ProductExportService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
             throw $e;
         }
     }

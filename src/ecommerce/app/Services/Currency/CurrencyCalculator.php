@@ -7,6 +7,7 @@ namespace App\Services\Currency;
 class CurrencyCalculator
 {
     private const SUPPORTED_CURRENCIES = ['BYN', 'USD', 'EUR', 'RUB'];
+
     private const BASE_CURRENCY = 'USD';
 
     private const DEFAULT_RATE = 1.0;

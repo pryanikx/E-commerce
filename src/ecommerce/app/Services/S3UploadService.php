@@ -11,7 +11,6 @@ class S3UploadService
 {
     private const SUCCESS_STATUS_CODE = 200;
     private const NOT_FOUND_ERROR = 'NotFound';
-
     private const CONTEXT_EXPORT_ID = 'export_id';
     private const CONTEXT_S3_KEY = 's3_key';
     private const CONTEXT_BUCKET = 'bucket';
@@ -26,9 +25,29 @@ class S3UploadService
 
     public function __construct()
     {
-        $this->bucket = config('aws.S3.bucket');
+        $this->bucket = $this->initializeS3Bucket();
 
-        $this->s3Client = new S3Client([
+        $this->s3Client = $this->initializeS3Client();
+    }
+
+    /**
+     * Initializes S3 Bucket
+     *
+     * @return string
+     */
+    public function initializeS3Bucket(): string
+    {
+        return config('aws.S3.bucket');
+    }
+
+    /**
+     * Initializes S3Client
+     *
+     * @return S3Client
+     */
+    public function initializeS3Client(): S3Client
+    {
+        return new S3Client([
             'version' => config('aws.S3.version'),
             'region' => config('aws.S3.region'),
             'credentials' => [
@@ -91,6 +110,7 @@ class S3UploadService
                 self::CONTEXT_ERROR_MESSAGE => $e->getAwsErrorMessage(),
                 self::CONTEXT_FILE_PATH => $filePath
             ]);
+
             return null;
 
         } catch (\Exception $e) {
@@ -99,6 +119,7 @@ class S3UploadService
                 self::CONTEXT_ERROR => $e->getMessage(),
                 self::CONTEXT_FILE_PATH => $filePath
             ]);
+
             return null;
         }
     }
@@ -116,6 +137,7 @@ class S3UploadService
                 'Bucket' => $this->bucket,
                 'Key' => $s3Key,
             ]);
+
             return true;
 
         } catch (AwsException $e) {
@@ -127,6 +149,7 @@ class S3UploadService
                 self::CONTEXT_S3_KEY => $s3Key,
                 self::CONTEXT_ERROR => $e->getMessage()
             ]);
+
             return false;
         }
     }

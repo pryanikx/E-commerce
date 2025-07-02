@@ -42,6 +42,7 @@ class ProductService
             'data' => $products->map(function ($product) {
                 $dto = (new ProductListDTO($product, $this->currencyCalculator))->toArray();
                 $dto['image_url'] = $this->getImageUrlWithFallback($product->image_path);
+
                 return $dto;
             })->toArray(),
             'meta' => [
@@ -70,6 +71,7 @@ class ProductService
                     $dto = new ProductShowDTO($product, $this->currencyCalculator);
                     $dtoArray = $dto->toArray();
                     $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
+
                     return $dtoArray;
                 } catch (ModelNotFoundException $e) {
                     return null;
@@ -151,6 +153,7 @@ class ProductService
      *
      * @param ProductUpdateDTO $dto
      * @param Product $product
+     *
      * @return array
      */
     private function prepareUpdateData(ProductUpdateDTO $dto, Product $product): array

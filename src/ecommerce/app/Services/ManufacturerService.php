@@ -104,6 +104,7 @@ class ManufacturerService
     private function cacheManufacturers(): void
     {
         $manufacturers = $this->manufacturerRepository->all();
+
         $data = $manufacturers->map(fn($manufacturer) =>
         (new ManufacturerListDTO($manufacturer))->toArray())->toArray();
 
