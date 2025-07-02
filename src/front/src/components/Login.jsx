@@ -17,7 +17,6 @@ const Login = () => {
             const response = await api.post('/login', formData);
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('role', response.data.user.role);
-            // Принудительно обновляем страницу для синхронизации Navbar
             window.location.href = '/';
         } catch (err) {
             setError('Invalid credentials');

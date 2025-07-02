@@ -14,7 +14,7 @@ const Home = () => {
                 const categoriesData = Array.isArray(response.data) ? response.data : [];
                 setCategories(categoriesData);
                 if (categoriesData.length > 0) {
-                    setSelectedCategory(categoriesData[0].id); // Select first category by default
+                    setSelectedCategory(categoriesData[0].id);
                 }
             } catch (error) {
                 console.error('Failed to fetch categories:', error);

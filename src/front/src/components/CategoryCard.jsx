@@ -1,7 +1,6 @@
 import ProductCard from './ProductCard';
 
 const CategoryCard = ({ category, products }) => {
-    // Убедимся, что products — это массив
     const productList = Array.isArray(products) ? products : [];
 
     return (

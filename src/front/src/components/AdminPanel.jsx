@@ -67,7 +67,6 @@ const AdminPanel = () => {
         }
     }, []);
 
-    // Fetch categories with improved error handling
     const fetchCategories = useCallback(async () => {
         setLoadingStates(prev => ({ ...prev, categories: true }));
         setErrors(prev => ({ ...prev, categories: '' }));
@@ -83,16 +82,12 @@ const AdminPanel = () => {
 
             console.log('Categories API Response:', response.data);
 
-            // Обработка разных структур ответа
             if (response.data) {
                 if (Array.isArray(response.data)) {
-                    // Если ответ - массив напрямую
                     setCategories(response.data);
                 } else if (response.data.data && Array.isArray(response.data.data)) {
-                    // Если ответ обернут в объект с полем data
                     setCategories(response.data.data);
                 } else if (response.data.message && response.data.message.includes('empty')) {
-                    // Если пустой результат
                     setCategories([]);
                 } else {
                     console.warn('Unexpected categories response structure:', response.data);
@@ -111,7 +106,6 @@ const AdminPanel = () => {
         }
     }, []);
 
-    // Fetch manufacturers with improved error handling
     const fetchManufacturers = useCallback(async () => {
         setLoadingStates(prev => ({ ...prev, manufacturers: true }));
         setErrors(prev => ({ ...prev, manufacturers: '' }));
@@ -151,7 +145,6 @@ const AdminPanel = () => {
         }
     }, []);
 
-    // Fetch maintenances with improved error handling
     const fetchMaintenances = useCallback(async () => {
         setLoadingStates(prev => ({ ...prev, maintenances: true }));
         setErrors(prev => ({ ...prev, maintenances: '' }));
@@ -191,7 +184,6 @@ const AdminPanel = () => {
         }
     }, []);
 
-    // Initial data fetch
     useEffect(() => {
         fetchProducts(pagination.current_page);
         fetchCategories();
@@ -199,13 +191,10 @@ const AdminPanel = () => {
         fetchMaintenances();
     }, []);
 
-    // Handle page changes
     useEffect(() => {
-        // Убираем условие - fetchProducts должен вызываться для любой страницы
         fetchProducts(pagination.current_page);
     }, [pagination.current_page, fetchProducts]);
 
-    // Функция для экспорта каталога
     const handleExportCatalog = async () => {
         setIsExporting(true);
         setExportStatus('');
@@ -224,7 +213,6 @@ const AdminPanel = () => {
         } finally {
             setIsExporting(false);
 
-            // Очистить статус через 10 секунд
             setTimeout(() => setExportStatus(''), 10000);
         }
     };
@@ -236,7 +224,6 @@ const AdminPanel = () => {
         }
         try {
             await api.post('/admin/products', data, { headers });
-            // Refresh products after creation
             await fetchProducts(pagination.current_page);
             setEditingProduct(null);
         } catch (error) {
@@ -255,11 +242,8 @@ const AdminPanel = () => {
             return;
         }
         try {
-            // Для PUT запросов с FormData нужна специальная обработка
             if (data instanceof FormData) {
                 console.log('Updating product with FormData via PUT - converting to POST with _method');
-                // Laravel не может обрабатывать файлы в PUT запросах
-                // Используем POST с _method=PUT (Laravel автоматически это обработает)
                 await api.post(`/admin/products/${editingProduct.id}?_method=PUT`, data, {
                     headers: {
                         ...headers,
@@ -270,7 +254,6 @@ const AdminPanel = () => {
                 console.log('Updating product with JSON via PUT');
                 await api.put(`/admin/products/${editingProduct.id}`, data, { headers });
             }
-            // Refresh products after update
             await fetchProducts(pagination.current_page);
             setEditingProduct(null);
         } catch (error) {
@@ -286,7 +269,6 @@ const AdminPanel = () => {
     const handleDeleteProduct = async (id) => {
         try {
             await api.delete(`/admin/products/${id}`);
-            // Refresh products after deletion
             await fetchProducts(pagination.current_page);
         } catch (error) {
             console.error('Failed to delete product:', error);
@@ -300,7 +282,7 @@ const AdminPanel = () => {
         }
         try {
             await api.post('/admin/categories', data);
-            await fetchCategories(); // Используем новую функцию
+            await fetchCategories();
             setEditingCategory(null);
         } catch (error) {
             console.error('Failed to create category:', error);
@@ -315,7 +297,7 @@ const AdminPanel = () => {
         }
         try {
             await api.put(`/admin/categories/${editingCategory.id}`, data);
-            await fetchCategories(); // Используем новую функцию
+            await fetchCategories();
             setEditingCategory(null);
         } catch (error) {
             console.error('Failed to update category:', error);
@@ -339,7 +321,7 @@ const AdminPanel = () => {
         }
         try {
             await api.post('/admin/manufacturers', data);
-            await fetchManufacturers(); // Используем новую функцию
+            await fetchManufacturers();
             setEditingManufacturer(null);
         } catch (error) {
             console.error('Failed to create manufacturer:', error);
@@ -354,7 +336,7 @@ const AdminPanel = () => {
         }
         try {
             await api.put(`/admin/manufacturers/${editingManufacturer.id}`, data);
-            await fetchManufacturers(); // Используем новую функцию
+            await fetchManufacturers();
             setEditingManufacturer(null);
         } catch (error) {
             console.error('Failed to update manufacturer:', error);
@@ -378,7 +360,7 @@ const AdminPanel = () => {
         }
         try {
             await api.post('/admin/maintenance', data);
-            await fetchMaintenances(); // Используем новую функцию
+            await fetchMaintenances();
             setEditingMaintenance(null);
         } catch (error) {
             console.error('Failed to create maintenance:', error);
@@ -393,7 +375,7 @@ const AdminPanel = () => {
         }
         try {
             await api.put(`/admin/maintenance/${editingMaintenance.id}`, data);
-            await fetchMaintenances(); // Используем новую функцию
+            await fetchMaintenances();
             setEditingMaintenance(null);
         } catch (error) {
             console.error('Failed to update maintenance:', error);
@@ -486,12 +468,10 @@ const AdminPanel = () => {
         let startPage = Math.max(1, pagination.current_page - Math.floor(maxPagesToShow / 2));
         let endPage = Math.min(pagination.last_page, startPage + maxPagesToShow - 1);
 
-        // Adjust startPage if we're near the end
         if (endPage - startPage + 1 < maxPagesToShow) {
             startPage = Math.max(1, endPage - maxPagesToShow + 1);
         }
 
-        // Add first page and ellipsis if needed
         if (startPage > 1) {
             pages.push(
                 <button
@@ -508,7 +488,6 @@ const AdminPanel = () => {
             }
         }
 
-        // Page buttons
         for (let i = startPage; i <= endPage; i++) {
             pages.push(
                 <button
@@ -526,7 +505,6 @@ const AdminPanel = () => {
             );
         }
 
-        // Add last page and ellipsis if needed
         if (endPage < pagination.last_page) {
             if (endPage < pagination.last_page - 1) {
                 pages.push(<span key="ellipsis-end" className="px-2">...</span>);
@@ -614,7 +592,6 @@ const AdminPanel = () => {
                 </div>
             </div>
 
-            {/* Статус экспорта */}
             {exportStatus && (
                 <div className={`mb-4 p-3 rounded ${
                     exportStatus.includes('Ошибка')
@@ -657,10 +634,8 @@ const AdminPanel = () => {
 
             <h2 className="text-2xl font-bold mb-4 mt-8">Categories</h2>
 
-            {/* Показываем индикатор загрузки для категорий */}
             {loadingStates.categories && <div className="text-center my-4">Loading categories...</div>}
 
-            {/* Показываем ошибки для категорий */}
             {errors.categories && (
                 <div className="mb-4 p-3 rounded bg-red-100 border border-red-400 text-red-700">
                     {errors.categories}
@@ -702,10 +677,8 @@ const AdminPanel = () => {
 
             <h2 className="text-2xl font-bold mb-4 mt-8">Manufacturers</h2>
 
-            {/* Показываем индикатор загрузки для производителей */}
             {loadingStates.manufacturers && <div className="text-center my-4">Loading manufacturers...</div>}
 
-            {/* Показываем ошибки для производителей */}
             {errors.manufacturers && (
                 <div className="mb-4 p-3 rounded bg-red-100 border border-red-400 text-red-700">
                     {errors.manufacturers}
@@ -747,10 +720,8 @@ const AdminPanel = () => {
 
             <h2 className="text-2xl font-bold mb-4 mt-8">Maintenances</h2>
 
-            {/* Показываем индикатор загрузки для услуг */}
             {loadingStates.maintenances && <div className="text-center my-4">Loading maintenances...</div>}
 
-            {/* Показываем ошибки для услуг */}
             {errors.maintenances && (
                 <div className="mb-4 p-3 rounded bg-red-100 border border-red-400 text-red-700">
                     {errors.maintenances}
