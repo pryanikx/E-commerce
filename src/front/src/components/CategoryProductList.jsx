@@ -27,14 +27,30 @@ const CategoryProductList = ({ categoryId }) => {
         last_page: 1,
     });
 
+    // Функция для очистки параметров от пустых значений
+    const cleanParams = (params) => {
+        const cleaned = {};
+        Object.keys(params).forEach(key => {
+            const value = params[key];
+            // Исключаем пустые строки, null и undefined, но оставляем 0 и false
+            if (value !== '' && value !== null && value !== undefined) {
+                cleaned[key] = value;
+            }
+        });
+        return cleaned;
+    };
+
     const fetchProducts = async () => {
         setIsLoading(true);
         try {
+            // Очищаем параметры от пустых значений перед отправкой
+            const cleanedParams = cleanParams({
+                ...filters,
+                page: pagination.current_page,
+            });
+
             const response = await api.get(`/categories/${categoryId}/products`, {
-                params: {
-                    ...filters,
-                    page: pagination.current_page,
-                },
+                params: cleanedParams,
                 headers: { 'Cache-Control': 'no-cache' },
             });
             console.log('Request URL:', response.config.url + '?' + new URLSearchParams(response.config.params).toString());
@@ -147,6 +163,7 @@ const CategoryProductList = ({ categoryId }) => {
                             className="w-full p-1 border rounded"
                             placeholder="Min price"
                             min="0"
+                            step="0.01"
                         />
                     </div>
                     <div>
@@ -159,6 +176,7 @@ const CategoryProductList = ({ categoryId }) => {
                             className="w-full p-1 border rounded"
                             placeholder="Price max"
                             min="0"
+                            step="0.01"
                         />
                     </div>
                     <div>
@@ -189,7 +207,7 @@ const CategoryProductList = ({ categoryId }) => {
                 </div>
                 <button
                     onClick={handleApplyFilters}
-                    className="mt-4 bg-blue-500 text-white p-2 rounded"
+                    className="mt-4 bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors"
                 >
                     Apply Filters & Sorting
                 </button>

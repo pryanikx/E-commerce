@@ -24,6 +24,16 @@ const AdminPanel = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [exportStatus, setExportStatus] = useState('');
+    const [loadingStates, setLoadingStates] = useState({
+        categories: false,
+        manufacturers: false,
+        maintenances: false
+    });
+    const [errors, setErrors] = useState({
+        categories: '',
+        manufacturers: '',
+        maintenances: ''
+    });
 
     // Memoized function to fetch products
     const fetchProducts = useCallback(async (page = 1) => {
@@ -57,34 +67,142 @@ const AdminPanel = () => {
         }
     }, []);
 
-    // Fetch other resources
-    const fetchOtherResources = useCallback(async () => {
-        try {
-            const [catRes, manRes, mainRes] = await Promise.all([
-                api.get('/admin/categories'),
-                api.get('/admin/manufacturers'),
-                api.get('/admin/maintenance'),
-            ]);
+    // Fetch categories with improved error handling
+    const fetchCategories = useCallback(async () => {
+        setLoadingStates(prev => ({ ...prev, categories: true }));
+        setErrors(prev => ({ ...prev, categories: '' }));
 
-            setCategories(catRes.data.data || []);
-            setManufacturers(manRes.data.data || []);
-            setMaintenances(mainRes.data.data || []);
+        try {
+            console.log('Fetching categories...');
+            const response = await api.get('/admin/categories', {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
+
+            console.log('Categories API Response:', response.data);
+
+            // Обработка разных структур ответа
+            if (response.data) {
+                if (Array.isArray(response.data)) {
+                    // Если ответ - массив напрямую
+                    setCategories(response.data);
+                } else if (response.data.data && Array.isArray(response.data.data)) {
+                    // Если ответ обернут в объект с полем data
+                    setCategories(response.data.data);
+                } else if (response.data.message && response.data.message.includes('empty')) {
+                    // Если пустой результат
+                    setCategories([]);
+                } else {
+                    console.warn('Unexpected categories response structure:', response.data);
+                    setCategories([]);
+                }
+            }
         } catch (error) {
-            console.error('Failed to fetch other resources:', error);
+            console.error('Failed to fetch categories:', error);
+            setErrors(prev => ({
+                ...prev,
+                categories: `Failed to load categories: ${error.response?.data?.message || error.message}`
+            }));
+            setCategories([]);
+        } finally {
+            setLoadingStates(prev => ({ ...prev, categories: false }));
+        }
+    }, []);
+
+    // Fetch manufacturers with improved error handling
+    const fetchManufacturers = useCallback(async () => {
+        setLoadingStates(prev => ({ ...prev, manufacturers: true }));
+        setErrors(prev => ({ ...prev, manufacturers: '' }));
+
+        try {
+            console.log('Fetching manufacturers...');
+            const response = await api.get('/admin/manufacturers', {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
+
+            console.log('Manufacturers API Response:', response.data);
+
+            if (response.data) {
+                if (Array.isArray(response.data)) {
+                    setManufacturers(response.data);
+                } else if (response.data.data && Array.isArray(response.data.data)) {
+                    setManufacturers(response.data.data);
+                } else if (response.data.message && response.data.message.includes('empty')) {
+                    setManufacturers([]);
+                } else {
+                    console.warn('Unexpected manufacturers response structure:', response.data);
+                    setManufacturers([]);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch manufacturers:', error);
+            setErrors(prev => ({
+                ...prev,
+                manufacturers: `Failed to load manufacturers: ${error.response?.data?.message || error.message}`
+            }));
+            setManufacturers([]);
+        } finally {
+            setLoadingStates(prev => ({ ...prev, manufacturers: false }));
+        }
+    }, []);
+
+    // Fetch maintenances with improved error handling
+    const fetchMaintenances = useCallback(async () => {
+        setLoadingStates(prev => ({ ...prev, maintenances: true }));
+        setErrors(prev => ({ ...prev, maintenances: '' }));
+
+        try {
+            console.log('Fetching maintenances...');
+            const response = await api.get('/admin/maintenance', {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
+
+            console.log('Maintenances API Response:', response.data);
+
+            if (response.data) {
+                if (Array.isArray(response.data)) {
+                    setMaintenances(response.data);
+                } else if (response.data.data && Array.isArray(response.data.data)) {
+                    setMaintenances(response.data.data);
+                } else if (response.data.message && response.data.message.includes('empty')) {
+                    setMaintenances([]);
+                } else {
+                    console.warn('Unexpected maintenances response structure:', response.data);
+                    setMaintenances([]);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch maintenances:', error);
+            setErrors(prev => ({
+                ...prev,
+                maintenances: `Failed to load maintenances: ${error.response?.data?.message || error.message}`
+            }));
+            setMaintenances([]);
+        } finally {
+            setLoadingStates(prev => ({ ...prev, maintenances: false }));
         }
     }, []);
 
     // Initial data fetch
     useEffect(() => {
         fetchProducts(pagination.current_page);
-        fetchOtherResources();
+        fetchCategories();
+        fetchManufacturers();
+        fetchMaintenances();
     }, []);
 
     // Handle page changes
     useEffect(() => {
-        if (pagination.current_page > 1) {
-            fetchProducts(pagination.current_page);
-        }
+        // Убираем условие - fetchProducts должен вызываться для любой страницы
+        fetchProducts(pagination.current_page);
     }, [pagination.current_page, fetchProducts]);
 
     // Функция для экспорта каталога
@@ -168,8 +286,7 @@ const AdminPanel = () => {
         }
         try {
             await api.post('/admin/categories', data);
-            const response = await api.get('/admin/categories');
-            setCategories(response.data.data || []);
+            await fetchCategories(); // Используем новую функцию
             setEditingCategory(null);
         } catch (error) {
             console.error('Failed to create category:', error);
@@ -184,8 +301,7 @@ const AdminPanel = () => {
         }
         try {
             await api.put(`/admin/categories/${editingCategory.id}`, data);
-            const response = await api.get('/admin/categories');
-            setCategories(response.data.data || []);
+            await fetchCategories(); // Используем новую функцию
             setEditingCategory(null);
         } catch (error) {
             console.error('Failed to update category:', error);
@@ -209,8 +325,7 @@ const AdminPanel = () => {
         }
         try {
             await api.post('/admin/manufacturers', data);
-            const response = await api.get('/admin/manufacturers');
-            setManufacturers(response.data.data || []);
+            await fetchManufacturers(); // Используем новую функцию
             setEditingManufacturer(null);
         } catch (error) {
             console.error('Failed to create manufacturer:', error);
@@ -225,8 +340,7 @@ const AdminPanel = () => {
         }
         try {
             await api.put(`/admin/manufacturers/${editingManufacturer.id}`, data);
-            const response = await api.get('/admin/manufacturers');
-            setManufacturers(response.data.data || []);
+            await fetchManufacturers(); // Используем новую функцию
             setEditingManufacturer(null);
         } catch (error) {
             console.error('Failed to update manufacturer:', error);
@@ -250,8 +364,7 @@ const AdminPanel = () => {
         }
         try {
             await api.post('/admin/maintenance', data);
-            const response = await api.get('/admin/maintenance');
-            setMaintenances(response.data.data || []);
+            await fetchMaintenances(); // Используем новую функцию
             setEditingMaintenance(null);
         } catch (error) {
             console.error('Failed to create maintenance:', error);
@@ -266,8 +379,7 @@ const AdminPanel = () => {
         }
         try {
             await api.put(`/admin/maintenance/${editingMaintenance.id}`, data);
-            const response = await api.get('/admin/maintenance');
-            setMaintenances(response.data.data || []);
+            await fetchMaintenances(); // Используем новую функцию
             setEditingMaintenance(null);
         } catch (error) {
             console.error('Failed to update maintenance:', error);
@@ -348,8 +460,10 @@ const AdminPanel = () => {
     };
 
     const handlePageChange = (page) => {
-        console.log('Changing page to:', page);
-        setPagination((prev) => ({ ...prev, current_page: page }));
+        console.log('Changing page from', pagination.current_page, 'to:', page);
+        if (page !== pagination.current_page) {
+            setPagination((prev) => ({ ...prev, current_page: page }));
+        }
     };
 
     const renderPagination = () => {
@@ -528,12 +642,30 @@ const AdminPanel = () => {
             {pagination.last_page > 1 && renderPagination()}
 
             <h2 className="text-2xl font-bold mb-4 mt-8">Categories</h2>
+
+            {/* Показываем индикатор загрузки для категорий */}
+            {loadingStates.categories && <div className="text-center my-4">Loading categories...</div>}
+
+            {/* Показываем ошибки для категорий */}
+            {errors.categories && (
+                <div className="mb-4 p-3 rounded bg-red-100 border border-red-400 text-red-700">
+                    {errors.categories}
+                    <button
+                        onClick={fetchCategories}
+                        className="ml-2 px-2 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
+
             <button
-                className="bg-blue-500 text-white p-2 rounded mb-4"
+                className="bg-blue-500 text-white p-2 rounded mb-4 hover:bg-blue-600 transition-colors"
                 onClick={handleCreateCategoryClick}
             >
                 Create Category
             </button>
+
             {editingCategory !== null && (
                 <CategoryForm
                     category={editingCategory}
@@ -541,6 +673,11 @@ const AdminPanel = () => {
                     onCancel={handleCancel}
                 />
             )}
+
+            <div className="mb-2 text-sm text-gray-600">
+                Categories loaded: {categories.length}
+            </div>
+
             <ResourceTable
                 title="Categories"
                 data={categories}
@@ -550,12 +687,30 @@ const AdminPanel = () => {
             />
 
             <h2 className="text-2xl font-bold mb-4 mt-8">Manufacturers</h2>
+
+            {/* Показываем индикатор загрузки для производителей */}
+            {loadingStates.manufacturers && <div className="text-center my-4">Loading manufacturers...</div>}
+
+            {/* Показываем ошибки для производителей */}
+            {errors.manufacturers && (
+                <div className="mb-4 p-3 rounded bg-red-100 border border-red-400 text-red-700">
+                    {errors.manufacturers}
+                    <button
+                        onClick={fetchManufacturers}
+                        className="ml-2 px-2 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
+
             <button
-                className="bg-blue-500 text-white p-2 rounded mb-4"
+                className="bg-blue-500 text-white p-2 rounded mb-4 hover:bg-blue-600 transition-colors"
                 onClick={handleCreateManufacturerClick}
             >
                 Create Manufacturer
             </button>
+
             {editingManufacturer !== null && (
                 <ManufacturerForm
                     manufacturer={editingManufacturer}
@@ -563,6 +718,11 @@ const AdminPanel = () => {
                     onCancel={handleCancel}
                 />
             )}
+
+            <div className="mb-2 text-sm text-gray-600">
+                Manufacturers loaded: {manufacturers.length}
+            </div>
+
             <ResourceTable
                 title="Manufacturers"
                 data={manufacturers}
@@ -572,12 +732,30 @@ const AdminPanel = () => {
             />
 
             <h2 className="text-2xl font-bold mb-4 mt-8">Maintenances</h2>
+
+            {/* Показываем индикатор загрузки для услуг */}
+            {loadingStates.maintenances && <div className="text-center my-4">Loading maintenances...</div>}
+
+            {/* Показываем ошибки для услуг */}
+            {errors.maintenances && (
+                <div className="mb-4 p-3 rounded bg-red-100 border border-red-400 text-red-700">
+                    {errors.maintenances}
+                    <button
+                        onClick={fetchMaintenances}
+                        className="ml-2 px-2 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
+
             <button
-                className="bg-blue-500 text-white p-2 rounded mb-4"
+                className="bg-blue-500 text-white p-2 rounded mb-4 hover:bg-blue-600 transition-colors"
                 onClick={handleCreateMaintenanceClick}
             >
                 Create Maintenance
             </button>
+
             {editingMaintenance !== null && (
                 <MaintenanceForm
                     maintenance={editingMaintenance}
@@ -585,6 +763,11 @@ const AdminPanel = () => {
                     onCancel={handleCancel}
                 />
             )}
+
+            <div className="mb-2 text-sm text-gray-600">
+                Maintenances loaded: {maintenances.length}
+            </div>
+
             <ResourceTable
                 title="Maintenances"
                 data={maintenances}
