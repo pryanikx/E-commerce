@@ -6,6 +6,9 @@ namespace App\DTO\Maintenance;
 
 use App\Models\Maintenance;
 
+/**
+ * Data transfer object for listing maintenances.
+ */
 readonly class MaintenanceListDTO
 {
     /**

@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Currency;
 
-class CurrencyCalculator
+class CurrencyCalculatorService
 {
-    private const SUPPORTED_CURRENCIES = ['BYN', 'USD', 'EUR', 'RUB'];
-
-    private const BASE_CURRENCY = 'USD';
-
     private const DEFAULT_RATE = 1.0;
 
     private const PRECISION = 2;
@@ -28,10 +24,10 @@ class CurrencyCalculator
      * @param CurrencySource $source
      * @param string $baseCurrency
      */
-    public function __construct(CurrencySource $source, string $baseCurrency = self::BASE_CURRENCY)
+    public function __construct(CurrencySource $source, string $baseCurrency = null)
     {
         $this->source = $source;
-        $this->baseCurrency = $baseCurrency;
+        $this->baseCurrency = $baseCurrency ?? config('services.open_exchange_rates.base_currency', 'USD');
     }
 
     /**

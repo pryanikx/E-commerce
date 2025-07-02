@@ -73,9 +73,9 @@ class MaintenanceService
         $dto = new MaintenanceUpdateDTO($request_validated);
 
         $data = [
-            'name' => $dto->name !== null ? $dto->name : $maintenance->name,
-            'description' => $dto->description !== null ? $dto->description : $maintenance->description,
-            'duration' => $dto->duration !== null ? $dto->duration : $maintenance->duration,
+            'name' => $dto->name ?? $maintenance->name,
+            'description' => $dto->description ?? $maintenance->description,
+            'duration' => $dto->duration ?? $maintenance->duration,
         ];
 
         $this->maintenanceRepository->update($maintenance, $data);

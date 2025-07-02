@@ -20,7 +20,7 @@ class ProductFilter
     public function applyFilters(Builder|HasMany $query, array $filters): Builder|HasMany
     {
         foreach ($filters as $filter => $value) {
-            if ($this->isEmpty($value)) {
+            if (empty($value)) {
                 continue;
             }
 
@@ -47,17 +47,5 @@ class ProductFilter
             'price_max' => $query->where('price', '<=', (float) $value),
             default => null,
         };
-    }
-
-    /**
-     * Check if a value is empty.
-     *
-     * @param mixed $value
-     *
-     * @return bool
-     */
-    private function isEmpty(mixed $value): bool
-    {
-        return $value === null || $value === '' || $value === [];
     }
 }

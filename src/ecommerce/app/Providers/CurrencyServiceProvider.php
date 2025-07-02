@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Services\Currency\CurrencyCalculator;
+use App\Services\Currency\CurrencyCalculatorService;
 use App\Services\Currency\CurrencySource;
 use App\Services\Currency\OpenExchangeRatesSource;
 use Illuminate\Support\ServiceProvider;
@@ -20,8 +20,8 @@ class CurrencyServiceProvider extends ServiceProvider
             return new OpenExchangeRatesSource();
         });
 
-        $this->app->singleton(CurrencyCalculator::class, function ($app) {
-            return new CurrencyCalculator(
+        $this->app->singleton(CurrencyCalculatorService::class, function ($app) {
+            return new CurrencyCalculatorService(
                 $app->make(CurrencySource::class),
                 config('services.currency.base', self::DEFAULT_CURRENCY_BASE)
             );

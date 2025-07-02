@@ -10,7 +10,7 @@ use App\DTO\Product\ProductStoreDTO;
 use App\DTO\Product\ProductUpdateDTO;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
-use App\Services\Currency\CurrencyCalculator;
+use App\Services\Currency\CurrencyCalculatorService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Storage;
 
@@ -18,14 +18,15 @@ class ProductService
 {
     private const FALLBACK_IMAGE_PATH = 'storage/products/fallback_image1.png';
     private const CACHE_TTL_MINUTES = 30;
+    private const STORAGE_DISK = 'public';
 
     /**
      * @param ProductRepositoryInterface $productRepository
-     * @param CurrencyCalculator $currencyCalculator
+     * @param CurrencyCalculatorService $currencyCalculator
      */
     public function __construct(
         protected ProductRepositoryInterface $productRepository,
-        protected CurrencyCalculator $currencyCalculator,
+        protected CurrencyCalculatorService $currencyCalculator,
     ) {
     }
 
@@ -158,21 +159,16 @@ class ProductService
      */
     private function prepareUpdateData(ProductUpdateDTO $dto, Product $product): array
     {
-        $data = [];
-
-        if ($dto->name !== null) $data['name'] = $dto->name;
-        if ($dto->article !== null) $data['article'] = $dto->article;
-        if ($dto->description !== null) $data['description'] = $dto->description;
-        if ($dto->release_date !== null) $data['release_date'] = $dto->release_date;
-        if ($dto->price !== null) $data['price'] = $dto->price;
-        if ($dto->manufacturer_id !== null) $data['manufacturer_id'] = $dto->manufacturer_id;
-        if ($dto->category_id !== null) $data['category_id'] = $dto->category_id;
-
-        if ($dto->image !== null) {
-            $data['image_path'] = $this->handleImagePath($dto->image, $product->image_path);
-        }
-
-        return $data;
+        return [
+            'name' => $dto->name ?? $product->name,
+            'article' => $dto->article ?? $product->article,
+            'description' => $dto->description ?? $product->description,
+            'release_date' => $dto->release_date ?? $product->release_date,
+            'price' => $dto->price ?? $product->price,
+            'manufacturer_id' => $dto->manufacturer_id ?? $product->manufacturer_id,
+            'category_id' => $dto->category_id ?? $product->category_id,
+            'image_path' => $dto->image !== null ? $this->handleImagePath($dto->image, $product->image_path) : $product->image_path,
+        ];
     }
 
     /**
@@ -189,7 +185,7 @@ class ProductService
                 $this->deleteOldImageIfExists($oldPath);
 
                 $filename = uniqid() . '.' . $image->getClientOriginalExtension();
-                $path = $image->storeAs('products', $filename, 'public');
+                $path = $image->storeAs('products', $filename, self::STORAGE_DISK);
 
                 return $path ? 'storage/' . $path : $this->getFallbackImagePath();
             } catch (\Exception $e) {
@@ -213,9 +209,9 @@ class ProductService
     {
         if ($oldPath &&
             $oldPath !== $this->getFallbackImagePath() &&
-            Storage::disk('public')->exists(str_replace('storage/', '', $oldPath))
+            Storage::disk(self::STORAGE_DISK)->exists(str_replace('storage/', '', $oldPath))
         ) {
-            Storage::disk('public')->delete(str_replace('storage/', '', $oldPath));
+            Storage::disk(self::STORAGE_DISK)->delete(str_replace('storage/', '', $oldPath));
         }
     }
 
@@ -241,7 +237,7 @@ class ProductService
 
         if ($imagePath &&
             $imagePath !== '/' &&
-            Storage::disk('public')->exists(str_replace('storage/', '', $imagePath))
+            Storage::disk(self::STORAGE_DISK)->exists(str_replace('storage/', '', $imagePath))
         ) {
             return asset($imagePath);
         }

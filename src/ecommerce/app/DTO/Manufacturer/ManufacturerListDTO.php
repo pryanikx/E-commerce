@@ -6,6 +6,9 @@ namespace App\DTO\Manufacturer;
 
 use App\Models\Manufacturer;
 
+/**
+ * Data transfer object for listing manufacturers.
+ */
 class ManufacturerListDTO
 {
     /**
