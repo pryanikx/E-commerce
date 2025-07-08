@@ -18,7 +18,7 @@ return [
         'api_key' => env('OPEN_EXCHANGE_RATES_API_KEY'),
         'api_url' => env('OPEN_EXCHANGE_RATES_API_URL', 'https://openexchangerates.org/api/latest.json'),
         'supported_currencies' => ['BYN', 'USD', 'EUR', 'RUB'],
-        'base_currency' => env('OPEN_EXCHANGE_RATES_BASE_CURRENCY', 'USD'),
+        'base_currency' =>  'USD',
     ],
 
     'currency' => [

@@ -37,8 +37,9 @@ class CurrencyCalculatorService
      * @param array<string> $targetCurrencies
      * @return array<string, float>
      */
-    public function convert(float $price, array $targetCurrencies = self::SUPPORTED_CURRENCIES): array
+    public function convert(float $price, array $targetCurrencies = null): array
     {
+        $targetCurrencies = $targetCurrencies ?? config('services.open_exchange_rates.supported_currencies', ['BYN', 'USD', 'EUR', 'RUB']);
         $rates = $this->source->getExchangeRates($this->baseCurrency);
         $converted = [];
 
