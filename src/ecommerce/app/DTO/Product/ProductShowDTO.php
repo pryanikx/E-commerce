@@ -14,78 +14,32 @@ use Illuminate\Support\Facades\Storage;
 readonly class ProductShowDTO
 {
     /**
-     * @var int $id
+     * @param int $id
+     * @param string $name
+     * @param string $article
+     * @param string $description
+     * @param string $release_date
+     * @param string $category_name
+     * @param string $manufacturer_name
+     * @param array|null $prices
+     * @param string|null $image_url
+     * @param array $maintenances
      */
-    public int $id;
+    public function __construct(
+        public int $id,
+        public string $name,
+        public string $article,
+        public string $description,
+        public string $release_date,
+        public string $category_name,
+        public string $manufacturer_name,
+        public ?array $prices,
+        public ?string $image_url,
+        public array $maintenances,
+    ) {}
 
     /**
-     * @var string $name
-     */
-    public string $name;
-
-    /**
-     * @var string $article
-     */
-    public string $article;
-
-    /**
-     * @var string $description
-     */
-    public string $description;
-
-    /**
-     * @var string $release_date
-     */
-    public string $release_date;
-
-    /**
-     * @var string $category_name
-     */
-    public string $category_name;
-
-    /**
-     * @var string $manufacturer_name
-     */
-    public string $manufacturer_name;
-
-    /**
-     * @var array $prices
-     */
-    public array $prices;
-
-    /**
-     * @var string|null $image_url
-     */
-    public ?string $image_url;
-
-    /**
-     * @var array $maintenances
-     */
-    public array $maintenances;
-
-    /**
-     * @param Product $product
-     * @param CurrencyCalculatorService $calculator
-     */
-    public function __construct(Product $product, CurrencyCalculatorService $calculator)
-    {
-        $this->id = $product->id;
-        $this->name = $product->name;
-        $this->article = $product->article;
-        $this->description = $product->description;
-        $this->release_date = $product->release_date->toDateString();
-        $this->category_name = $product->category->name;
-        $this->manufacturer_name = $product->manufacturer->name;
-        $this->prices = $product->price ? $calculator->convert((float) $product->price) : null;
-        $this->image_url = $product->image_path ? asset($product->image_path) : null;
-        $this->maintenances = $product->maintenances->map(fn ($maintenance) => [
-            'name' => $maintenance->name,
-            'prices' => $calculator->convert((float) $maintenance->pivot->price),
-        ])->toArray();
-    }
-
-    /**
-     * @return array
+     * @return array<string, int|string|array|null>
      */
     public function toArray(): array
     {

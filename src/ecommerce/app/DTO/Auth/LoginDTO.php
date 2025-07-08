@@ -10,26 +10,16 @@ namespace App\DTO\Auth;
 readonly class LoginDTO
 {
     /**
-     * @var string $email
+     * @param string $email
+     * @param string $password
      */
-    public string $email;
+    public function __construct(
+        public string $email,
+        public string $password,
+    ) {}
 
     /**
-     * @var string $password
-     */
-    public string $password;
-
-    /**
-     * @param array $request_data
-     */
-    public function __construct(array $request_data)
-    {
-        $this->email = $request_data['email'];
-        $this->password = $request_data['password'];
-    }
-
-    /**
-     * @return array
+     * @return array<string, string>
      */
     public function toArray(): array
     {

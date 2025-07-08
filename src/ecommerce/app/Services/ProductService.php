@@ -40,12 +40,7 @@ class ProductService
         $products = $this->productRepository->all();
 
         return [
-            'data' => $products->map(function ($product) {
-                $dto = (new ProductListDTO($product, $this->currencyCalculator))->toArray();
-                $dto['image_url'] = $this->getImageUrlWithFallback($product->image_path);
-
-                return $dto;
-            })->toArray(),
+            'data' => $products->map(fn($product) => $this->makeProductListDTO($product)->toArray())->toArray(),
             'meta' => [
                 'current_page' => $products->currentPage(),
                 'per_page' => $products->perPage(),
@@ -69,7 +64,7 @@ class ProductService
             function () use ($id) {
                 try {
                     $product = $this->productRepository->find($id);
-                    $dto = new ProductShowDTO($product, $this->currencyCalculator);
+                    $dto = $this->makeProductShowDTO($product);
                     $dtoArray = $dto->toArray();
                     $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
 
@@ -267,7 +262,7 @@ class ProductService
     {
         try {
             $product = $this->productRepository->find($id);
-            $dto = new ProductShowDTO($product, $this->currencyCalculator);
+            $dto = $this->makeProductShowDTO($product);
             $dtoArray = $dto->toArray();
             $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
 
@@ -279,6 +274,49 @@ class ProductService
         } catch (\Exception $e) {
             logger()->error(__('errors.cache_failed', ['error' => $e->getMessage()]));
         }
+    }
+
+    /**
+     * Преобразует модель Product в ProductShowDTO
+     *
+     * @param \App\Models\Product $product
+     * @return \App\DTO\Product\ProductShowDTO
+     */
+    private function makeProductShowDTO(\App\Models\Product $product): \App\DTO\Product\ProductShowDTO
+    {
+        return new \App\DTO\Product\ProductShowDTO(
+            $product->id,
+            $product->name,
+            $product->article,
+            $product->description,
+            $product->release_date instanceof \Illuminate\Support\Carbon ? $product->release_date->toDateString() : (string)$product->release_date,
+            $product->category->name,
+            $product->manufacturer->name,
+            $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
+            $product->image_path ? $this->getImageUrlWithFallback($product->image_path) : null,
+            $product->maintenances->map(fn ($maintenance) => [
+                'name' => $maintenance->name,
+                'prices' => $this->currencyCalculator->convert((float) $maintenance->pivot->price),
+            ])->toArray(),
+        );
+    }
+
+    /**
+     * Преобразует модель Product в ProductListDTO
+     *
+     * @param \App\Models\Product $product
+     * @return \App\DTO\Product\ProductListDTO
+     */
+    private function makeProductListDTO(\App\Models\Product $product): \App\DTO\Product\ProductListDTO
+    {
+        return new \App\DTO\Product\ProductListDTO(
+            $product->id,
+            $product->name,
+            $product->article,
+            $product->manufacturer->name,
+            $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
+            $product->image_path ? $this->getImageUrlWithFallback($product->image_path) : null,
+        );
     }
 
     /**

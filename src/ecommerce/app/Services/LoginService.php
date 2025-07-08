@@ -27,10 +27,8 @@ class LoginService
      */
     public function login(array $request_validated): array
     {
-        $dto = new LoginDTO($request_validated);
-
+        $dto = $this->makeLoginDTO($request_validated);
         $user_data = $this->loginRepository->login($dto->toArray());
-
         return [
             'token' => $user_data['token'],
             'user' => $user_data['user'],
@@ -47,5 +45,20 @@ class LoginService
     public function logout(User $user): void
     {
         $this->loginRepository->logout($user);
+    }
+
+    /**
+     * Create a new LoginDTO.
+     *
+     * @param array $data
+     * 
+     * @return \App\DTO\Auth\LoginDTO
+     */
+    private function makeLoginDTO(array $data): \App\DTO\Auth\LoginDTO
+    {
+        return new \App\DTO\Auth\LoginDTO(
+            $data['email'],
+            $data['password']
+        );
     }
 }

@@ -7,30 +7,16 @@ namespace App\DTO\Maintenance;
 /**
  * Data transfer object for updating a maintenance.
  */
-class MaintenanceUpdateDTO
+readonly class MaintenanceUpdateDTO
 {
     /**
-     * @var string|null $name
+     * @param string|null $name
+     * @param string|null $description
+     * @param string|null $duration
      */
-    public ?string $name;
-
-    /**
-     * @var string|null $description
-     */
-    public ?string $description;
-
-    /**
-     * @var string|null $duration
-     */
-    public ?string $duration;
-
-    /**
-     * @param array $request_data
-     */
-    public function __construct(array $request_data)
-    {
-        $this->name = $request_data['name'] ?? null;
-        $this->description = $request_data['description'] ?? null;
-        $this->duration = $request_data['duration'] ?? null;
-    }
+    public function __construct(
+        public ?string $name = null,
+        public ?string $description = null,
+        public ?string $duration = null,
+    ) {}
 }

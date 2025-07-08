@@ -64,8 +64,7 @@ class CategoryService
         $products = $this->categoryRepository->getProductsForCategory($id, $filters, $sorters, $page);
 
         return [
-            'data' => $products->map(fn($product)
-                => (new ProductListDTO($product, $this->currencyCalculator))->toArray())->toArray(),
+            'data' => $products->map(fn($product) => $this->makeProductListDTO($product)->toArray())->toArray(),
             'meta' => [
                 'current_page' => $products->currentPage(),
                 'per_page' => $products->perPage(),
@@ -163,5 +162,23 @@ class CategoryService
             (new CategoryListDTO($category))->toArray())->toArray();
 
         cache()->put(self::CACHE_KEY, $data);
+    }
+
+    /**
+     * Преобразует модель Product в ProductListDTO
+     *
+     * @param \App\Models\Product $product
+     * @return \App\DTO\Product\ProductListDTO
+     */
+    private function makeProductListDTO(\App\Models\Product $product): \App\DTO\Product\ProductListDTO
+    {
+        return new \App\DTO\Product\ProductListDTO(
+            $product->id,
+            $product->name,
+            $product->article,
+            $product->manufacturer->name,
+            $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
+            $product->image_path ? asset($product->image_path) : null,
+        );
     }
 }

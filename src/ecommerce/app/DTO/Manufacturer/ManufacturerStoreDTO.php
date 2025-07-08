@@ -10,15 +10,9 @@ namespace App\DTO\Manufacturer;
 readonly class ManufacturerStoreDTO
 {
     /**
-     * @var string $name
+     * @param string $name
      */
-    public string $name;
-
-    /**
-     * @param array $request_data
-     */
-    public function __construct(array $request_data)
-    {
-        $this->name = $request_data['name'];
-    }
+    public function __construct(
+        public string $name,
+    ) {}
 }

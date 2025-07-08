@@ -10,21 +10,11 @@ namespace App\DTO\Category;
 readonly class CategoryUpdateDTO
 {
     /**
-     * @var string|null $name
+     * @param string|null $name
+     * @param string|null $alias
      */
-    public ?string $name;
-
-    /**
-     * @var string|null $alias
-     */
-    public ?string $alias;
-
-    /**
-     * @param array $request_data
-     */
-    public function __construct(array $request_data)
-    {
-        $this->name = $request_data['name'] ?? null;
-        $this->alias = $request_data['alias'] ?? null;
-    }
+    public function __construct(
+        public ?string $name = null,
+        public ?string $alias = null,
+    ) {}
 }

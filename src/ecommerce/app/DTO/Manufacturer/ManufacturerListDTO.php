@@ -9,35 +9,25 @@ use App\Models\Manufacturer;
 /**
  * Data transfer object for listing manufacturers.
  */
-class ManufacturerListDTO
+readonly class ManufacturerListDTO
 {
     /**
-     * @var int $id
+     * @param int $id
+     * @param string $name
      */
-    public int $id;
+    public function __construct(
+        public int $id,
+        public string $name,
+    ) {}
 
     /**
-     * @var string $name
-     */
-    public string $name;
-
-    /**
-     * @param Manufacturer $manufacturer
-     */
-    public function __construct(Manufacturer $manufacturer)
-    {
-        $this->id = $manufacturer->id;
-        $this->name = $manufacturer->name;
-    }
-
-    /**
-     * @return array
+     * @return array<string, int|string>
      */
     public function toArray(): array
     {
         return [
             'id' => $this->id,
             'name' => $this->name,
-            ];
+        ];
     }
 }

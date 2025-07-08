@@ -12,33 +12,18 @@ use App\Models\Category;
 readonly class CategoryListDTO
 {
     /**
-     * @var int $id
+     * @param int $id
+     * @param string $name
+     * @param string $alias
      */
-    public int $id;
+    public function __construct(
+        public int $id,
+        public string $name,
+        public string $alias,
+    ) {}
 
     /**
-     * @var string $name
-     */
-    public string $name;
-
-    /**
-     * @var string $alias
-     */
-    public string $alias;
-
-    /**
-     *
-     * @param Category $category
-     */
-    public function __construct(Category $category)
-    {
-        $this->id = $category->id;
-        $this->name = $category->name;
-        $this->alias = $category->alias;
-    }
-
-    /**
-     * @return array
+     * @return array<string, int|string>
      */
     public function toArray(): array
     {

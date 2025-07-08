@@ -13,53 +13,25 @@ use Illuminate\Support\Facades\Storage;
  */
 readonly class ProductListDTO
 {
-
     /**
-     * @var int $id
+     * @param int $id
+     * @param string $name
+     * @param string $article
+     * @param string $manufacturer_name
+     * @param array|null $prices
+     * @param string|null $image_url
      */
-    public int $id;
+    public function __construct(
+        public int $id,
+        public string $name,
+        public string $article,
+        public string $manufacturer_name,
+        public ?array $prices,
+        public ?string $image_url,
+    ) {}
 
     /**
-     * @var string $name
-     */
-    public string $name;
-
-    /**
-     * @var string $article
-     */
-    public string $article;
-
-    /**
-     * @var string $manufacturer_name
-     */
-    public string $manufacturer_name;
-
-    /**
-     * @var array $prices
-     */
-    public array $prices;
-
-    /**
-     * @var string|null $image_url
-     */
-    public ?string $image_url;
-
-    /**
-     * @param Product $product
-     * @param CurrencyCalculatorService $calculator
-     */
-    public function __construct(Product $product, CurrencyCalculatorService $calculator)
-    {
-        $this->id = $product->id;
-        $this->name = $product->name;
-        $this->article = $product->article;
-        $this->manufacturer_name = $product->manufacturer->name;
-        $this->prices = $product->price ? $calculator->convert((float) $product->price) : null;
-        $this->image_url = $product->image_path ? asset($product->image_path) : null;
-    }
-
-    /**
-     * @return array
+     * @return array<string, int|string|array|null>
      */
     public function toArray(): array
     {
