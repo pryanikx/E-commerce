@@ -13,7 +13,7 @@ class RegisterService
 {
 
     public function __construct(
-        protected RegisterRepositoryInterface $registerRepository,
+        private RegisterRepositoryInterface $registerRepository,
     )
     {
     }
@@ -38,9 +38,10 @@ class RegisterService
     }
 
     /**
-     * Создаёт RegisterDTO из массива данных
+     * Create a new RegisterDTO.
      *
      * @param array $data
+     * 
      * @return \App\DTO\Auth\RegisterDTO
      */
     private function makeRegisterDTO(array $data): \App\DTO\Auth\RegisterDTO
@@ -57,6 +58,7 @@ class RegisterService
      * Hash the password.
      *
      * @param string $password
+     * 
      * @return string
      */
     private function hashPassword(string $password): string

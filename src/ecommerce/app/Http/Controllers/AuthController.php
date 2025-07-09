@@ -18,8 +18,8 @@ class AuthController extends Controller
      * @param RegisterService $registerService
      */
     public function __construct(
-        protected LoginService $loginService,
-        protected RegisterService $registerService,
+        private LoginService $loginService,
+        private RegisterService $registerService,
     ) {
     }
 

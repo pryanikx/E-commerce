@@ -25,8 +25,8 @@ class ProductService
      * @param CurrencyCalculatorService $currencyCalculator
      */
     public function __construct(
-        protected ProductRepositoryInterface $productRepository,
-        protected CurrencyCalculatorService $currencyCalculator,
+        private ProductRepositoryInterface $productRepository,
+        private CurrencyCalculatorService $currencyCalculator,
     ) {
     }
 
@@ -54,6 +54,7 @@ class ProductService
      * Get one product by ID with caching.
      *
      * @param int $id
+     * 
      * @return array|null
      */
     public function getProduct(int $id): ?array
@@ -79,6 +80,7 @@ class ProductService
      * Create a new product.
      *
      * @param array $request_validated
+     * 
      * @return Product
      */
     public function createProduct(array $request_validated): Product
@@ -135,6 +137,7 @@ class ProductService
      * Delete an existing product by ID.
      *
      * @param int $id
+     * 
      * @return bool
      */
     public function deleteProduct(int $id): bool
@@ -171,6 +174,7 @@ class ProductService
      *
      * @param \Illuminate\Http\UploadedFile|null $image
      * @param string|null $oldPath
+     * 
      * @return string
      */
     private function handleImagePath(?\Illuminate\Http\UploadedFile $image, ?string $oldPath = null): string
@@ -198,6 +202,7 @@ class ProductService
      * Delete old image if it exists and is not the fallback image.
      *
      * @param string|null $oldPath
+     * 
      * @return void
      */
     private function deleteOldImageIfExists(?string $oldPath): void
@@ -244,6 +249,7 @@ class ProductService
      * Refresh product cache.
      *
      * @param int $id
+     * 
      * @return void
      */
     private function refreshProductCache(int $id): void
@@ -256,6 +262,7 @@ class ProductService
      * Save product in cache.
      *
      * @param int $id
+     * 
      * @return void
      */
     private function cacheProduct(int $id): void
@@ -277,9 +284,10 @@ class ProductService
     }
 
     /**
-     * Преобразует модель Product в ProductShowDTO
+     * Convert Product model to ProductShowDTO.
      *
      * @param \App\Models\Product $product
+     * 
      * @return \App\DTO\Product\ProductShowDTO
      */
     private function makeProductShowDTO(\App\Models\Product $product): \App\DTO\Product\ProductShowDTO
@@ -302,9 +310,10 @@ class ProductService
     }
 
     /**
-     * Преобразует модель Product в ProductListDTO
+     * Convert Product model to ProductListDTO.
      *
      * @param \App\Models\Product $product
+     * 
      * @return \App\DTO\Product\ProductListDTO
      */
     private function makeProductListDTO(\App\Models\Product $product): \App\DTO\Product\ProductListDTO
@@ -323,6 +332,7 @@ class ProductService
      * Get cache key for one product.
      *
      * @param int $id
+     * 
      * @return string
      */
     private function getProductCacheKey(int $id): string

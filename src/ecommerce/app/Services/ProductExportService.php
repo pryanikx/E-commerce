@@ -29,7 +29,7 @@ class ProductExportService
     ];
 
     public function __construct(
-        protected ProductController $productController,
+        private ProductController $productController,
     ) {
     }
 

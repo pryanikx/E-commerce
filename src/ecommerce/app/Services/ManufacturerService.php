@@ -17,7 +17,9 @@ class ManufacturerService
     /**
      * @param ManufacturerRepositoryInterface $manufacturerRepository
      */
-    public function __construct(protected ManufacturerRepositoryInterface $manufacturerRepository)
+    public function __construct(
+        private ManufacturerRepositoryInterface $manufacturerRepository
+    )
     {
     }
 

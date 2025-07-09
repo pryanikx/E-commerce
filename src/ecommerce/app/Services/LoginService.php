@@ -12,7 +12,7 @@ class LoginService
 {
 
     public function __construct(
-        protected LoginRepositoryInterface $loginRepository,
+        private LoginRepositoryInterface $loginRepository,
     )
     {
     }

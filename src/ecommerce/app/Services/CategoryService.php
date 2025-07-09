@@ -23,8 +23,8 @@ class CategoryService
      * @param CurrencyCalculatorService $currencyCalculator
      */
     public function __construct(
-        protected CategoryRepositoryInterface $categoryRepository,
-        protected CurrencyCalculatorService $currencyCalculator
+        private CategoryRepositoryInterface $categoryRepository,
+        private CurrencyCalculatorService $currencyCalculator
     )
     {
     }

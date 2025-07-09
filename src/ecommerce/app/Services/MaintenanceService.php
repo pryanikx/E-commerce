@@ -17,7 +17,9 @@ class MaintenanceService
     /**
      * @param MaintenanceRepositoryInterface $maintenanceRepository
      */
-    public function __construct(protected MaintenanceRepositoryInterface $maintenanceRepository)
+    public function __construct(
+        private MaintenanceRepositoryInterface $maintenanceRepository
+    )
     {
     }
 
