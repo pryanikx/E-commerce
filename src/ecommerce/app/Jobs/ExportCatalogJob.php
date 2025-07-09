@@ -102,7 +102,7 @@ class ExportCatalogJob implements ShouldQueue
         $csvFilePath = $exportService->exportToCSV($this->exportId);
 
         if (!file_exists($csvFilePath)) {
-            throw new \RuntimeException(__('errors.csv_not_created') . ": {$csvFilePath}");
+            throw new \Exception(__('errors.csv_not_created') . ": {$csvFilePath}");
         }
 
         $this->logger->info(__('messages.csv_file_generated'), [
@@ -128,7 +128,7 @@ class ExportCatalogJob implements ShouldQueue
         $s3Key = $s3Service->uploadCatalogExport($csvFilePath, $this->exportId);
 
         if (!$s3Key) {
-            throw new \RuntimeException(__('errors.s3_upload_failed'));
+            throw new \Exception(__('errors.s3_upload_failed'));
         }
 
         $this->logger->info(__('messages.file_uploaded_to_s3'), [
