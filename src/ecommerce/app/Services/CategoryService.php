@@ -81,20 +81,20 @@ class CategoryService
      *
      * @param array $request_validated
      *
-     * @return Category
+     * @return \App\DTO\Category\CategoryDTO
      */
-    public function createCategory(array $request_validated): Category
+    public function createCategory(array $request_validated): \App\DTO\Category\CategoryDTO
     {
         $dto = new CategoryStoreDTO($request_validated);
 
-        $category =  $this->categoryRepository->create([
+        $categoryDTO = $this->categoryRepository->create([
             'name' => $dto->name,
             'alias' => $dto->alias,
         ]);
 
         $this->cacheCategories();
 
-        return $category;
+        return $categoryDTO;
     }
 
     /**
@@ -103,9 +103,9 @@ class CategoryService
      * @param int $id
      * @param array $request_validated
      *
-     * @return Category
+     * @return \App\DTO\Category\CategoryDTO
      */
-    public function updateCategory(int $id, array $request_validated): Category
+    public function updateCategory(int $id, array $request_validated): \App\DTO\Category\CategoryDTO
     {
         $category = $this->categoryRepository->find($id);
 
@@ -113,14 +113,14 @@ class CategoryService
 
         $data = [
             'name' => $dto->name ?? $category->name,
-            'alias' => $dto->alias ?? ($dto->name ? Str::slug($dto->name) : $category->alias),
+            'alias' => $dto->alias ?? ($dto->name ? \Illuminate\Support\Str::slug($dto->name) : $category->alias),
         ];
 
-        $this->categoryRepository->update($category, $data);
+        $this->categoryRepository->update($id, $data);
 
         $this->cacheCategories();
 
-        return $category->refresh();
+        return $this->categoryRepository->find($id);
     }
 
     /**
@@ -132,7 +132,7 @@ class CategoryService
      */
     public function deleteCategory(int $id): bool
     {
-        $is_deleted =  $this->categoryRepository->delete($id);
+        $is_deleted = $this->categoryRepository->delete($id);
 
         $this->cacheCategories();
 

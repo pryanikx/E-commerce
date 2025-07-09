@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
+use App\DTO\Category\CategoryDTO;
 use App\Models\Category;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -18,37 +19,37 @@ interface CategoryRepositoryInterface
     /**
      * Get all categories from the database.
      *
-     * @return Collection<int, Category>
+     * @return CategoryDTO[]
      */
-    public function all(): Collection;
+    public function all(): array;
 
     /**
      * Find an existing category by ID.
      *
      * @param int $id
      *
-     * @return Category
+     * @return CategoryDTO
      */
-    public function find(int $id): Category;
+    public function find(int $id): CategoryDTO;
 
     /**
      * Create a new category.
      *
      * @param array<string, mixed> $data
      *
-     * @return Category
+     * @return CategoryDTO
      */
-    public function create(array $data): Category;
+    public function create(array $data): CategoryDTO;
 
     /**
      * Update an existing category.
      *
-     * @param Category $category
+     * @param int $id
      * @param array $data
      *
      * @return bool
      */
-    public function update(Category $category, array $data): bool;
+    public function update(int $id, array $data): bool;
 
     /**
      * Delete a category by ID.
@@ -95,4 +96,12 @@ interface CategoryRepositoryInterface
      * @return Builder|HasMany
      */
     public function filter(Builder|HasMany $query, array $filters): Builder|HasMany;
+
+    /**
+     * map Eloquent model to DTO
+     * 
+     * @param Category $category
+     * @return CategoryDTO
+     */
+    public function mapToDTO(Category $category): CategoryDTO;
 }

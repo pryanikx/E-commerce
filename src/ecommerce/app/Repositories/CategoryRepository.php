@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTO\Category\CategoryDTO;
 use App\Models\Category;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\Filters\ProductFilter;
@@ -27,13 +28,12 @@ class CategoryRepository implements CategoryRepositoryInterface
     }
 
     /**
-     * Get all categories from the database.
-     *
-     * @return Collection<int, Category>
+     * @return CategoryDTO[]
      */
-    public function all(): Collection
+    public function all(): array
     {
-        return Category::all();
+        return Category::all()->map(fn(Category $category)
+            => $this->mapToDTO($category))->all();
     }
 
     /**
@@ -41,11 +41,12 @@ class CategoryRepository implements CategoryRepositoryInterface
      *
      * @param int $id
      *
-     * @return Category
+     * @return CategoryDTO
      */
-    public function find(int $id): Category
+    public function find(int $id): CategoryDTO
     {
-        return Category::findOrFail($id);
+        $category = Category::findOrFail($id);
+        return $this->mapToDTO($category);
     }
 
     /**
@@ -53,23 +54,25 @@ class CategoryRepository implements CategoryRepositoryInterface
      *
      * @param array<string, mixed> $data
      *
-     * @return Category
+     * @return CategoryDTO
      */
-    public function create(array $data): Category
+    public function create(array $data): CategoryDTO
     {
-        return Category::create($data);
+        $category = Category::create($data);
+        return $this->mapToDTO($category);
     }
 
     /**
      * Update an existing category.
      *
-     * @param Category $category
+     * @param int $id
      * @param array $data
      *
      * @return bool
      */
-    public function update(Category $category, array $data): bool
+    public function update(int $id, array $data): bool
     {
+        $category = Category::findOrFail($id);
         return $category->update($data);
     }
 
@@ -102,7 +105,7 @@ class CategoryRepository implements CategoryRepositoryInterface
         int $page = self::DEFAULT_PAGE_NUMBER
     ): LengthAwarePaginator
     {
-        $category = $this->find($id);
+        $category = Category::findOrFail($id);
 
         $query = $category->products();
 
@@ -137,5 +140,20 @@ class CategoryRepository implements CategoryRepositoryInterface
     public function filter(Builder|HasMany $query, array $filters): Builder|HasMany
     {
         return $this->productFilter->applyFilters($query, $filters);
+    }
+
+    /**
+     * @param Category $category
+     * @return CategoteryDTO
+     */
+    public function mapToDTO(Category $category): CategoryDTO
+    {
+        return new CategoryDTO(
+            $category->id,
+            $category->name,
+            $category->alias,
+            $category->created_at?->toISOString() ?? '',
+            $category->updated_at?->toISOString() ?? '',
+        );
     }
 }

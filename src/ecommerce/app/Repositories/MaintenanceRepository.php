@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTO\Maintenance\MaintenanceDTO;
 use App\Models\Maintenance;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -11,13 +12,11 @@ use Illuminate\Database\Eloquent\Collection;
 class MaintenanceRepository implements MaintenanceRepositoryInterface
 {
     /**
-     * Get all maintenances from the database
-     *
-     * @return Collection
+     * @return MaintenanceDTO[]
      */
-    public function all(): Collection
+    public function all(): array
     {
-        return Maintenance::all();
+        return Maintenance::all()->map(fn(Maintenance $maintenance) => $this->mapToDTO($maintenance))->all();
     }
 
     /**
@@ -25,11 +24,12 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
      *
      * @param int $id
      *
-     * @return Maintenance
+     * @return MaintenanceDTO
      */
-    public function find(int $id): Maintenance
+    public function find(int $id): MaintenanceDTO
     {
-        return Maintenance::findOrFail($id);
+        $maintenance = Maintenance::findOrFail($id);
+        return $this->mapToDTO($maintenance);
     }
 
     /**
@@ -37,23 +37,25 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
      *
      * @param array $array
      *
-     * @return Maintenance
+     * @return MaintenanceDTO
      */
-    public function create(array $array): Maintenance
+    public function create(array $array): MaintenanceDTO
     {
-        return Maintenance::create($array);
+        $maintenance = Maintenance::create($array);
+        return $this->mapToDTO($maintenance);
     }
 
     /**
      * Update existing maintenance.
      *
-     * @param Maintenance $maintenance
+     * @param int $id
      * @param array $data
      *
      * @return bool
      */
-    public function update(Maintenance $maintenance, array $data): bool
+    public function update(int $id, array $data): bool
     {
+        $maintenance = Maintenance::findOrFail($id);
         return $maintenance->update($data);
     }
 
@@ -67,5 +69,21 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
     public function delete(int $id): bool
     {
         return (bool) Maintenance::destroy($id);
+    }
+
+    /**
+     * @param Maintenance $maintenance
+     * @return MaintenanceDTO
+     */
+    private function mapToDTO(Maintenance $maintenance): MaintenanceDTO
+    {
+        return new MaintenanceDTO(
+            $maintenance->id,
+            $maintenance->name,
+            $maintenance->description,
+            $maintenance->duration,
+            $maintenance->created_at?->toISOString() ?? '',
+            $maintenance->updated_at?->toISOString() ?? '',
+        );
     }
 }

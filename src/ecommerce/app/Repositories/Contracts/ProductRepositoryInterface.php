@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
-use App\Models\Product;
+use App\DTO\Product\ProductDTO;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -13,39 +13,39 @@ interface ProductRepositoryInterface
     const PER_PAGE = 20;
 
     /**
-     * Get all products paginated from the database.
+     * Get all products.
      *
-     * @return LengthAwarePaginator
+     * @return ProductDTO[]
      */
-    public function all(): LengthAwarePaginator;
+    public function all(): array;
 
     /**
      * Find a product by ID.
      *
      * @param int $id
      *
-     * @return Product
+     * @return ProductDTO
      */
-    public function find(int $id): Product;
+    public function find(int $id): ProductDTO;
 
     /**
      * Create a new product.
      *
      * @param array $data
      *
-     * @return Product
+     * @return ProductDTO
      */
-    public function create(array $data): Product;
+    public function create(array $data): ProductDTO;
 
     /**
      * Update an existing product.
      *
-     * @param Product $product
+     * @param int $id
      * @param array $data
      *
      * @return bool
      */
-    public function update(Product $product, array $data): bool;
+    public function update(int $id, array $data): bool;
 
     /**
      * Delete an existing product by ID.
@@ -59,10 +59,10 @@ interface ProductRepositoryInterface
     /**
      * Attach maintenances to a product.
      *
-     * @param Product $product
+     * @param int $id
      * @param array $maintenances
      *
      * @return void
      */
-    public function attachMaintenances(Product $product, array $maintenances): void;
+    public function attachMaintenances(int $id, array $maintenances): void;
 }

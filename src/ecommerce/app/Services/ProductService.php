@@ -8,7 +8,7 @@ use App\DTO\Product\ProductListDTO;
 use App\DTO\Product\ProductShowDTO;
 use App\DTO\Product\ProductStoreDTO;
 use App\DTO\Product\ProductUpdateDTO;
-use App\Models\Product;
+use App\DTO\Product\ProductDTO;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Services\Currency\CurrencyCalculatorService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -42,15 +42,8 @@ class ProductService
     public function getAll(): ?array
     {
         $products = $this->productRepository->all();
-
         return [
-            'data' => $products->map(fn($product) => $this->makeProductListDTO($product)->toArray())->toArray(),
-            'meta' => [
-                'current_page' => $products->currentPage(),
-                'per_page' => $products->perPage(),
-                'total' => $products->total(),
-                'last_page' => $products->lastPage(),
-            ],
+            'data' => array_map(fn($product) => $this->makeProductListDTO($product)->toArray(), $products),
         ];
     }
 
@@ -64,7 +57,6 @@ class ProductService
     public function getProduct(int $id): ?array
     {
         $cacheKey = $this->getProductCacheKey($id);
-
         return $this->cache->remember($cacheKey, now()->addMinutes(self::CACHE_TTL_MINUTES),
             function () use ($id) {
                 try {
@@ -72,7 +64,6 @@ class ProductService
                     $dto = $this->makeProductShowDTO($product);
                     $dtoArray = $dto->toArray();
                     $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
-
                     return $dtoArray;
                 } catch (ModelNotFoundException $e) {
                     return null;
@@ -85,13 +76,12 @@ class ProductService
      *
      * @param array $request_validated
      * 
-     * @return Product
+     * @return ProductDTO
      */
-    public function createProduct(array $request_validated): Product
+    public function createProduct(array $request_validated): ProductDTO
     {
         $dto = new ProductStoreDTO($request_validated);
         $image_path = $this->handleImagePath($dto->image);
-
         $created_product = $this->productRepository->create([
             'name' => $dto->name,
             'article' => $dto->article,
@@ -102,13 +92,10 @@ class ProductService
             'manufacturer_id' => $dto->manufacturer_id,
             'category_id' => $dto->category_id,
         ]);
-
         if (!empty($dto->maintenances)) {
-            $this->productRepository->attachMaintenances($created_product, $dto->maintenances);
+            $this->productRepository->attachMaintenances($created_product->id, $dto->maintenances);
         }
-
         $this->cacheProduct($created_product->id);
-
         return $created_product;
     }
 
@@ -117,24 +104,19 @@ class ProductService
      *
      * @param int $id
      * @param array $request_validated
-     * @return Product
+     * @return ProductDTO
      */
-    public function updateProduct(int $id, array $request_validated): Product
+    public function updateProduct(int $id, array $request_validated): ProductDTO
     {
         $product = $this->productRepository->find($id);
         $dto = new ProductUpdateDTO($request_validated);
-
         $data = $this->prepareUpdateData($dto, $product);
-
-        $this->productRepository->update($product, $data);
-
+        $this->productRepository->update($id, $data);
         if ($dto->maintenances !== null) {
-            $this->productRepository->attachMaintenances($product, $dto->maintenances);
+            $this->productRepository->attachMaintenances($id, $dto->maintenances);
         }
-
-        $this->refreshProductCache($product->id);
-
-        return $product->refresh();
+        $this->refreshProductCache($id);
+        return $this->productRepository->find($id);
     }
 
     /**
@@ -155,11 +137,11 @@ class ProductService
      * Prepare data for product update.
      *
      * @param ProductUpdateDTO $dto
-     * @param Product $product
+     * @param ProductDTO $product
      *
      * @return array
      */
-    private function prepareUpdateData(ProductUpdateDTO $dto, Product $product): array
+    private function prepareUpdateData(ProductUpdateDTO $dto, ProductDTO $product): array
     {
         return [
             'name' => $dto->name ?? $product->name,
@@ -290,11 +272,11 @@ class ProductService
     /**
      * Convert Product model to ProductShowDTO.
      *
-     * @param \App\Models\Product $product
+     * @param \App\DTO\Product\ProductDTO $product
      * 
      * @return \App\DTO\Product\ProductShowDTO
      */
-    private function makeProductShowDTO(\App\Models\Product $product): \App\DTO\Product\ProductShowDTO
+    private function makeProductShowDTO(ProductDTO $product): \App\DTO\Product\ProductShowDTO
     {
         return new \App\DTO\Product\ProductShowDTO(
             $product->id,
@@ -302,31 +284,28 @@ class ProductService
             $product->article,
             $product->description,
             $product->release_date instanceof \Illuminate\Support\Carbon ? $product->release_date->toDateString() : (string)$product->release_date,
-            $product->category->name,
-            $product->manufacturer->name,
+            $product->category_name,
+            $product->manufacturer_name,
             $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
             $product->image_path ? $this->getImageUrlWithFallback($product->image_path) : null,
-            $product->maintenances->map(fn ($maintenance) => [
-                'name' => $maintenance->name,
-                'prices' => $this->currencyCalculator->convert((float) $maintenance->pivot->price),
-            ])->toArray(),
+            [], // maintenances — если нужно, добавить в DTO и mapToDTO
         );
     }
 
     /**
      * Convert Product model to ProductListDTO.
      *
-     * @param \App\Models\Product $product
+     * @param \App\DTO\Product\ProductDTO $product
      * 
      * @return \App\DTO\Product\ProductListDTO
      */
-    private function makeProductListDTO(\App\Models\Product $product): \App\DTO\Product\ProductListDTO
+    private function makeProductListDTO(ProductDTO $product): \App\DTO\Product\ProductListDTO
     {
         return new \App\DTO\Product\ProductListDTO(
             $product->id,
             $product->name,
             $product->article,
-            $product->manufacturer->name,
+            $product->manufacturer_name,
             $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
             $product->image_path ? $this->getImageUrlWithFallback($product->image_path) : null,
         );

@@ -7,7 +7,7 @@ namespace App\Services;
 use App\DTO\Maintenance\MaintenanceListDTO;
 use App\DTO\Maintenance\MaintenanceStoreDTO;
 use App\DTO\Maintenance\MaintenanceUpdateDTO;
-use App\Models\Maintenance;
+use App\DTO\Maintenance\MaintenanceDTO;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
@@ -34,9 +34,7 @@ class MaintenanceService
     {
         return $this->cache->get(self::CACHE_KEY, function () {
             $maintenances = $this->maintenanceRepository->all();
-
-            return $maintenances->map(fn($maintenance)
-                => (new MaintenanceListDTO($maintenance))->toArray())->toArray();
+            return array_map(fn($maintenance) => (new MaintenanceListDTO($maintenance))->toArray(), $maintenances);
         });
     }
 
@@ -45,9 +43,9 @@ class MaintenanceService
      *
      * @param array $request_validated
      *
-     * @return Maintenance
+     * @return MaintenanceDTO
      */
-    public function createMaintenance(array $request_validated): Maintenance
+    public function createMaintenance(array $request_validated): MaintenanceDTO
     {
         $dto = new MaintenanceStoreDTO($request_validated);
 
@@ -68,9 +66,9 @@ class MaintenanceService
      * @param int $id
      * @param array $request_validated
      *
-     * @return Maintenance
+     * @return MaintenanceDTO
      */
-    public function updateMaintenance(int $id, array $request_validated): Maintenance
+    public function updateMaintenance(int $id, array $request_validated): MaintenanceDTO
     {
         $maintenance = $this->maintenanceRepository->find($id);
 
@@ -82,11 +80,11 @@ class MaintenanceService
             'duration' => $dto->duration ?? $maintenance->duration,
         ];
 
-        $this->maintenanceRepository->update($maintenance, $data);
+        $this->maintenanceRepository->update($id, $data);
 
         $this->cacheMaintenances();
 
-        return $maintenance->refresh();
+        return $this->maintenanceRepository->find($id);
     }
 
     /**
@@ -108,9 +106,7 @@ class MaintenanceService
     private function cacheMaintenances(): void
     {
         $maintenances = $this->maintenanceRepository->all();
-        $data = $maintenances->map(fn($maintenance) =>
-        (new MaintenanceListDTO($maintenance))->toArray())->toArray();
-
+        $data = array_map(fn($maintenance) => (new MaintenanceListDTO($maintenance))->toArray(), $maintenances);
         $this->cache->put(self::CACHE_KEY, $data);
     }
 }

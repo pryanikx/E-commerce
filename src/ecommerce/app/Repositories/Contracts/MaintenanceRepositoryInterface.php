@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
-use App\Models\Maintenance;
+use App\DTO\Maintenance\MaintenanceDTO;
 use Illuminate\Database\Eloquent\Collection;
 
 interface MaintenanceRepositoryInterface
@@ -12,35 +12,35 @@ interface MaintenanceRepositoryInterface
     /**
      * Get all maintenances from the database
      *
-     * @return Collection
+     * @return MaintenanceDTO[]
      */
-    public function all(): Collection;
+    public function all(): array;
 
     /**
      * Find a maintenance by ID.
      *
      * @param int $id
      *
-     * @return Maintenance
+     * @return MaintenanceDTO
      */
-    public function find(int $id): Maintenance;
+    public function find(int $id): MaintenanceDTO;
 
     /**
      * @param array $array
      *
-     * @return Maintenance
+     * @return MaintenanceDTO
      */
-    public function create(array $array): Maintenance;
+    public function create(array $array): MaintenanceDTO;
 
     /**
      * Update existing maintenance.
      *
-     * @param Maintenance $maintenance
+     * @param int $id
      * @param array $data
      *
      * @return bool
      */
-    public function update(Maintenance $maintenance, array $data): bool;
+    public function update(int $id, array $data): bool;
 
     /**
      * Delete maintenance by ID.

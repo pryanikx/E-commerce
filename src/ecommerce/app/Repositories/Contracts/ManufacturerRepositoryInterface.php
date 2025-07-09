@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
-use App\Models\Manufacturer;
+use App\DTO\Manufacturer\ManufacturerDTO;
 use Illuminate\Database\Eloquent\Collection;
 
 interface ManufacturerRepositoryInterface
@@ -12,37 +12,37 @@ interface ManufacturerRepositoryInterface
     /**
      * Get all manufacturers from the database.
      *
-     * @return Collection
+     * @return ManufacturerDTO[]
      */
-    public function all(): Collection;
+    public function all(): array;
 
     /**
      * Find a manufacturer by ID.
      *
      * @param int $id
      *
-     * @return Manufacturer
+     * @return ManufacturerDTO
      */
-    public function find(int $id): Manufacturer;
+    public function find(int $id): ManufacturerDTO;
 
     /**
      * Create a new manufacturer.
      *
      * @param array $array
      *
-     * @return Manufacturer
+     * @return ManufacturerDTO
      */
-    public function create(array $array): Manufacturer;
+    public function create(array $array): ManufacturerDTO;
 
     /**
      * Update an existing manufacturer.
      *
-     * @param Manufacturer $manufacturer
+     * @param int $id
      * @param array $data
      *
      * @return bool
      */
-    public function update(Manufacturer $manufacturer, array $data): bool;
+    public function update(int $id, array $data): bool;
 
     /**
      * Delete a manufacturer by ID.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTO\Manufacturer\ManufacturerDTO;
 use App\Models\Manufacturer;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -11,13 +12,11 @@ use Illuminate\Database\Eloquent\Collection;
 class ManufacturerRepository implements ManufacturerRepositoryInterface
 {
     /**
-     * Get all manufacturers from the database.
-     *
-     * @return Collection
+     * @return ManufacturerDTO[]
      */
-    public function all(): Collection
+    public function all(): array
     {
-        return Manufacturer::all();
+        return Manufacturer::all()->map(fn(Manufacturer $manufacturer) => $this->mapToDTO($manufacturer))->all();
     }
 
     /**
@@ -25,11 +24,12 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
      *
      * @param int $id
      *
-     * @return Manufacturer
+     * @return ManufacturerDTO
      */
-    public function find(int $id): Manufacturer
+    public function find(int $id): ManufacturerDTO
     {
-        return Manufacturer::findOrFail($id);
+        $manufacturer = Manufacturer::findOrFail($id);
+        return $this->mapToDTO($manufacturer);
     }
 
     /**
@@ -37,23 +37,25 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
      *
      * @param array $array
      *
-     * @return Manufacturer
+     * @return ManufacturerDTO
      */
-    public function create(array $array): Manufacturer
+    public function create(array $array): ManufacturerDTO
     {
-        return Manufacturer::create($array);
+        $manufacturer = Manufacturer::create($array);
+        return $this->mapToDTO($manufacturer);
     }
 
     /**
      * Update an existing manufacturer.
      *
-     * @param Manufacturer $manufacturer
+     * @param int $id
      * @param array $data
      *
      * @return bool
      */
-    public function update(Manufacturer $manufacturer, array $data): bool
+    public function update(int $id, array $data): bool
     {
+        $manufacturer = Manufacturer::findOrFail($id);
         return $manufacturer->update($data);
     }
 
@@ -67,5 +69,19 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
     public function delete(int $id): bool
     {
         return (bool) Manufacturer::destroy($id);
+    }
+
+    /**
+     * @param Manufacturer $manufacturer
+     * @return ManufacturerDTO
+     */
+    private function mapToDTO(Manufacturer $manufacturer): ManufacturerDTO
+    {
+        return new ManufacturerDTO(
+            $manufacturer->id,
+            $manufacturer->name,
+            $manufacturer->created_at?->toISOString() ?? '',
+            $manufacturer->updated_at?->toISOString() ?? '',
+        );
     }
 }

@@ -28,6 +28,6 @@ readonly class ManufacturerListDTO
         return [
             'id' => $this->id,
             'name' => $this->name,
-        ];
+            ];
     }
 }

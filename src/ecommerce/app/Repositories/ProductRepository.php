@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTO\Product\ProductDTO;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,13 +13,11 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class ProductRepository implements ProductRepositoryInterface
 {
     /**
-     * Get all products paginated from the database.
-     *
-     * @return LengthAwarePaginator;
+     * @return ProductDTO[]
      */
-    public function all(): LengthAwarePaginator
+    public function all(): array
     {
-        return Product::with(['manufacturer'])->paginate(self::PER_PAGE);
+        return Product::with(['manufacturer'])->get()->map(fn(Product $product) => $this->mapToDTO($product))->all();
     }
 
     /**
@@ -26,11 +25,12 @@ class ProductRepository implements ProductRepositoryInterface
      *
      * @param int $id
      *
-     * @return Product
+     * @return ProductDTO
      */
-    public function find(int $id): Product
+    public function find(int $id): ProductDTO
     {
-        return Product::with(['manufacturer', 'category', 'maintenances'])->findOrFail($id);
+        $product = Product::with(['manufacturer', 'category', 'maintenances'])->findOrFail($id);
+        return $this->mapToDTO($product);
     }
 
     /**
@@ -38,23 +38,25 @@ class ProductRepository implements ProductRepositoryInterface
      *
      * @param array $data
      *
-     * @return Product
+     * @return ProductDTO
      */
-    public function create(array $data): Product
+    public function create(array $data): ProductDTO
     {
-        return Product::create($data);
+        $product = Product::create($data);
+        return $this->mapToDTO($product);
     }
 
     /**
      * Update an existing product.
      *
-     * @param Product $product
+     * @param int $id
      * @param array $data
      *
      * @return bool
      */
-    public function update(Product $product, array $data): bool
+    public function update(int $id, array $data): bool
     {
+        $product = Product::findOrFail($id);
         return $product->update($data);
     }
 
@@ -73,13 +75,37 @@ class ProductRepository implements ProductRepositoryInterface
     /**
      * Attach maintenances to a product.
      *
-     * @param Product $product
+     * @param int $id
      * @param array $maintenances
      *
      * @return void
      */
-    public function attachMaintenances(Product $product, array $maintenances): void
+    public function attachMaintenances(int $id, array $maintenances): void
     {
+        $product = Product::findOrFail($id);
         $product->maintenances()->sync($maintenances);
+    }
+
+    /**
+     * @param Product $product
+     * @return ProductDTO
+     */
+    private function mapToDTO(Product $product): ProductDTO
+    {
+        return new ProductDTO(
+            $product->id,
+            $product->name,
+            $product->article,
+            $product->description,
+            $product->release_date?->toDateString(),
+            (float)$product->price,
+            $product->image_path,
+            $product->manufacturer_id,
+            $product->manufacturer?->name,
+            $product->category_id,
+            $product->category?->name,
+            $product->created_at?->toISOString() ?? '',
+            $product->updated_at?->toISOString() ?? '',
+        );
     }
 }
