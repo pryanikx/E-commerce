@@ -11,6 +11,7 @@ use App\Services\S3UploadService;
 use Illuminate\Support\ServiceProvider;
 use App\Services\Support\CsvWriterFactoryInterface;
 use App\Services\Support\CsvWriterFactory;
+use App\Services\Support\StorageUploaderInterface;
 
 class CatalogExportServiceProvider extends ServiceProvider
 {
@@ -41,6 +42,8 @@ class CatalogExportServiceProvider extends ServiceProvider
                 $app->make(\Illuminate\Contracts\Filesystem\Filesystem::class),
             );
         });
+
+        $this->app->singleton(StorageUploaderInterface::class, S3UploadService::class);
     }
 
     /**

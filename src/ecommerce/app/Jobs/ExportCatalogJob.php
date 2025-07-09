@@ -6,6 +6,7 @@ namespace App\Jobs;
 
 use App\Services\ProductExportService;
 use App\Services\S3UploadService;
+use App\Services\Support\StorageUploaderInterface;
 use App\Services\EmailNotificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -35,7 +36,6 @@ class ExportCatalogJob implements ShouldQueue
     public function __construct(
         protected readonly string $exportId,
         protected readonly string $adminEmail,
-        private LoggerInterface $logger,
     ) {
     }
 
@@ -46,30 +46,30 @@ class ExportCatalogJob implements ShouldQueue
      */
     public function handle(
         ProductExportService $exportService,
-        S3UploadService $s3Service,
-        EmailNotificationService $emailService
+        StorageUploaderInterface $uploader,
+        EmailNotificationService $emailService,
+        LoggerInterface $logger
     ): void {
         try {
-            $this->logger->info(__('messages.export_started'), [
+            $logger->info(__('messages.export_started'), [
                 self::CONTEXT_EXPORT_ID => $this->exportId,
                 self::CONTEXT_ADMIN_EMAIL => $this->adminEmail
             ]);
 
-            $csvFilePath = $this->generateCsvFile($exportService);
-            $s3Key = $this->uploadToS3($s3Service, $csvFilePath);
+            $csvFilePath = $this->generateCsvFile($exportService, $logger);
+            $storageKey = $this->uploadToStorage($uploader, $csvFilePath, $logger);
             $stats = $exportService->getExportStats();
 
-            $this->sendSuccessNotification($emailService, $s3Key, $stats);
+            $this->sendSuccessNotification($emailService, $storageKey, $stats, $logger);
 
-            $this->logger->info(__('messages.export_completed'), [
+            $logger->info(__('messages.export_completed'), [
                 self::CONTEXT_EXPORT_ID => $this->exportId,
-                self::CONTEXT_S3_KEY => $s3Key,
+                self::CONTEXT_S3_KEY => $storageKey,
                 self::CONTEXT_STATS => $stats
             ]);
 
         } catch (\Throwable $exception) {
-            $this->handleExportFailure($exception, $emailService);
-
+            $this->handleExportFailure($emailService, $exception, $logger);
             throw $exception;
         }
     }
@@ -97,7 +97,7 @@ class ExportCatalogJob implements ShouldQueue
      * @return string
      * @throws \Exception
      */
-    private function generateCsvFile(ProductExportService $exportService): string
+    private function generateCsvFile(ProductExportService $exportService, LoggerInterface $logger): string
     {
         $csvFilePath = $exportService->exportToCSV($this->exportId);
 
@@ -105,7 +105,7 @@ class ExportCatalogJob implements ShouldQueue
             throw new \Exception(__('errors.csv_not_created') . ": {$csvFilePath}");
         }
 
-        $this->logger->info(__('messages.csv_file_generated'), [
+        $logger->info(__('messages.csv_file_generated'), [
             self::CONTEXT_EXPORT_ID => $this->exportId,
             self::CONTEXT_FILE_PATH => $csvFilePath,
             self::CONTEXT_FILE_SIZE => filesize($csvFilePath)
@@ -117,48 +117,47 @@ class ExportCatalogJob implements ShouldQueue
     /**
      * Upload CSV file to S3 storage
      *
-     * @param S3UploadService $s3Service
      * @param string $csvFilePath
      *
      * @return string
      * @throws \Exception
      */
-    private function uploadToS3(S3UploadService $s3Service, string $csvFilePath): string
+    private function uploadToStorage(StorageUploaderInterface $uploader, string $csvFilePath, LoggerInterface $logger): string
     {
-        $s3Key = $s3Service->uploadCatalogExport($csvFilePath, $this->exportId);
+        $storageKey = $uploader->uploadCatalogExport($csvFilePath, $this->exportId);
 
-        if (!$s3Key) {
-            throw new \Exception(__('errors.s3_upload_failed'));
+        if (!$storageKey) {
+            throw new \Exception(__('errors.storage_upload_failed'));
         }
 
-        $this->logger->info(__('messages.file_uploaded_to_s3'), [
+        $logger->info(__('messages.file_uploaded_to_storage'), [
             self::CONTEXT_EXPORT_ID => $this->exportId,
-            self::CONTEXT_S3_KEY => $s3Key
+            self::CONTEXT_S3_KEY => $storageKey
         ]);
 
-        return $s3Key;
+        return $storageKey;
     }
 
     /**
      * Send success notification email
      *
-     * @param EmailNotificationService $emailService
-     * @param string $s3Key
+     * @param string $storageKey
      * @param array $stats
      */
     private function sendSuccessNotification(
         EmailNotificationService $emailService,
-        string $s3Key,
-        array $stats
+        string $storageKey,
+        array $stats,
+        LoggerInterface $logger
     ): void {
         $emailService->sendExportSuccessNotification(
             $this->adminEmail,
             $this->exportId,
-            $s3Key,
+            $storageKey,
             $stats
         );
 
-        $this->logger->info(__('messages.success_notification_sent'), [
+        $logger->info(__('messages.success_notification_sent'), [
             self::CONTEXT_EXPORT_ID => $this->exportId,
             self::CONTEXT_ADMIN_EMAIL => $this->adminEmail
         ]);
@@ -168,11 +167,14 @@ class ExportCatalogJob implements ShouldQueue
      * Handle export failure and send notification
      *
      * @param \Throwable $exception
-     * @param EmailNotificationService $emailService
     */
-    private function handleExportFailure(\Throwable $exception, EmailNotificationService $emailService): void
+    private function handleExportFailure(
+        EmailNotificationService $emailService,
+        \Throwable $exception,
+        LoggerInterface $logger
+    ): void
     {
-        $this->logger->error(__('messages.export_failed'), [
+        $logger->error(__('messages.export_failed'), [
             self::CONTEXT_EXPORT_ID => $this->exportId,
             self::CONTEXT_ERROR => $exception->getMessage(),
             self::CONTEXT_TRACE => $exception->getTraceAsString()
@@ -185,13 +187,13 @@ class ExportCatalogJob implements ShouldQueue
                 $exception->getMessage()
             );
 
-            $this->logger->info(__('messages.failure_notification_sent'), [
+            $logger->info(__('messages.failure_notification_sent'), [
                 self::CONTEXT_EXPORT_ID => $this->exportId,
                 self::CONTEXT_ADMIN_EMAIL => $this->adminEmail
             ]);
 
         } catch (\Throwable $emailException) {
-            $this->logger->error(__('messages.failure_notification_failed'), [
+            $logger->error(__('messages.failure_notification_failed'), [
                 self::CONTEXT_EXPORT_ID => $this->exportId,
                 self::CONTEXT_EMAIL_ERROR => $emailException->getMessage()
             ]);

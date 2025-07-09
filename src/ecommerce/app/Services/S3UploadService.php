@@ -7,8 +7,9 @@ namespace App\Services;
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 use Psr\Log\LoggerInterface;
+use App\Services\Support\StorageUploaderInterface;
 
-class S3UploadService
+class S3UploadService implements StorageUploaderInterface
 {
     private const SUCCESS_STATUS_CODE = 200;
     private const NOT_FOUND_ERROR = 'NotFound';
@@ -65,6 +66,7 @@ class S3UploadService
      *
      * @param string $filePath
      * @param string $exportId
+     * 
      * @return string|null
      * @throws \Exception
      */
@@ -129,6 +131,7 @@ class S3UploadService
      * Check if file exists in S3 storage
      *
      * @param string $s3Key
+     * 
      * @return bool
      */
     public function fileExists(string $s3Key): bool
