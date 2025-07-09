@@ -9,6 +9,8 @@ use App\Services\EmailNotificationService;
 use App\Services\ProductExportService;
 use App\Services\S3UploadService;
 use Illuminate\Support\ServiceProvider;
+use App\Services\Support\CsvWriterFactoryInterface;
+use App\Services\Support\CsvWriterFactory;
 
 class CatalogExportServiceProvider extends ServiceProvider
 {
@@ -17,10 +19,13 @@ class CatalogExportServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(CsvWriterFactoryInterface::class, CsvWriterFactory::class);
+
         $this->app->singleton(ProductExportService::class, function ($app) {
             return new ProductExportService(
                 $app->make(\App\Http\Controllers\User\ProductController::class),
                 $app->make(\Psr\Log\LoggerInterface::class),
+                $app->make(CsvWriterFactoryInterface::class),
             );
         });
 
@@ -33,6 +38,7 @@ class CatalogExportServiceProvider extends ServiceProvider
         $this->app->singleton(EmailNotificationService::class, function ($app) {
             return new EmailNotificationService(
                 $app->make(\Psr\Log\LoggerInterface::class),
+                $app->make(\Illuminate\Contracts\Filesystem\Filesystem::class),
             );
         });
     }

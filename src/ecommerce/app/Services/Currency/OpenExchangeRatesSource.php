@@ -7,6 +7,7 @@ namespace App\Services\Currency;
 use Illuminate\Support\Facades\Http;
 use Psr\Log\LoggerInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
+use App\Services\Support\HttpClientInterface;
 
 class OpenExchangeRatesSource implements CurrencySource
 {
@@ -14,19 +15,14 @@ class OpenExchangeRatesSource implements CurrencySource
 
     private const DEFAULT_RATE = 1.0;
 
-    /**
-     * @var string $apiKey
-     */
     protected string $apiKey;
 
-    /**
-     * @var string $apiUrl
-     */
     protected string $apiUrl;
 
     public function __construct(
         private LoggerInterface $logger,
         private CacheInterface $cache,
+        private HttpClientInterface $http,
     )
     {
         $this->apiKey = config('services.open_exchange_rates.api_key');
@@ -47,7 +43,7 @@ class OpenExchangeRatesSource implements CurrencySource
 
         return $this->cache->remember($cacheKey, $cacheDuration, function () use ($baseCurrency) {
             try {
-                $response = Http::get($this->apiUrl, [
+                $response = $this->http->get($this->apiUrl, [
                     'app_id' => $this->apiKey,
                     'base' => $baseCurrency,
                 ]);

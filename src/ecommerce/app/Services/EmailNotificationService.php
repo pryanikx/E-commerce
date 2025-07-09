@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\File;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Psr\Log\LoggerInterface;
 
 class EmailNotificationService
@@ -16,7 +16,7 @@ class EmailNotificationService
     protected string $emailLogPath;
     protected string $emailFilePrefix;
 
-    public function __construct(private LoggerInterface $logger)
+    public function __construct(private LoggerInterface $logger, private Filesystem $filesystem)
     {
         $this->fromEmail = config('services.email_notification.default_from_email', 'noreply@example.com');
         $this->emailLogPath = storage_path(config('services.email_notification.email_log_directory', 'app/emails'));
@@ -111,8 +111,8 @@ class EmailNotificationService
      */
     private function ensureDirectoryExists(): void
     {
-        if (!File::exists($this->emailLogPath)) {
-            File::makeDirectory($this->emailLogPath, self::DIRECTORY_PERMISSIONS, true);
+        if (!$this->filesystem->exists($this->emailLogPath)) {
+            $this->filesystem->makeDirectory($this->emailLogPath, self::DIRECTORY_PERMISSIONS, true);
         }
     }
 
@@ -136,7 +136,7 @@ class EmailNotificationService
             'content' => $content
         ];
 
-        File::put($filePath, json_encode($emailData, self::JSON_FLAGS));
+        $this->filesystem->put($filePath, json_encode($emailData, self::JSON_FLAGS));
 
         $this->saveHtmlVersion($to, $subject, $content, $exportId);
     }
@@ -153,7 +153,7 @@ class EmailNotificationService
     {
         $htmlFilePath = $this->emailLogPath . "/" . $this->emailFilePrefix . "{$exportId}.html";
         $htmlContent = $this->buildHtmlWrapper($to, $subject, $content);
-        File::put($htmlFilePath, $htmlContent);
+        $this->filesystem->put($htmlFilePath, $htmlContent);
     }
 
     /**
