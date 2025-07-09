@@ -12,6 +12,7 @@ use App\Models\Category;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\Currency\CurrencyCalculatorService;
 use Illuminate\Support\Str;
+use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
 class CategoryService
 {
@@ -24,7 +25,8 @@ class CategoryService
      */
     public function __construct(
         private CategoryRepositoryInterface $categoryRepository,
-        private CurrencyCalculatorService $currencyCalculator
+        private CurrencyCalculatorService $currencyCalculator,
+        private CacheInterface $cache,
     )
     {
     }
@@ -36,7 +38,7 @@ class CategoryService
      */
     public function getAll(): ?array
     {
-        return cache()->rememberForever(self::CACHE_KEY, function () {
+        return $this->cache->rememberForever(self::CACHE_KEY, function () {
             $categories = $this->categoryRepository->all();
 
             return $categories->map(fn($category)
@@ -161,7 +163,7 @@ class CategoryService
         $data = $categories->map(fn($category) =>
             (new CategoryListDTO($category))->toArray())->toArray();
 
-        cache()->put(self::CACHE_KEY, $data);
+        $this->cache->put(self::CACHE_KEY, $data);
     }
 
     /**

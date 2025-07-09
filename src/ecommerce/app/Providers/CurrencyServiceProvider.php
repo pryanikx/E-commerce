@@ -17,7 +17,10 @@ class CurrencyServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(CurrencySource::class, function ($app) {
-            return new OpenExchangeRatesSource();
+            return new OpenExchangeRatesSource(
+                $app->make(\Psr\Log\LoggerInterface::class),
+                $app->make(\Illuminate\Contracts\Cache\Repository::class),
+            );
         });
 
         $this->app->singleton(CurrencyCalculatorService::class, function ($app) {

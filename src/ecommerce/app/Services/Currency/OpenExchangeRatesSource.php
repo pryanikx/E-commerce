@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services\Currency;
 
 use Illuminate\Support\Facades\Http;
+use Psr\Log\LoggerInterface;
+use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
 class OpenExchangeRatesSource implements CurrencySource
 {
@@ -22,7 +24,10 @@ class OpenExchangeRatesSource implements CurrencySource
      */
     protected string $apiUrl;
 
-    public function __construct()
+    public function __construct(
+        private LoggerInterface $logger,
+        private CacheInterface $cache,
+    )
     {
         $this->apiKey = config('services.open_exchange_rates.api_key');
         $this->apiUrl = config('services.open_exchange_rates.api_url', 'https://openexchangerates.org/api/latest.json');
@@ -40,7 +45,7 @@ class OpenExchangeRatesSource implements CurrencySource
         $cacheKey = "exchange_rates_{$baseCurrency}";
         $cacheDuration = now()->addHours(self::CACHE_DURATION_H);
 
-        return cache()->remember($cacheKey, $cacheDuration, function () use ($baseCurrency) {
+        return $this->cache->remember($cacheKey, $cacheDuration, function () use ($baseCurrency) {
             try {
                 $response = Http::get($this->apiUrl, [
                     'app_id' => $this->apiKey,
@@ -48,7 +53,7 @@ class OpenExchangeRatesSource implements CurrencySource
                 ]);
 
                 if ($response->failed()) {
-                    logger()->error(__('errors.fetch_exchange_rates_failed'), [
+                    $this->logger->error(__('errors.fetch_exchange_rates_failed'), [
                         'status' => $response->status(),
                         'body' => $response->body(),
                     ]);
@@ -60,7 +65,7 @@ class OpenExchangeRatesSource implements CurrencySource
 
                 return $data['rates'] ?? array_map(fn() => self::DEFAULT_RATE, array_combine($this->getSupportedCurrencies(), $this->getSupportedCurrencies()));
             } catch (\Exception $e) {
-                logger()->error(__('errors.fetch_exchange_rates_failed'), [
+                $this->logger->error(__('errors.fetch_exchange_rates_failed'), [
                     'message' => $e->getMessage(),
                     'base_currency' => $baseCurrency,
                 ]);

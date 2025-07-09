@@ -12,6 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Psr\Log\LoggerInterface;
 
 class ExportCatalogJob implements ShouldQueue
 {
@@ -33,7 +34,8 @@ class ExportCatalogJob implements ShouldQueue
 
     public function __construct(
         protected readonly string $exportId,
-        protected readonly string $adminEmail
+        protected readonly string $adminEmail,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -48,7 +50,7 @@ class ExportCatalogJob implements ShouldQueue
         EmailNotificationService $emailService
     ): void {
         try {
-            logger()->info(__('messages.export_started'), [
+            $this->logger->info(__('messages.export_started'), [
                 self::CONTEXT_EXPORT_ID => $this->exportId,
                 self::CONTEXT_ADMIN_EMAIL => $this->adminEmail
             ]);
@@ -59,7 +61,7 @@ class ExportCatalogJob implements ShouldQueue
 
             $this->sendSuccessNotification($emailService, $s3Key, $stats);
 
-            logger()->info(__('messages.export_completed'), [
+            $this->logger->info(__('messages.export_completed'), [
                 self::CONTEXT_EXPORT_ID => $this->exportId,
                 self::CONTEXT_S3_KEY => $s3Key,
                 self::CONTEXT_STATS => $stats
@@ -79,7 +81,7 @@ class ExportCatalogJob implements ShouldQueue
      */
     public function failed(\Throwable $exception): void
     {
-        logger()->error(__('messages.export_failed_permanently'), [
+        $this->logger->error(__('messages.export_failed_permanently'), [
             self::CONTEXT_EXPORT_ID => $this->exportId,
             self::CONTEXT_ADMIN_EMAIL => $this->adminEmail,
             self::CONTEXT_ERROR => $exception->getMessage(),
@@ -103,7 +105,7 @@ class ExportCatalogJob implements ShouldQueue
             throw new \RuntimeException(__('errors.csv_not_created') . ": {$csvFilePath}");
         }
 
-        logger()->info(__('messages.csv_file_generated'), [
+        $this->logger->info(__('messages.csv_file_generated'), [
             self::CONTEXT_EXPORT_ID => $this->exportId,
             self::CONTEXT_FILE_PATH => $csvFilePath,
             self::CONTEXT_FILE_SIZE => filesize($csvFilePath)
@@ -129,7 +131,7 @@ class ExportCatalogJob implements ShouldQueue
             throw new \RuntimeException(__('errors.s3_upload_failed'));
         }
 
-        logger()->info(__('messages.file_uploaded_to_s3'), [
+        $this->logger->info(__('messages.file_uploaded_to_s3'), [
             self::CONTEXT_EXPORT_ID => $this->exportId,
             self::CONTEXT_S3_KEY => $s3Key
         ]);
@@ -156,7 +158,7 @@ class ExportCatalogJob implements ShouldQueue
             $stats
         );
 
-        logger()->info(__('messages.success_notification_sent'), [
+        $this->logger->info(__('messages.success_notification_sent'), [
             self::CONTEXT_EXPORT_ID => $this->exportId,
             self::CONTEXT_ADMIN_EMAIL => $this->adminEmail
         ]);
@@ -170,7 +172,7 @@ class ExportCatalogJob implements ShouldQueue
     */
     private function handleExportFailure(\Throwable $exception, EmailNotificationService $emailService): void
     {
-        logger()->error(__('messages.export_failed'), [
+        $this->logger->error(__('messages.export_failed'), [
             self::CONTEXT_EXPORT_ID => $this->exportId,
             self::CONTEXT_ERROR => $exception->getMessage(),
             self::CONTEXT_TRACE => $exception->getTraceAsString()
@@ -183,13 +185,13 @@ class ExportCatalogJob implements ShouldQueue
                 $exception->getMessage()
             );
 
-            logger()->info(__('messages.failure_notification_sent'), [
+            $this->logger->info(__('messages.failure_notification_sent'), [
                 self::CONTEXT_EXPORT_ID => $this->exportId,
                 self::CONTEXT_ADMIN_EMAIL => $this->adminEmail
             ]);
 
         } catch (\Throwable $emailException) {
-            logger()->error(__('messages.failure_notification_failed'), [
+            $this->logger->error(__('messages.failure_notification_failed'), [
                 self::CONTEXT_EXPORT_ID => $this->exportId,
                 self::CONTEXT_EMAIL_ERROR => $emailException->getMessage()
             ]);

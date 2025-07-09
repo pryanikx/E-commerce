@@ -6,6 +6,7 @@ namespace App\Services;
 
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
+use Psr\Log\LoggerInterface;
 
 class S3UploadService
 {
@@ -23,7 +24,7 @@ class S3UploadService
     protected S3Client $s3Client;
     protected string $bucket;
 
-    public function __construct()
+    public function __construct(private LoggerInterface $logger)
     {
         $this->bucket = $this->initializeS3Bucket();
 
@@ -89,7 +90,7 @@ class S3UploadService
             ]);
 
             if ($result['@metadata']['statusCode'] === self::SUCCESS_STATUS_CODE) {
-                logger()->info(__('messages.csv_uploaded'), [
+                $this->logger->info(__('messages.csv_uploaded'), [
                     self::CONTEXT_EXPORT_ID => $exportId,
                     self::CONTEXT_S3_KEY => $s3Key,
                     self::CONTEXT_BUCKET => $this->bucket,
@@ -104,7 +105,7 @@ class S3UploadService
             );
 
         } catch (AwsException $e) {
-            logger()->error(__('messages.s3_aws_error'), [
+            $this->logger->error(__('messages.s3_aws_error'), [
                 self::CONTEXT_EXPORT_ID => $exportId,
                 self::CONTEXT_ERROR_CODE => $e->getAwsErrorCode(),
                 self::CONTEXT_ERROR_MESSAGE => $e->getAwsErrorMessage(),
@@ -114,7 +115,7 @@ class S3UploadService
             return null;
 
         } catch (\Exception $e) {
-            logger()->error(__('messages.s3_general_error'), [
+            $this->logger->error(__('messages.s3_general_error'), [
                 self::CONTEXT_EXPORT_ID => $exportId,
                 self::CONTEXT_ERROR => $e->getMessage(),
                 self::CONTEXT_FILE_PATH => $filePath
@@ -145,7 +146,7 @@ class S3UploadService
                 return false;
             }
 
-            logger()->error(__('messages.s3_file_check_error'), [
+            $this->logger->error(__('messages.s3_file_check_error'), [
                 self::CONTEXT_S3_KEY => $s3Key,
                 self::CONTEXT_ERROR => $e->getMessage()
             ]);

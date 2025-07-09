@@ -8,6 +8,7 @@ use App\Http\Controllers\User\ProductController;
 use App\Models\Product;
 use League\Csv\UnavailableStream;
 use League\Csv\Writer;
+use Psr\Log\LoggerInterface;
 
 class ProductExportService
 {
@@ -30,6 +31,7 @@ class ProductExportService
 
     public function __construct(
         private ProductController $productController,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -48,7 +50,7 @@ class ProductExportService
 
             $totalExported = $this->exportProductsToCSV($csv, $exportId);
 
-            logger()->info(__('messages.catalog_export_completed'), [
+            $this->logger->info(__('messages.catalog_export_completed'), [
                 'export_id' => $exportId,
                 'total_products' => $totalExported,
                 'file_path' => $filePath
@@ -57,7 +59,7 @@ class ProductExportService
             return $filePath;
 
         } catch (\Exception $e) {
-            logger()->error(__('errors.catalog_export_failed'), [
+            $this->logger->error(__('errors.catalog_export_failed'), [
                 'export_id' => $exportId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()

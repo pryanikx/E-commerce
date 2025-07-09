@@ -13,6 +13,8 @@ use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Services\Currency\CurrencyCalculatorService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Storage;
+use Psr\Log\LoggerInterface;
+use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
 class ProductService
 {
@@ -27,6 +29,8 @@ class ProductService
     public function __construct(
         private ProductRepositoryInterface $productRepository,
         private CurrencyCalculatorService $currencyCalculator,
+        private LoggerInterface $logger,
+        private CacheInterface $cache,
     ) {
     }
 
@@ -61,7 +65,7 @@ class ProductService
     {
         $cacheKey = $this->getProductCacheKey($id);
 
-        return cache()->remember($cacheKey, now()->addMinutes(self::CACHE_TTL_MINUTES),
+        return $this->cache->remember($cacheKey, now()->addMinutes(self::CACHE_TTL_MINUTES),
             function () use ($id) {
                 try {
                     $product = $this->productRepository->find($id);
@@ -142,7 +146,7 @@ class ProductService
      */
     public function deleteProduct(int $id): bool
     {
-        cache()->forget($this->getProductCacheKey($id));
+        $this->cache->forget($this->getProductCacheKey($id));
 
         return $this->productRepository->delete($id);
     }
@@ -188,7 +192,7 @@ class ProductService
 
                 return $path ? 'storage/' . $path : $this->getFallbackImagePath();
             } catch (\Exception $e) {
-                logger()->error(
+                $this->logger->error(
                     __('errors.store_image_failed', ['error' => $e->getMessage()])
                 );
                 return $oldPath ?? $this->getFallbackImagePath();
@@ -254,7 +258,7 @@ class ProductService
      */
     private function refreshProductCache(int $id): void
     {
-        cache()->forget($this->getProductCacheKey($id));
+        $this->cache->forget($this->getProductCacheKey($id));
         $this->cacheProduct($id);
     }
 
@@ -273,13 +277,13 @@ class ProductService
             $dtoArray = $dto->toArray();
             $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
 
-            cache()->put(
+            $this->cache->put(
                 $this->getProductCacheKey($id),
                 $dtoArray,
                 now()->addMinutes(self::CACHE_TTL_MINUTES)
             );
         } catch (\Exception $e) {
-            logger()->error(__('errors.cache_failed', ['error' => $e->getMessage()]));
+            $this->logger->error(__('errors.cache_failed', ['error' => $e->getMessage()]));
         }
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Illuminate\Support\Facades\File;
+use Psr\Log\LoggerInterface;
 
 class EmailNotificationService
 {
@@ -15,7 +16,7 @@ class EmailNotificationService
     protected string $emailLogPath;
     protected string $emailFilePrefix;
 
-    public function __construct()
+    public function __construct(private LoggerInterface $logger)
     {
         $this->fromEmail = config('services.email_notification.default_from_email', 'noreply@example.com');
         $this->emailLogPath = storage_path(config('services.email_notification.email_log_directory', 'app/emails'));
@@ -44,7 +45,7 @@ class EmailNotificationService
 
             $this->saveEmailToFile($adminEmail, $subject, $emailContent, $exportId);
 
-            logger()->info(__('messages.email_notification_saved'), [
+            $this->logger->info(__('messages.email_notification_saved'), [
                 'to' => $adminEmail,
                 'subject' => $subject,
                 'export_id' => $exportId,
@@ -54,7 +55,7 @@ class EmailNotificationService
             return true;
 
         } catch (\Exception $e) {
-            logger()->error(__('errors.export_success_notification_failed'), [
+            $this->logger->error(__('errors.export_success_notification_failed'), [
                 'export_id' => $exportId,
                 'admin_email' => $adminEmail,
                 'error' => $e->getMessage()
@@ -85,7 +86,7 @@ class EmailNotificationService
             $errorFileId = $exportId . '_error';
             $this->saveEmailToFile($adminEmail, $subject, $emailContent, $errorFileId);
 
-            logger()->info(__('messages.error_email_saved'), [
+            $this->logger->info(__('messages.error_email_saved'), [
                 'to' => $adminEmail,
                 'subject' => $subject,
                 'export_id' => $exportId,
@@ -95,7 +96,7 @@ class EmailNotificationService
             return true;
 
         } catch (\Exception $e) {
-            logger()->error(__('errors.export_failure_notification_failed'), [
+            $this->logger->error(__('errors.export_failure_notification_failed'), [
                 'export_id' => $exportId,
                 'admin_email' => $adminEmail,
                 'error' => $e->getMessage()

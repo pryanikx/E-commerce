@@ -9,6 +9,7 @@ use App\DTO\Maintenance\MaintenanceStoreDTO;
 use App\DTO\Maintenance\MaintenanceUpdateDTO;
 use App\Models\Maintenance;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
+use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
 class MaintenanceService
 {
@@ -18,7 +19,8 @@ class MaintenanceService
      * @param MaintenanceRepositoryInterface $maintenanceRepository
      */
     public function __construct(
-        private MaintenanceRepositoryInterface $maintenanceRepository
+        private MaintenanceRepositoryInterface $maintenanceRepository,
+        private CacheInterface $cache,
     )
     {
     }
@@ -30,7 +32,7 @@ class MaintenanceService
      */
     public function getAll(): ?array
     {
-        return cache(self::CACHE_KEY, function () {
+        return $this->cache->get(self::CACHE_KEY, function () {
             $maintenances = $this->maintenanceRepository->all();
 
             return $maintenances->map(fn($maintenance)
@@ -109,6 +111,6 @@ class MaintenanceService
         $data = $maintenances->map(fn($maintenance) =>
         (new MaintenanceListDTO($maintenance))->toArray())->toArray();
 
-        cache()->put(self::CACHE_KEY, $data);
+        $this->cache->put(self::CACHE_KEY, $data);
     }
 }

@@ -19,16 +19,21 @@ class CatalogExportServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ProductExportService::class, function ($app) {
             return new ProductExportService(
-                $app->make(ProductController::class)
+                $app->make(\App\Http\Controllers\User\ProductController::class),
+                $app->make(\Psr\Log\LoggerInterface::class),
             );
         });
 
         $this->app->singleton(S3UploadService::class, function ($app) {
-            return new S3UploadService();
+            return new S3UploadService(
+                $app->make(\Psr\Log\LoggerInterface::class),
+            );
         });
 
         $this->app->singleton(EmailNotificationService::class, function ($app) {
-            return new EmailNotificationService();
+            return new EmailNotificationService(
+                $app->make(\Psr\Log\LoggerInterface::class),
+            );
         });
     }
 

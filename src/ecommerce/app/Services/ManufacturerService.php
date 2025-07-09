@@ -9,6 +9,7 @@ use App\DTO\Manufacturer\ManufacturerStoreDTO;
 use App\DTO\Manufacturer\ManufacturerUpdateDTO;
 use App\Models\Manufacturer;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
+use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
 class ManufacturerService
 {
@@ -18,7 +19,8 @@ class ManufacturerService
      * @param ManufacturerRepositoryInterface $manufacturerRepository
      */
     public function __construct(
-        private ManufacturerRepositoryInterface $manufacturerRepository
+        private ManufacturerRepositoryInterface $manufacturerRepository,
+        private CacheInterface $cache,
     )
     {
     }
@@ -30,7 +32,7 @@ class ManufacturerService
      */
     public function getAll(): ?array
     {
-        return cache()->rememberForever(self::CACHE_KEY, function () {
+        return $this->cache->rememberForever(self::CACHE_KEY, function () {
             $manufacturers = $this->manufacturerRepository->all();
 
             return $manufacturers->map(fn($manufacturer) => (new ManufacturerListDTO($manufacturer))->toArray())->toArray();
@@ -110,6 +112,6 @@ class ManufacturerService
         $data = $manufacturers->map(fn($manufacturer) =>
         (new ManufacturerListDTO($manufacturer))->toArray())->toArray();
 
-        cache()->put(self::CACHE_KEY, $data);
+        $this->cache->put(self::CACHE_KEY, $data);
     }
 }
