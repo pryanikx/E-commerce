@@ -25,10 +25,6 @@ class AdminProductExportController extends Controller
         try {
             $user = $this->getAuthenticatedUser();
 
-            if (!$user) {
-                return $this->unauthorizedResponse();
-            }
-
             $exportId = $this->generateExportId();
 
             $this->dispatchExportJob($exportId, $user->email);
@@ -77,18 +73,6 @@ class AdminProductExportController extends Controller
     {
         ExportCatalogJob::dispatch($exportId, $userEmail)
             ->onQueue(self::QUEUE_NAME);
-    }
-
-    /**
-     * Return unauthorized response
-     *
-     * @return JsonResponse
-     */
-    private function unauthorizedResponse(): JsonResponse
-    {
-        return response()->json([
-            'message' => __('messages.user_unauthorized'),
-        ], 401);
     }
 
     /**
