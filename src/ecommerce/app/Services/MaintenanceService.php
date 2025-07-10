@@ -42,13 +42,13 @@ class MaintenanceService
     /**
      * Create new maintenance.
      *
-     * @param array $request_validated
+     * @param array $requestValidated
      *
      * @return MaintenanceDTO
      */
-    public function createMaintenance(array $request_validated): MaintenanceDTO
+    public function createMaintenance(array $requestValidated): MaintenanceDTO
     {
-        $dto = new MaintenanceStoreDTO($request_validated);
+        $dto = new MaintenanceStoreDTO($requestValidated);
 
         $maintenance = $this->maintenanceRepository->create([
             'name' => $dto->name,
@@ -65,15 +65,15 @@ class MaintenanceService
      * Update existing maintenance by ID.
      *
      * @param int $id
-     * @param array $request_validated
+     * @param array $requestValidated
      *
      * @return MaintenanceDTO
      */
-    public function updateMaintenance(int $id, array $request_validated): MaintenanceDTO
+    public function updateMaintenance(int $id, array $requestValidated): MaintenanceDTO
     {
         $maintenance = $this->maintenanceRepository->find($id);
 
-        $dto = new MaintenanceUpdateDTO($request_validated);
+        $dto = new MaintenanceUpdateDTO($requestValidated);
 
         $data = [
             'name' => $dto->name ?? $maintenance->name,
@@ -123,14 +123,21 @@ class MaintenanceService
      *
      * @return MaintenanceListDTO
      */
-    private function makeMaintenanceListDTO($maintenance): MaintenanceListDTO
+    private function makeMaintenanceListDTO(mixed $maintenance): MaintenanceListDTO
     {
         if ($maintenance instanceof MaintenanceListDTO) {
             return $maintenance;
         }
+
         if ($maintenance instanceof MaintenanceDTO) {
-            return new MaintenanceListDTO($maintenance->id, $maintenance->name, $maintenance->description, $maintenance->duration);
+            return new MaintenanceListDTO(
+                $maintenance->id,
+                $maintenance->name,
+                $maintenance->description,
+                $maintenance->duration
+            );
         }
+
         return new MaintenanceListDTO(
             $maintenance['id'] ?? $maintenance->id,
             $maintenance['name'] ?? $maintenance->name,

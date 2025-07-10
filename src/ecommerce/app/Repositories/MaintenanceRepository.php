@@ -18,7 +18,8 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
      */
     public function all(): array
     {
-        return Maintenance::all()->map(fn(Maintenance $maintenance) => $this->mapToDTO($maintenance))->all();
+        return Maintenance::all()->map(fn(Maintenance $maintenance) =>
+            $this->mapToDTO($maintenance))->all();
     }
 
     /**
@@ -31,6 +32,7 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
     public function find(int $id): MaintenanceDTO
     {
         $maintenance = Maintenance::findOrFail($id);
+
         return $this->mapToDTO($maintenance);
     }
 
@@ -44,6 +46,7 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
     public function create(array $array): MaintenanceDTO
     {
         $maintenance = Maintenance::create($array);
+
         return $this->mapToDTO($maintenance);
     }
 
@@ -58,6 +61,7 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
     public function update(int $id, array $data): bool
     {
         $maintenance = Maintenance::findOrFail($id);
+
         return $maintenance->update($data);
     }
 

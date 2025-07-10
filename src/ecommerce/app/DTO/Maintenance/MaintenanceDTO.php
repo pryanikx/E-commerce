@@ -11,15 +11,15 @@ class MaintenanceDTO
      * @param string $name
      * @param string|null $description
      * @param string|null $duration
-     * @param string $created_at
-     * @param string $updated_at
+     * @param string $createdAt
+     * @param string $updatedAt
      */
     public function __construct(
         public int $id,
         public string $name,
         public ?string $description,
         public ?string $duration,
-        public string $created_at,
-        public string $updated_at,
+        public string $createdAt,
+        public string $updatedAt,
     ) {}
 } 

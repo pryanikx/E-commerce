@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTO\Auth\RegisterDTO;
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Repositories\Contracts\RegisterRepositoryInterface;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Contracts\Hashing\Hasher;
 
 class RegisterService
 {
-
+    /**
+     * @param RegisterRepositoryInterface $registerRepository
+     */
     public function __construct(
         private RegisterRepositoryInterface $registerRepository,
+        private Hasher $hasher,
     )
     {
     }
@@ -21,16 +25,17 @@ class RegisterService
     /**
      * Register a new user.
      *
-     * @param array $request_validated
+     * @param array $requestValidated
      *
      * @return array
      */
-    public function register(array $request_validated): array
+    public function register(array $requestValidated): array
     {
-        $dto = $this->makeRegisterDTO($request_validated);
+        $dto = $this->makeRegisterDTO($requestValidated);
         $data = $dto->toArray();
         $data['password'] = $this->hashPassword($data['password']);
         $created_user = $this->registerRepository->register($data);
+
         return [
             'user' => $created_user['user'],
             'token' => $created_user['token'],
@@ -41,28 +46,28 @@ class RegisterService
      * Create a new RegisterDTO.
      *
      * @param array $data
-     * 
-     * @return \App\DTO\Auth\RegisterDTO
+     *
+     * @return RegisterDTO
      */
-    private function makeRegisterDTO(array $data): \App\DTO\Auth\RegisterDTO
+    private function makeRegisterDTO(array $data): RegisterDTO
     {
-        return new \App\DTO\Auth\RegisterDTO(
-            $data['name'],
-            $data['email'],
-            $data['password'],
-            \App\Enums\UserRole::USER->value
-        );
+        return new RegisterDTO([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'role' => UserRole::USER->value,
+        ]);
     }
 
     /**
      * Hash the password.
      *
      * @param string $password
-     * 
+     *
      * @return string
      */
     private function hashPassword(string $password): string
     {
-        return \Illuminate\Support\Facades\Hash::make($password);
+        return $this->hasher->make($password);
     }
 }

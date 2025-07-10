@@ -15,7 +15,7 @@ class AdminMaintenanceController extends Controller
     /**
      * @param MaintenanceService $maintenanceService
      */
-    public function __construct(private MaintenanceService $maintenanceService)
+    public function __construct(private readonly MaintenanceService $maintenanceService)
     {
     }
 

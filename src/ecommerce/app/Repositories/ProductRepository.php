@@ -19,7 +19,8 @@ class ProductRepository implements ProductRepositoryInterface
      */
     public function all(): array
     {
-        return Product::with(['manufacturer'])->get()->map(fn(Product $product) => $this->mapToDTO($product))->all();
+        return Product::with(['manufacturer'])->get()->map(fn(Product $product)
+            => $this->mapToDTO($product))->all();
     }
 
     /**
@@ -32,6 +33,7 @@ class ProductRepository implements ProductRepositoryInterface
     public function find(int $id): ProductDTO
     {
         $product = Product::with(['manufacturer', 'category', 'maintenances'])->findOrFail($id);
+
         return $this->mapToDTO($product);
     }
 
@@ -45,6 +47,7 @@ class ProductRepository implements ProductRepositoryInterface
     public function create(array $data): ProductDTO
     {
         $product = Product::create($data);
+
         return $this->mapToDTO($product);
     }
 
@@ -59,6 +62,7 @@ class ProductRepository implements ProductRepositoryInterface
     public function update(int $id, array $data): bool
     {
         $product = Product::findOrFail($id);
+
         return $product->update($data);
     }
 

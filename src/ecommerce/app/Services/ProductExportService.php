@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Http\Controllers\User\ProductController;
 use App\Models\Product;
-use League\Csv\UnavailableStream;
+use League\Csv\ByteSequence;
 use League\Csv\Writer;
 use Psr\Log\LoggerInterface;
 use App\Services\Support\CsvWriterFactoryInterface;
@@ -118,10 +117,10 @@ class ProductExportService
      *
      * @return Writer
      */
-    private function initializeCsvWriter(string $filePath): \League\Csv\Writer
+    private function initializeCsvWriter(string $filePath): Writer
     {
         $csv = $this->csvWriterFactory->createFromPath($filePath, 'w+');
-        $csv->setOutputBOM(\League\Csv\Writer::BOM_UTF8);
+        $csv->setOutputBOM(ByteSequence::BOM_UTF8);
         $csv->insertOne(self::CSV_HEADERS);
         return $csv;
     }

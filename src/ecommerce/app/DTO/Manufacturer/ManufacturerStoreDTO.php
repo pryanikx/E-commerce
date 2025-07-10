@@ -9,10 +9,13 @@ namespace App\DTO\Manufacturer;
  */
 readonly class ManufacturerStoreDTO
 {
+    public string $name;
+
     /**
-     * @param string $name
+     * @param array $data
      */
-    public function __construct(
-        public string $name,
-    ) {}
+    public function __construct(array $data)
+    {
+        $this->name = $data['name'];
+    }
 }

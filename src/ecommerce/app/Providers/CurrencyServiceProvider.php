@@ -29,8 +29,14 @@ class CurrencyServiceProvider extends ServiceProvider
                 $app->make(HttpClientInterface::class),
                 $app->make(\Psr\Clock\ClockInterface::class),
                 config('services.open_exchange_rates.api_key'),
-                config('services.open_exchange_rates.api_url', 'https://openexchangerates.org/api/latest.json'),
-                config('services.open_exchange_rates.supported_currencies', ['BYN', 'USD', 'EUR', 'RUB'])
+                config(
+                    'services.open_exchange_rates.api_url',
+                    'https://openexchangerates.org/api/latest.json'
+                ),
+                config(
+                    'services.open_exchange_rates.supported_currencies',
+                    ['BYN', 'USD', 'EUR', 'RUB']
+                )
             );
         });
 
@@ -38,7 +44,10 @@ class CurrencyServiceProvider extends ServiceProvider
             return new CurrencyCalculatorService(
                 $app->make(CurrencySource::class),
                 config('services.currency.base', 'USD'),
-                config('services.open_exchange_rates.supported_currencies', ['BYN', 'USD', 'EUR', 'RUB'])
+                config(
+                    'services.open_exchange_rates.supported_currencies',
+                    ['BYN', 'USD', 'EUR', 'RUB']
+                )
             );
         });
     }

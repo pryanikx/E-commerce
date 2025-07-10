@@ -110,7 +110,7 @@ class EmailNotificationService
     private function ensureDirectoryExists(): void
     {
         if (!$this->filesystem->exists($this->emailLogPath)) {
-            $this->filesystem->makeDirectory($this->emailLogPath, self::DIRECTORY_PERMISSIONS, true);
+            $this->filesystem->makeDirectory($this->emailLogPath);
         }
     }
 
@@ -189,7 +189,9 @@ class EmailNotificationService
      * @param string $exportId
      * @param string $s3Key
      * @param array $stats
+     *
      * @return string
+     * @throws \Throwable
      */
     private function buildSuccessEmail(string $exportId, string $s3Key, array $stats): string
     {
@@ -207,7 +209,9 @@ class EmailNotificationService
      *
      * @param string $exportId
      * @param string $errorMessage
+     *
      * @return string
+     * @throws \Throwable
      */
     private function buildFailureEmail(string $exportId, string $errorMessage): string
     {

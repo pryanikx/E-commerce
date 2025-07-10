@@ -8,26 +8,29 @@ use Illuminate\Http\UploadedFile;
 
 readonly class ProductUpdateDTO
 {
+    public ?string $name;
+    public ?string $article;
+    public ?string $description;
+    public ?string $release_date;
+    public ?float $price;
+    public ?\Illuminate\Http\UploadedFile $image;
+    public ?int $manufacturer_id;
+    public ?int $category_id;
+    public ?array $maintenances;
+
     /**
-     * @param string|null $name
-     * @param string|null $article
-     * @param string|null $description
-     * @param string|null $release_date
-     * @param float|null $price
-     * @param \Illuminate\Http\UploadedFile|null $image
-     * @param int|null $manufacturer_id
-     * @param int|null $category_id
-     * @param array|null $maintenances
+     * @param array $data
      */
-    public function __construct(
-        public ?string $name = null,
-        public ?string $article = null,
-        public ?string $description = null,
-        public ?string $release_date = null,
-        public ?float $price = null,
-        public ?\Illuminate\Http\UploadedFile $image = null,
-        public ?int $manufacturer_id = null,
-        public ?int $category_id = null,
-        public ?array $maintenances = null,
-    ) {}
+    public function __construct(array $data)
+    {
+        $this->name = $data['name'] ?? null;
+        $this->article = $data['article'] ?? null;
+        $this->description = $data['description'] ?? null;
+        $this->release_date = $data['release_date'] ?? null;
+        $this->price = $data['price'] ?? null;
+        $this->image = $data['image'] ?? null;
+        $this->manufacturer_id = $data['manufacturer_id'] ?? null;
+        $this->category_id = $data['category_id'] ?? null;
+        $this->maintenances = $data['maintenances'] ?? null;
+    }
 }

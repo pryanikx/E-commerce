@@ -9,18 +9,21 @@ use Illuminate\Support\Facades\Hash;
 
 readonly class RegisterDTO
 {
+    public string $name;
+    public string $email;
+    public string $password;
+    public string $role;
+
     /**
-     * @param string $name
-     * @param string $email
-     * @param string $password
-     * @param string $role
+     * @param array $data
      */
-    public function __construct(
-        public string $name,
-        public string $email,
-        public string $password,
-        public string $role,
-    ) {}
+    public function __construct(array $data)
+    {
+        $this->name = $data['name'];
+        $this->email = $data['email'];
+        $this->password = $data['password'];
+        $this->role = $data['role'];
+    }
 
     /**
      * Convert DTO to array.

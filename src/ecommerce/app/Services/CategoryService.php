@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTO\Category\CategoryDTO;
 use App\DTO\Category\CategoryListDTO;
 use App\DTO\Category\CategoryStoreDTO;
 use App\DTO\Category\CategoryUpdateDTO;
 use App\DTO\Product\ProductListDTO;
-use App\Models\Category;
+use App\Models\Product;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\Currency\CurrencyCalculatorService;
 use Illuminate\Support\Str;
@@ -25,9 +26,9 @@ class CategoryService
      * @param CacheInterface $cache
      */
     public function __construct(
-        private CategoryRepositoryInterface $categoryRepository,
-        private CurrencyCalculatorService $currencyCalculator,
-        private CacheInterface $cache,
+        private readonly CategoryRepositoryInterface $categoryRepository,
+        private readonly CurrencyCalculatorService   $currencyCalculator,
+        private readonly CacheInterface              $cache,
     )
     {
     }
@@ -68,10 +69,10 @@ class CategoryService
         return [
             'data' => $products->map(fn($product) => $this->makeProductListDTO($product)->toArray())->toArray(),
             'meta' => [
-                'current_page' => $products->currentPage(),
-                'per_page' => $products->perPage(),
+                'currentPage' => $products->currentPage(),
+                'perPage' => $products->perPage(),
                 'total' => $products->total(),
-                'last_page' => $products->lastPage(),
+                'lastPage' => $products->lastPage(),
             ],
         ];
     }
@@ -79,13 +80,13 @@ class CategoryService
     /**
      * Create a new category.
      *
-     * @param array $request_validated
+     * @param array $requestValidated
      *
-     * @return \App\DTO\Category\CategoryDTO
+     * @return CategoryDTO
      */
-    public function createCategory(array $request_validated): \App\DTO\Category\CategoryDTO
+    public function createCategory(array $requestValidated): CategoryDTO
     {
-        $dto = new CategoryStoreDTO($request_validated);
+        $dto = new CategoryStoreDTO($requestValidated);
 
         $categoryDTO = $this->categoryRepository->create([
             'name' => $dto->name,
@@ -101,19 +102,19 @@ class CategoryService
      * Update an existing category by ID.
      *
      * @param int $id
-     * @param array $request_validated
+     * @param array $requestValidated
      *
-     * @return \App\DTO\Category\CategoryDTO
+     * @return CategoryDTO
      */
-    public function updateCategory(int $id, array $request_validated): \App\DTO\Category\CategoryDTO
+    public function updateCategory(int $id, array $requestValidated): CategoryDTO
     {
         $category = $this->categoryRepository->find($id);
 
-        $dto = new CategoryUpdateDTO($request_validated);
+        $dto = new CategoryUpdateDTO($requestValidated);
 
         $data = [
             'name' => $dto->name ?? $category->name,
-            'alias' => $dto->alias ?? ($dto->name ? \Illuminate\Support\Str::slug($dto->name) : $category->alias),
+            'alias' => $dto->alias ?? ($dto->name ? Str::slug($dto->name) : $category->alias),
         ];
 
         $this->categoryRepository->update($id, $data);
@@ -166,13 +167,13 @@ class CategoryService
     /**
      * Convert Product model to ProductListDTO.
      *
-     * @param \App\Models\Product $product
+     * @param Product $product
      *
-     * @return \App\DTO\Product\ProductListDTO
+     * @return ProductListDTO
      */
-    private function makeProductListDTO(\App\Models\Product $product): \App\DTO\Product\ProductListDTO
+    private function makeProductListDTO(Product $product): ProductListDTO
     {
-        return new \App\DTO\Product\ProductListDTO(
+        return new ProductListDTO(
             $product->id,
             $product->name,
             $product->article,
@@ -189,14 +190,18 @@ class CategoryService
      *
      * @return CategoryListDTO
      */
-    private function makeCategoryListDTO($category): \App\DTO\Category\CategoryListDTO
+    private function makeCategoryListDTO(mixed $category): CategoryListDTO
     {
-        if ($category instanceof \App\DTO\Category\CategoryListDTO) {
+        if ($category instanceof CategoryListDTO) {
             return $category;
         }
-        if ($category instanceof \App\DTO\Category\CategoryDTO) {
+        if ($category instanceof CategoryDTO) {
             return new CategoryListDTO($category->id, $category->name, $category->alias);
         }
-        return new CategoryListDTO($category['id'] ?? $category->id, $category['name'] ?? $category->name, $category['alias'] ?? $category->alias);
+        return new CategoryListDTO(
+            $category['id'] ?? $category->id,
+                $category['name'] ?? $category->name,
+                $category['alias'] ?? $category->alias
+        );
     }
 }

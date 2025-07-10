@@ -20,8 +20,8 @@ class ManufacturerService
      * @param CacheInterface $cache
      */
     public function __construct(
-        private ManufacturerRepositoryInterface $manufacturerRepository,
-        private CacheInterface $cache,
+        private readonly ManufacturerRepositoryInterface $manufacturerRepository,
+        private readonly CacheInterface                  $cache,
     )
     {
     }
@@ -35,20 +35,24 @@ class ManufacturerService
     {
         $manufacturers = $this->manufacturerRepository->all();
         return [
-            'data' => array_map(fn($manufacturer) => $this->makeManufacturerListDTO($manufacturer)->toArray(), $manufacturers),
+            'data' => array_map(
+                fn($manufacturer) =>
+                $this->makeManufacturerListDTO($manufacturer)->toArray(),
+                $manufacturers
+            ),
         ];
     }
 
     /**
      * Create a new manufacturer.
      *
-     * @param array $request_validated
+     * @param array $requestValidated
      *
      * @return ManufacturerDTO
      */
-    public function createManufacturer(array $request_validated): ManufacturerDTO
+    public function createManufacturer(array $requestValidated): ManufacturerDTO
     {
-        $dto = new ManufacturerStoreDTO($request_validated);
+        $dto = new ManufacturerStoreDTO($requestValidated);
 
         $manufacturer = $this->manufacturerRepository->create([
             'name' => $dto->name,
@@ -63,15 +67,15 @@ class ManufacturerService
      * Update an existing manufacturer by ID.
      *
      * @param int $id
-     * @param array $request_validated
+     * @param array $requestValidated
      *
      * @return ManufacturerDTO
      */
-    public function updateManufacturer(int $id, array $request_validated): ManufacturerDTO
+    public function updateManufacturer(int $id, array $requestValidated): ManufacturerDTO
     {
         $manufacturer = $this->manufacturerRepository->find($id);
 
-        $dto = new ManufacturerUpdateDTO($request_validated);
+        $dto = new ManufacturerUpdateDTO($requestValidated);
 
         $data = [
             'name' => $dto->name ?? $manufacturer->name,
@@ -119,14 +123,19 @@ class ManufacturerService
      *
      * @return ManufacturerListDTO
      */
-    private function makeManufacturerListDTO($manufacturer): ManufacturerListDTO
+    private function makeManufacturerListDTO(mixed $manufacturer): ManufacturerListDTO
     {
         if ($manufacturer instanceof ManufacturerListDTO) {
             return $manufacturer;
         }
+
         if ($manufacturer instanceof ManufacturerDTO) {
             return new ManufacturerListDTO($manufacturer->id, $manufacturer->name);
         }
-        return new ManufacturerListDTO($manufacturer['id'] ?? $manufacturer->id, $manufacturer['name'] ?? $manufacturer->name);
+
+        return new ManufacturerListDTO(
+            $manufacturer['id'] ?? $manufacturer->id,
+                $manufacturer['name'] ?? $manufacturer->name
+        );
     }
 }

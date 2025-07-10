@@ -9,14 +9,17 @@ namespace App\DTO\Maintenance;
  */
 readonly class MaintenanceUpdateDTO
 {
+    public ?string $name;
+    public ?string $description;
+    public ?string $duration;
+
     /**
-     * @param string|null $name
-     * @param string|null $description
-     * @param string|null $duration
+     * @param array $data
      */
-    public function __construct(
-        public ?string $name = null,
-        public ?string $description = null,
-        public ?string $duration = null,
-    ) {}
+    public function __construct(array $data)
+    {
+        $this->name = $data['name'] ?? null;
+        $this->description = $data['description'] ?? null;
+        $this->duration = $data['duration'] ?? null;
+    }
 }

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\DTO\Category;
 
-/**
- * Data transfer object for storing a new category.
- */
 readonly class CategoryStoreDTO
 {
+    public string $name;
+    public string $alias;
+
     /**
-     * @param string $name
-     * @param string $alias
+     * @param array $data
      */
-    public function __construct(
-        public string $name,
-        public string $alias,
-    ) {}
+    public function __construct(array $data)
+    {
+        $this->name = $data['name'];
+        $this->alias = $data['alias'];
+    }
 }

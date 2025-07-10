@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\DTO\Category;
 
-/**
- * Data transfer object for updating a category.
- */
+
 readonly class CategoryUpdateDTO
 {
+    public ?string $name;
+    public ?string $alias;
+
     /**
-     * @param string|null $name
-     * @param string|null $alias
+     * @param array $data
      */
-    public function __construct(
-        public ?string $name = null,
-        public ?string $alias = null,
-    ) {}
+    public function __construct(array $data)
+    {
+        $this->name = $data['name'] ?? null;
+        $this->alias = $data['alias'] ?? null;
+    }
 }

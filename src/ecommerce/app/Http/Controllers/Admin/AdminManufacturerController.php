@@ -17,7 +17,7 @@ class AdminManufacturerController extends Controller
     /**
      * @param ManufacturerService $manufacturerService
      */
-    public function __construct(private ManufacturerService $manufacturerService)
+    public function __construct(private readonly ManufacturerService $manufacturerService)
     {
     }
 

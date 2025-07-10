@@ -14,7 +14,7 @@ class CategoryController extends Controller
     /**
      * @param CategoryService $categoryService
      */
-    public function __construct(private CategoryService $categoryService)
+    public function __construct(protected CategoryService $categoryService)
     {
     }
 

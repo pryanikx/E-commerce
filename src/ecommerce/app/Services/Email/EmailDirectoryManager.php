@@ -15,7 +15,7 @@ class EmailDirectoryManager
     public function ensureDirectoryExists(string $path): void
     {
         if (!$this->filesystem->exists($path)) {
-            $this->filesystem->makeDirectory($path, self::DIRECTORY_PERMISSIONS, true);
+            $this->filesystem->makeDirectory($path);
         }
     }
 } 

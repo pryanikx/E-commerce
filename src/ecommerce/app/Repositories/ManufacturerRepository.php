@@ -18,7 +18,8 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
      */
     public function all(): array
     {
-        return Manufacturer::all()->map(fn(Manufacturer $manufacturer) => $this->mapToDTO($manufacturer))->all();
+        return Manufacturer::all()->map(fn(Manufacturer $manufacturer)
+            => $this->mapToDTO($manufacturer))->all();
     }
 
     /**
@@ -31,6 +32,7 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
     public function find(int $id): ManufacturerDTO
     {
         $manufacturer = Manufacturer::findOrFail($id);
+
         return $this->mapToDTO($manufacturer);
     }
 
@@ -44,6 +46,7 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
     public function create(array $array): ManufacturerDTO
     {
         $manufacturer = Manufacturer::create($array);
+
         return $this->mapToDTO($manufacturer);
     }
 
@@ -58,6 +61,7 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
     public function update(int $id, array $data): bool
     {
         $manufacturer = Manufacturer::findOrFail($id);
+
         return $manufacturer->update($data);
     }
 
