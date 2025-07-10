@@ -18,7 +18,6 @@ use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
 class ProductService
 {
-    private const FALLBACK_IMAGE_PATH = 'storage/products/fallback_image1.png';
     private const CACHE_TTL_MINUTES = 30;
     private const STORAGE_DISK = 'public';
 
@@ -32,7 +31,9 @@ class ProductService
         private LoggerInterface $logger,
         private CacheInterface $cache,
         private \Psr\Clock\ClockInterface $clock,
-    ) {}
+    )
+    {
+    }
 
     /**
      * Get all products with pagination.
@@ -63,7 +64,7 @@ class ProductService
                     $product = $this->productRepository->find($id);
                     $dto = $this->makeProductShowDTO($product);
                     $dtoArray = $dto->toArray();
-                    $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
+                    $dtoArray['image_url'] = $this->getImageUrlOrNull($product->image_path);
                     return $dtoArray;
                 } catch (ModelNotFoundException $e) {
                     return null;
@@ -88,7 +89,7 @@ class ProductService
             'description' => $dto->description,
             'release_date' => $dto->release_date,
             'price' => $dto->price,
-            'image_path' => $image_path ?? self::FALLBACK_IMAGE_PATH,
+            'image_path' => $image_path ?? null,
             'manufacturer_id' => $dto->manufacturer_id,
             'category_id' => $dto->category_id,
         ]);
@@ -163,25 +164,22 @@ class ProductService
      * 
      * @return string
      */
-    private function handleImagePath(?\Illuminate\Http\UploadedFile $image, ?string $oldPath = null): string
+    private function handleImagePath(?\Illuminate\Http\UploadedFile $image, ?string $oldPath = null): ?string
     {
         if ($image && $image->isValid()) {
             try {
                 $this->deleteOldImageIfExists($oldPath);
-
                 $filename = uniqid() . '.' . $image->getClientOriginalExtension();
                 $path = $image->storeAs('products', $filename, self::STORAGE_DISK);
-
-                return $path ? 'storage/' . $path : $this->getFallbackImagePath();
+                return $path ? 'storage/' . $path : null;
             } catch (\Exception $e) {
                 $this->logger->error(
                     __('errors.store_image_failed', ['error' => $e->getMessage()])
                 );
-                return $oldPath ?? $this->getFallbackImagePath();
+                return $oldPath;
             }
         }
-
-        return $oldPath ?? $this->getFallbackImagePath();
+        return $oldPath;
     }
 
     /**
@@ -193,42 +191,23 @@ class ProductService
      */
     private function deleteOldImageIfExists(?string $oldPath): void
     {
-        if ($oldPath &&
-            $oldPath !== $this->getFallbackImagePath() &&
-            Storage::disk(self::STORAGE_DISK)->exists(str_replace('storage/', '', $oldPath))
-        ) {
+        if ($oldPath && Storage::disk(self::STORAGE_DISK)->exists(str_replace('storage/', '', $oldPath))) {
             Storage::disk(self::STORAGE_DISK)->delete(str_replace('storage/', '', $oldPath));
         }
     }
 
     /**
-     * Get fallback image path.
-     *
-     * @return string
-     */
-    private function getFallbackImagePath(): string
-    {
-        return self::FALLBACK_IMAGE_PATH;
-    }
-
-    /**
-     * Check if the image path exists and return its URL or the fallback image URL.
+     * Check if the image path exists and return its URL or null.
      *
      * @param string|null $imagePath
-     * @return string
+     * @return string|null
      */
-    private function getImageUrlWithFallback(?string $imagePath): string
+    private function getImageUrlOrNull(?string $imagePath): ?string
     {
-        $fallbackUrl = asset($this->getFallbackImagePath());
-
-        if ($imagePath &&
-            $imagePath !== '/' &&
-            Storage::disk(self::STORAGE_DISK)->exists(str_replace('storage/', '', $imagePath))
-        ) {
+        if ($imagePath && $imagePath !== '/' && Storage::disk(self::STORAGE_DISK)->exists(str_replace('storage/', '', $imagePath))) {
             return asset($imagePath);
         }
-
-        return $fallbackUrl;
+        return null;
     }
 
     /**
@@ -257,7 +236,7 @@ class ProductService
             $product = $this->productRepository->find($id);
             $dto = $this->makeProductShowDTO($product);
             $dtoArray = $dto->toArray();
-            $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
+            $dtoArray['image_url'] = $this->getImageUrlOrNull($product->image_path);
 
             $this->cache->put(
                 $this->getProductCacheKey($id),
@@ -287,7 +266,7 @@ class ProductService
             $product->category_name,
             $product->manufacturer_name,
             $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
-            $product->image_path ? $this->getImageUrlWithFallback($product->image_path) : null,
+            $this->getImageUrlOrNull($product->image_path),
             [], // maintenances — если нужно, добавить в DTO и mapToDTO
         );
     }
@@ -307,7 +286,7 @@ class ProductService
             $product->article,
             $product->manufacturer_name,
             $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
-            $product->image_path ? $this->getImageUrlWithFallback($product->image_path) : null,
+            $this->getImageUrlOrNull($product->image_path),
         );
     }
 

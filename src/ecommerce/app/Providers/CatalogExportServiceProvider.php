@@ -24,9 +24,13 @@ class CatalogExportServiceProvider extends ServiceProvider
 
         $this->app->singleton(ProductExportService::class, function ($app) {
             return new ProductExportService(
-                $app->make(\App\Http\Controllers\User\ProductController::class),
+                $app->make(\App\Services\ProductService::class),
                 $app->make(\Psr\Log\LoggerInterface::class),
-                $app->make(CsvWriterFactoryInterface::class),
+                $app->make(\App\Services\Support\CsvWriterFactoryInterface::class),
+                config('export.directory'),
+                config('export.file_prefix'),
+                config('export.file_extension'),
+                config('export.directory_permissions'),
             );
         });
 

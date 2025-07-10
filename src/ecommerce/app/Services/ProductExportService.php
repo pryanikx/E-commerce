@@ -13,10 +13,6 @@ use App\Services\Support\CsvWriterFactoryInterface;
 
 class ProductExportService
 {
-    private const EXPORT_DIRECTORY = 'app/exports';
-    private const FILE_PREFIX = 'catalog_export_';
-    private const FILE_EXTENSION = '.csv';
-    private const DIRECTORY_PERMISSIONS = 0755;
     private const STARTING_PAGE = 1;
 
     private const CSV_HEADERS = [
@@ -31,11 +27,14 @@ class ProductExportService
     ];
 
     public function __construct(
-        private ProductController $productController,
+        private ProductService $productService,
         private LoggerInterface $logger,
         private CsvWriterFactoryInterface $csvWriterFactory,
-    ) {
-    }
+        private string $exportDirectory,
+        private string $filePrefix,
+        private string $fileExtension,
+        private int $directoryPermissions,
+    ) {}
 
     /**
      * Export all products to CSV file
@@ -94,11 +93,9 @@ class ProductExportService
      */
     private function createExportFile(string $exportId): string
     {
-        $filename = self::FILE_PREFIX . $exportId . self::FILE_EXTENSION;
-        $filePath = storage_path(self::EXPORT_DIRECTORY . '/' . $filename);
-
+        $filename = $this->filePrefix . $exportId . $this->fileExtension;
+        $filePath = storage_path($this->exportDirectory . '/' . $filename);
         $this->ensureDirectoryExists(dirname($filePath));
-
         return $filePath;
     }
 
@@ -110,7 +107,7 @@ class ProductExportService
     private function ensureDirectoryExists(string $directory): void
     {
         if (!is_dir($directory)) {
-            mkdir($directory, self::DIRECTORY_PERMISSIONS, true);
+            mkdir($directory, $this->directoryPermissions, true);
         }
     }
 
@@ -126,12 +123,11 @@ class ProductExportService
         $csv = $this->csvWriterFactory->createFromPath($filePath, 'w+');
         $csv->setOutputBOM(\League\Csv\Writer::BOM_UTF8);
         $csv->insertOne(self::CSV_HEADERS);
-
         return $csv;
     }
 
     /**
-     * Export products to CSV using pagination
+     * Export all products to CSV
      *
      * @param Writer $csv
      * @param string $exportId
@@ -139,38 +135,25 @@ class ProductExportService
      */
     private function exportProductsToCSV(Writer $csv, string $exportId): int
     {
-        $currentPage = self::STARTING_PAGE;
-        $totalExported = 0;
-
-        do {
-            $response = $this->productController->index(['page' => $currentPage]);
-            $responseData = $response->getData(true);
-
-            $totalExported += $this->processProductsPage($csv, $responseData['data']);
-
-            $currentPage++;
-        } while ($currentPage <= $responseData['meta']['last_page']);
-
-        return $totalExported;
+        $products = $this->productService->getAll()['data'] ?? [];
+        return $this->processProducts($csv, $products);
     }
 
     /**
-     * Process a page of products and add to CSV
+     * Process all products and add to CSV
      *
      * @param Writer $csv
      * @param array $products
      * @return int Number of products processed
      */
-    private function processProductsPage(Writer $csv, array $products): int
+    private function processProducts(Writer $csv, array $products): int
     {
         $processed = 0;
-
         foreach ($products as $productData) {
             $row = $this->prepareProductRowFromAPI($productData);
             $csv->insertOne($row);
             $processed++;
         }
-
         return $processed;
     }
 
