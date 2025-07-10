@@ -32,6 +32,7 @@ class OpenExchangeRatesSource implements CurrencySource
      * Fetch exchange rates with base currency.
      *
      * @param string $baseCurrency
+     *
      * @return array<string, float>
      * @throws \Exception
      */

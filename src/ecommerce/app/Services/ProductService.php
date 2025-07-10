@@ -267,7 +267,7 @@ class ProductService
             $product->manufacturer_name,
             $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
             $this->getImageUrlOrNull($product->image_path),
-            [], // maintenances — если нужно, добавить в DTO и mapToDTO
+            [],
         );
     }
 

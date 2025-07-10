@@ -34,16 +34,15 @@ class CategoryService
     /**
      * Get all categories.
      *
-     * @return array|null
+     * @return array
      */
     public function getAll(): ?array
     {
-        return $this->cache->rememberForever(self::CACHE_KEY, function () {
-            $categories = $this->categoryRepository->all();
-
-            return $categories->map(fn($category)
-                => (new CategoryListDTO($category))->toArray())->toArray();
-        });
+        $categories = $this->categoryRepository->all();
+        return [
+            'data' => array_map(fn($category) =>
+                $this->makeCategoryListDTO($category)->toArray(), $categories),
+        ];
     }
 
     /**
@@ -144,9 +143,9 @@ class CategoryService
      *
      * @param int $id
      *
-     * @return Category
+     * @return \App\DTO\Category\CategoryDTO
      */
-    public function find(int $id): Category
+    public function find(int $id): CategoryDTO
     {
         return $this->categoryRepository->find($id);
     }
@@ -159,17 +158,15 @@ class CategoryService
     private function cacheCategories(): void
     {
         $categories = $this->categoryRepository->all();
-
-        $data = $categories->map(fn($category) =>
-            (new CategoryListDTO($category))->toArray())->toArray();
-
+        $data = array_map(fn($category) => $this->makeCategoryListDTO($category)->toArray(), $categories);
         $this->cache->put(self::CACHE_KEY, $data);
     }
 
     /**
-     * Преобразует модель Product в ProductListDTO
+     * Convert Product model to ProductListDTO.
      *
      * @param \App\Models\Product $product
+     * 
      * @return \App\DTO\Product\ProductListDTO
      */
     private function makeProductListDTO(\App\Models\Product $product): \App\DTO\Product\ProductListDTO
@@ -182,5 +179,23 @@ class CategoryService
             $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
             $product->image_path ? asset($product->image_path) : null,
         );
+    }
+
+    /**
+     * Make DTO for categories
+     * 
+     * @param mixed $maintenance
+     * 
+     * @return CategoryListDTO
+     */
+    private function makeCategoryListDTO($category): \App\DTO\Category\CategoryListDTO
+    {
+        if ($category instanceof \App\DTO\Category\CategoryListDTO) {
+            return $category;
+        }
+        if ($category instanceof \App\DTO\Category\CategoryDTO) {
+            return new CategoryListDTO($category->id, $category->name, $category->alias);
+        }
+        return new CategoryListDTO($category['id'] ?? $category->id, $category['name'] ?? $category->name, $category['alias'] ?? $category->alias);
     }
 }

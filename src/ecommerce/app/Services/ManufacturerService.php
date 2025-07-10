@@ -28,14 +28,14 @@ class ManufacturerService
     /**
      * Get all manufacturers.
      *
-     * @return array|null
+     * @return array
      */
-    public function getAll(): ?array
+    public function getAll(): array
     {
-        return $this->cache->rememberForever(self::CACHE_KEY, function () {
-            $manufacturers = $this->manufacturerRepository->all();
-            return array_map(fn($manufacturer) => (new ManufacturerListDTO($manufacturer))->toArray(), $manufacturers);
-        });
+        $manufacturers = $this->manufacturerRepository->all();
+        return [
+            'data' => array_map(fn($manufacturer) => $this->makeManufacturerListDTO($manufacturer)->toArray(), $manufacturers),
+        ];
     }
 
     /**
@@ -107,7 +107,24 @@ class ManufacturerService
     private function cacheManufacturers(): void
     {
         $manufacturers = $this->manufacturerRepository->all();
-        $data = array_map(fn($manufacturer) => (new ManufacturerListDTO($manufacturer))->toArray(), $manufacturers);
+        $data = array_map(fn($manufacturer) => $this->makeManufacturerListDTO($manufacturer)->toArray(), $manufacturers);
         $this->cache->put(self::CACHE_KEY, $data);
+    }
+
+    /**
+     * Make DTO for manufacturers
+     *
+     * @param mixed $manufacturer
+     * @return ManufacturerListDTO
+     */
+    private function makeManufacturerListDTO($manufacturer): ManufacturerListDTO
+    {
+        if ($manufacturer instanceof ManufacturerListDTO) {
+            return $manufacturer;
+        }
+        if ($manufacturer instanceof ManufacturerDTO) {
+            return new ManufacturerListDTO($manufacturer->id, $manufacturer->name);
+        }
+        return new ManufacturerListDTO($manufacturer['id'] ?? $manufacturer->id, $manufacturer['name'] ?? $manufacturer->name);
     }
 }
