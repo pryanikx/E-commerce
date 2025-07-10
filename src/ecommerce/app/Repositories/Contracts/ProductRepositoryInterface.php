@@ -13,7 +13,7 @@ interface ProductRepositoryInterface
     const PER_PAGE = 20;
 
     /**
-     * Get all products.
+     * Get all products from the database.
      *
      * @return ProductDTO[]
      */

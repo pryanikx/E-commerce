@@ -24,7 +24,7 @@ class AuthController extends Controller
     }
 
     /**
-     * register a new user.
+     * Register a new user.
      *
      * @param RegisterRequest $request
      *

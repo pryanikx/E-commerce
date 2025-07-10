@@ -78,7 +78,7 @@ interface CategoryRepositoryInterface
     ): LengthAwarePaginator;
 
     /**
-     * Apply sorters to the query
+     * Apply sorters to the query.
      *
      * @param Builder|HasMany $query
      * @param array $sorters
@@ -88,7 +88,7 @@ interface CategoryRepositoryInterface
     public function sort(Builder|HasMany $query, array $sorters): Builder|HasMany;
 
     /**
-     * Apply filters to the query
+     * Apply filters to the query.
      *
      * @param Builder|HasMany $query
      * @param array $filters
@@ -98,9 +98,10 @@ interface CategoryRepositoryInterface
     public function filter(Builder|HasMany $query, array $filters): Builder|HasMany;
 
     /**
-     * map Eloquent model to DTO
-     * 
+     * Map Eloquent model to DTO.
+     *
      * @param Category $category
+     *
      * @return CategoryDTO
      */
     public function mapToDTO(Category $category): CategoryDTO;

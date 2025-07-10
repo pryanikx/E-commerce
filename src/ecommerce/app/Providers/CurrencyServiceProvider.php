@@ -14,7 +14,9 @@ class CurrencyServiceProvider extends ServiceProvider
     private const DEFAULT_CURRENCY_BASE = 'USD';
 
     /**
-     * Register services.
+     * Register currency-related services.
+     *
+     * @return void
      */
     public function register(): void
     {
@@ -42,7 +44,9 @@ class CurrencyServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap services.
+     * Bootstrap currency-related services.
+     *
+     * @return void
      */
     public function boot(): void
     {

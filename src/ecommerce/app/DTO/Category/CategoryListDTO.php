@@ -6,9 +6,6 @@ namespace App\DTO\Category;
 
 use App\Models\Category;
 
-/**
- * Data transfer object for listing categories.
- */
 readonly class CategoryListDTO
 {
     /**
@@ -23,6 +20,8 @@ readonly class CategoryListDTO
     ) {}
 
     /**
+     * Convert DTO to array.
+     *
      * @return array<string, int|string>
      */
     public function toArray(): array

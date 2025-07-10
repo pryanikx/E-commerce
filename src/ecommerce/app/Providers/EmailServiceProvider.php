@@ -12,6 +12,11 @@ use App\Services\Email\EmailNotificationService;
 
 class EmailServiceProvider extends ServiceProvider
 {
+    /**
+     * Register email-related services.
+     *
+     * @return void
+     */
     public function register(): void
     {
         $this->app->singleton(EmailHtmlBuilder::class, function () {
@@ -43,6 +48,11 @@ class EmailServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Bootstrap email-related services.
+     *
+     * @return void
+     */
     public function boot(): void
     {
         //

@@ -12,7 +12,7 @@ use Illuminate\Http\JsonResponse;
 class AdminProductController extends ProductController
 {
     /**
-     * store a new product.
+     * Store a new product.
      *
      * @param ProductStoreRequest $request
      *
@@ -26,7 +26,7 @@ class AdminProductController extends ProductController
     }
 
     /**
-     * update an existing product.
+     * Update an existing product.
      *
      * @param int $id
      * @param ProductUpdateRequest $request
@@ -41,7 +41,7 @@ class AdminProductController extends ProductController
     }
 
     /**
-     * erase an existing product.
+     * Erase an existing product.
      *
      * @param int $id
      *

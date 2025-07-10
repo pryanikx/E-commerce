@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Collection;
 class MaintenanceRepository implements MaintenanceRepositoryInterface
 {
     /**
+     * Get all maintenances from the database.
+     *
      * @return MaintenanceDTO[]
      */
     public function all(): array
@@ -72,7 +74,10 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
     }
 
     /**
+     * Map Eloquent model to DTO.
+     *
      * @param Maintenance $maintenance
+     *
      * @return MaintenanceDTO
      */
     private function mapToDTO(Maintenance $maintenance): MaintenanceDTO

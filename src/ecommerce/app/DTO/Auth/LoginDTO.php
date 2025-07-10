@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\DTO\Auth;
 
-/**
- * Data transfer object for login.
- */
 readonly class LoginDTO
 {
     /**
@@ -19,6 +16,8 @@ readonly class LoginDTO
     ) {}
 
     /**
+     * Convert DTO to array.
+     *
      * @return array<string, string>
      */
     public function toArray(): array

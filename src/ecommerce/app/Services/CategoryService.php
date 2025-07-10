@@ -22,6 +22,7 @@ class CategoryService
     /**
      * @param CategoryRepositoryInterface $categoryRepository
      * @param CurrencyCalculatorService $currencyCalculator
+     * @param CacheInterface $cache
      */
     public function __construct(
         private CategoryRepositoryInterface $categoryRepository,
@@ -34,7 +35,7 @@ class CategoryService
     /**
      * Get all categories.
      *
-     * @return array
+     * @return array|null
      */
     public function getAll(): ?array
     {
@@ -123,7 +124,7 @@ class CategoryService
     }
 
     /**
-     * delete an existing category by ID.
+     * Delete an existing category by ID.
      *
      * @param int $id
      *
@@ -139,11 +140,11 @@ class CategoryService
     }
 
     /**
-     * find an existing category by ID.
+     * Find an existing category by ID.
      *
      * @param int $id
      *
-     * @return \App\DTO\Category\CategoryDTO
+     * @return CategoryDTO
      */
     public function find(int $id): CategoryDTO
     {
@@ -151,7 +152,7 @@ class CategoryService
     }
 
     /**
-     * Save categories in cache
+     * Cache categories in storage.
      *
      * @return void
      */
@@ -166,7 +167,7 @@ class CategoryService
      * Convert Product model to ProductListDTO.
      *
      * @param \App\Models\Product $product
-     * 
+     *
      * @return \App\DTO\Product\ProductListDTO
      */
     private function makeProductListDTO(\App\Models\Product $product): \App\DTO\Product\ProductListDTO
@@ -182,10 +183,10 @@ class CategoryService
     }
 
     /**
-     * Make DTO for categories
-     * 
-     * @param mixed $maintenance
-     * 
+     * Make DTO for categories.
+     *
+     * @param mixed $category
+     *
      * @return CategoryListDTO
      */
     private function makeCategoryListDTO($category): \App\DTO\Category\CategoryListDTO

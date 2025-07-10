@@ -17,6 +17,7 @@ class ManufacturerService
 
     /**
      * @param ManufacturerRepositoryInterface $manufacturerRepository
+     * @param CacheInterface $cache
      */
     public function __construct(
         private ManufacturerRepositoryInterface $manufacturerRepository,
@@ -100,7 +101,7 @@ class ManufacturerService
     }
 
     /**
-     * Save manufacturers in cache
+     * Cache manufacturers in storage.
      *
      * @return void
      */
@@ -112,9 +113,10 @@ class ManufacturerService
     }
 
     /**
-     * Make DTO for manufacturers
+     * Make DTO for manufacturers.
      *
      * @param mixed $manufacturer
+     *
      * @return ManufacturerListDTO
      */
     private function makeManufacturerListDTO($manufacturer): ManufacturerListDTO

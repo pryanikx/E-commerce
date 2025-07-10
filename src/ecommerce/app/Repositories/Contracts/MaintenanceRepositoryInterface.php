@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Collection;
 interface MaintenanceRepositoryInterface
 {
     /**
-     * Get all maintenances from the database
+     * Get all maintenances from the database.
      *
      * @return MaintenanceDTO[]
      */
@@ -26,6 +26,8 @@ interface MaintenanceRepositoryInterface
     public function find(int $id): MaintenanceDTO;
 
     /**
+     * Create new maintenance.
+     *
      * @param array $array
      *
      * @return MaintenanceDTO

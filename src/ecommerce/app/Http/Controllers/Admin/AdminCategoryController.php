@@ -12,7 +12,7 @@ use Illuminate\Http\JsonResponse;
 class AdminCategoryController extends CategoryController
 {
     /**
-     * store a new category.
+     * Store a new category.
      *
      * @param CategoryStoreRequest $request
      *
@@ -26,7 +26,7 @@ class AdminCategoryController extends CategoryController
     }
 
     /**
-     * update an existing category.
+     * Update an existing category.
      *
      * @param int $id
      * @param CategoryUpdateRequest $request
@@ -41,7 +41,7 @@ class AdminCategoryController extends CategoryController
     }
 
     /**
-     * erase an existing category.
+     * Erase an existing category.
      *
      * @param int $id
      *

@@ -17,6 +17,7 @@ class MaintenanceService
 
     /**
      * @param MaintenanceRepositoryInterface $maintenanceRepository
+     * @param CacheInterface $cache
      */
     public function __construct(
         private MaintenanceRepositoryInterface $maintenanceRepository,
@@ -103,6 +104,11 @@ class MaintenanceService
         return $is_deleted;
     }
 
+    /**
+     * Cache maintenances in storage.
+     *
+     * @return void
+     */
     private function cacheMaintenances(): void
     {
         $maintenances = $this->maintenanceRepository->all();
@@ -111,10 +117,10 @@ class MaintenanceService
     }
 
     /**
-     * Make DTO for maintenances
+     * Make DTO for maintenances.
      *
      * @param mixed $maintenance
-     * 
+     *
      * @return MaintenanceListDTO
      */
     private function makeMaintenanceListDTO($maintenance): MaintenanceListDTO

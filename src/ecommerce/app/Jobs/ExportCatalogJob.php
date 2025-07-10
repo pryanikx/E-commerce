@@ -40,8 +40,14 @@ class ExportCatalogJob implements ShouldQueue
     }
 
     /**
-     * Execute the catalog export job
+     * Execute the catalog export job.
      *
+     * @param ProductExportService $exportService
+     * @param StorageUploaderInterface $uploader
+     * @param EmailNotificationService $emailService
+     * @param LoggerInterface $logger
+     *
+     * @return void
      * @throws \Throwable
      */
     public function handle(
@@ -75,9 +81,11 @@ class ExportCatalogJob implements ShouldQueue
     }
 
     /**
-     * Handle failed job execution
+     * Handle failed job execution.
      *
      * @param \Throwable $exception
+     *
+     * @return void
      */
     public function failed(\Throwable $exception): void
     {
@@ -90,9 +98,10 @@ class ExportCatalogJob implements ShouldQueue
     }
 
     /**
-     * Generate CSV file from catalog data
+     * Generate CSV file from catalog data.
      *
      * @param ProductExportService $exportService
+     * @param LoggerInterface $logger
      *
      * @return string
      * @throws \Exception
@@ -115,9 +124,11 @@ class ExportCatalogJob implements ShouldQueue
     }
 
     /**
-     * Upload CSV file to S3 storage
+     * Upload CSV file to S3 storage.
      *
+     * @param StorageUploaderInterface $uploader
      * @param string $csvFilePath
+     * @param LoggerInterface $logger
      *
      * @return string
      * @throws \Exception
@@ -139,10 +150,14 @@ class ExportCatalogJob implements ShouldQueue
     }
 
     /**
-     * Send success notification email
+     * Send success notification email.
      *
+     * @param EmailNotificationService $emailService
      * @param string $storageKey
      * @param array $stats
+     * @param LoggerInterface $logger
+     *
+     * @return void
      */
     private function sendSuccessNotification(
         EmailNotificationService $emailService,
@@ -164,10 +179,14 @@ class ExportCatalogJob implements ShouldQueue
     }
 
     /**
-     * Handle export failure and send notification
+     * Handle export failure and send notification.
      *
+     * @param EmailNotificationService $emailService
      * @param \Throwable $exception
-    */
+     * @param LoggerInterface $logger
+     *
+     * @return void
+     */
     private function handleExportFailure(
         EmailNotificationService $emailService,
         \Throwable $exception,

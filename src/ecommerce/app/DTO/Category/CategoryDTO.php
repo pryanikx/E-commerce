@@ -6,6 +6,13 @@ namespace App\DTO\Category;
 
 class CategoryDTO
 {
+    /**
+     * @param int $id
+     * @param string $name
+     * @param string $alias
+     * @param string $created_at
+     * @param string $updated_at
+     */
     public function __construct(
         public int $id,
         public string $name,

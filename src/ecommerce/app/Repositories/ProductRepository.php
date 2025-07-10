@@ -13,6 +13,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class ProductRepository implements ProductRepositoryInterface
 {
     /**
+     * Get all products from the database.
+     *
      * @return ProductDTO[]
      */
     public function all(): array
@@ -87,7 +89,10 @@ class ProductRepository implements ProductRepositoryInterface
     }
 
     /**
+     * Map Eloquent model to DTO.
+     *
      * @param Product $product
+     *
      * @return ProductDTO
      */
     private function mapToDTO(Product $product): ProductDTO

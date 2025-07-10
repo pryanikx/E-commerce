@@ -8,9 +8,7 @@ use App\Models\Product;
 use App\Services\Currency\CurrencyCalculatorService;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Data transfer object for listing products.
- */
+
 readonly class ProductListDTO
 {
     /**
@@ -31,7 +29,7 @@ readonly class ProductListDTO
     ) {}
 
     /**
-     * @return array<string, int|string|array|null>
+     * @return array<string, int|float|string|array|null>
      */
     public function toArray(): array
     {

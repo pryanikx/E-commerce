@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Collection;
 class ManufacturerRepository implements ManufacturerRepositoryInterface
 {
     /**
+     * Get all manufacturers from the database.
+     *
      * @return ManufacturerDTO[]
      */
     public function all(): array
@@ -72,7 +74,10 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
     }
 
     /**
+     * Map Eloquent model to DTO.
+     *
      * @param Manufacturer $manufacturer
+     *
      * @return ManufacturerDTO
      */
     private function mapToDTO(Manufacturer $manufacturer): ManufacturerDTO

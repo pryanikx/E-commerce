@@ -28,6 +28,8 @@ class CategoryRepository implements CategoryRepositoryInterface
     }
 
     /**
+     * Get all categories from the database.
+     *
      * @return CategoryDTO[]
      */
     public function all(): array
@@ -117,7 +119,7 @@ class CategoryRepository implements CategoryRepositoryInterface
     }
 
     /**
-     * Apply sorters to the query
+     * Apply sorters to the query.
      *
      * @param Builder|HasMany $query
      * @param array $sorters
@@ -130,7 +132,7 @@ class CategoryRepository implements CategoryRepositoryInterface
     }
 
     /**
-     * Apply filters to the query
+     * Apply filters to the query.
      *
      * @param Builder|HasMany $query
      * @param array $filters
@@ -143,8 +145,11 @@ class CategoryRepository implements CategoryRepositoryInterface
     }
 
     /**
+     * Map Eloquent model to DTO.
+     *
      * @param Category $category
-     * @return CategoteryDTO
+     *
+     * @return CategoryDTO
      */
     public function mapToDTO(Category $category): CategoryDTO
     {
