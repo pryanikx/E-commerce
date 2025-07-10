@@ -43,16 +43,6 @@ class CatalogExportServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->singleton(EmailNotificationService::class, function ($app) {
-            return new EmailNotificationService(
-                $app->make(\Psr\Log\LoggerInterface::class),
-                $app->make(\Illuminate\Contracts\Filesystem\Filesystem::class),
-                config('services.email_notification.default_from_email', 'noreply@example.com'),
-                storage_path(config('services.email_notification.email_log_directory', 'app/emails')),
-                config('services.email_notification.email_file_prefix', 'email_'),
-            );
-        });
-
         $this->app->singleton(StorageUploaderInterface::class, S3UploadService::class);
     }
 

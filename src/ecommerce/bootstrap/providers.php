@@ -6,4 +6,5 @@ return [
     App\Providers\CurrencyServiceProvider::class,
     App\Providers\FilterServiceProvider::class,
     App\Providers\RepositoryServiceProvider::class,
+    App\Providers\EmailServiceProvider::class,
 ];
