@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { FALLBACK_IMAGE_URL } from '../constants';
 
 const ProductCard = ({ product }) => (
     <Link
@@ -7,11 +8,11 @@ const ProductCard = ({ product }) => (
     >
         <div className="relative w-full h-48 mb-2 rounded overflow-hidden">
             <img
-                src={product.image_url || '/storage/products/fallback_image1.png'}
+                src={product.image_url ?? FALLBACK_IMAGE_URL}
                 alt={product.name}
                 className="w-full h-full object-contain"
                 onError={(e) => {
-                    e.target.src = '/storage/products/fallback_image1.png';
+                    e.currentTarget.src = FALLBACK_IMAGE_URL;
                 }}
             />
         </div>

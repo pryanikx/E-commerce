@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/api';
+import { FALLBACK_IMAGE_URL } from '../constants';
 
 const ProductDetails = () => {
     const { id } = useParams();
@@ -82,9 +83,14 @@ const ProductDetails = () => {
             <div className="bg-white p-6 rounded shadow">
                 <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
                 <img
-                    src={product.image_url}
+                    src={product.image_url || FALLBACK_IMAGE_URL}
                     alt={product.name}
                     className="w-full max-w-md h-auto mb-4 rounded"
+                    onError={(e) => {
+                        if (!e.currentTarget.src.endsWith(FALLBACK_IMAGE_URL)) {
+                            e.currentTarget.src = FALLBACK_IMAGE_URL;
+                        }
+                    }}
                 />
                 <p className="text-secondary mb-2">
                     <strong>Article:</strong> {product.article}
