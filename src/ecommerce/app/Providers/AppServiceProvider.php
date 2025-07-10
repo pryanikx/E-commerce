@@ -6,7 +6,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
+use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Clock\NativeClock;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,8 +25,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(CacheInterface::class, function ($app) {
             return $app->make('cache')->store();
         });
-        $this->app->singleton(\Psr\Clock\ClockInterface::class, function () {
-            return new \Symfony\Component\Clock\NativeClock();
+        $this->app->singleton(ClockInterface::class, function () {
+            return new NativeClock();
         });
     }
 

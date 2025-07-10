@@ -56,6 +56,7 @@ class RepositoryServiceProvider extends ServiceProvider
                 $app->make(\Psr\Log\LoggerInterface::class),
                 $app->make(\Illuminate\Contracts\Cache\Repository::class),
                 $app->make(\Psr\Clock\ClockInterface::class),
+                $app->make(\Illuminate\Contracts\Filesystem\Factory::class),
             );
         });
     }
