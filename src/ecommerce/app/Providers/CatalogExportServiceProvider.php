@@ -33,6 +33,13 @@ class CatalogExportServiceProvider extends ServiceProvider
         $this->app->singleton(S3UploadService::class, function ($app) {
             return new S3UploadService(
                 $app->make(\Psr\Log\LoggerInterface::class),
+                config('aws.S3.bucket'),
+                config('aws.S3.region'),
+                config('aws.S3.version'),
+                config('aws.S3.credentials.key'),
+                config('aws.S3.credentials.secret'),
+                config('aws.S3.endpoint'),
+                config('aws.S3.use_path_style_endpoint'),
             );
         });
 
@@ -40,6 +47,9 @@ class CatalogExportServiceProvider extends ServiceProvider
             return new EmailNotificationService(
                 $app->make(\Psr\Log\LoggerInterface::class),
                 $app->make(\Illuminate\Contracts\Filesystem\Filesystem::class),
+                config('services.email_notification.default_from_email', 'noreply@example.com'),
+                storage_path(config('services.email_notification.email_log_directory', 'app/emails')),
+                config('services.email_notification.email_file_prefix', 'email_'),
             );
         });
 

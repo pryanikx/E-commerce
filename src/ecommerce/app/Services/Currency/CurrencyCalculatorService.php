@@ -10,25 +10,11 @@ class CurrencyCalculatorService
 
     private const PRECISION = 2;
 
-    /**
-     * @var CurrencySource $source
-     */
-    protected CurrencySource $source;
-
-    /**
-     * @var string $baseCurrency
-     */
-    protected string $baseCurrency;
-
-    /**
-     * @param CurrencySource $source
-     * @param string $baseCurrency
-     */
-    public function __construct(CurrencySource $source, string $baseCurrency = null)
-    {
-        $this->source = $source;
-        $this->baseCurrency = $baseCurrency ?? config('services.open_exchange_rates.base_currency', 'USD');
-    }
+    public function __construct(
+        private CurrencySource $source,
+        private string $baseCurrency,
+        private array $supportedCurrencies,
+    ) {}
 
     /**
      * Convert a price to multiple currencies.
@@ -39,7 +25,7 @@ class CurrencyCalculatorService
      */
     public function convert(float $price, array $targetCurrencies = null): array
     {
-        $targetCurrencies = $targetCurrencies ?? config('services.open_exchange_rates.supported_currencies', ['BYN', 'USD', 'EUR', 'RUB']);
+        $targetCurrencies = $targetCurrencies ?? $this->supportedCurrencies;
         $rates = $this->source->getExchangeRates($this->baseCurrency);
         $converted = [];
 

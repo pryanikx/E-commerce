@@ -23,41 +23,26 @@ class S3UploadService implements StorageUploaderInterface
     private const CONTEXT_ERROR = 'error';
 
     protected S3Client $s3Client;
-    protected string $bucket;
 
-    public function __construct(private LoggerInterface $logger)
-    {
-        $this->bucket = $this->initializeS3Bucket();
-
-        $this->s3Client = $this->initializeS3Client();
-    }
-
-    /**
-     * Initializes S3 Bucket
-     *
-     * @return string
-     */
-    public function initializeS3Bucket(): string
-    {
-        return config('aws.S3.bucket');
-    }
-
-    /**
-     * Initializes S3Client
-     *
-     * @return S3Client
-     */
-    public function initializeS3Client(): S3Client
-    {
-        return new S3Client([
-            'version' => config('aws.S3.version'),
-            'region' => config('aws.S3.region'),
+    public function __construct(
+        private LoggerInterface $logger,
+        private string $bucket,
+        private string $region,
+        private string $version,
+        private string $key,
+        private string $secret,
+        private string $endpoint,
+        private bool $usePathStyleEndpoint,
+    ) {
+        $this->s3Client = new S3Client([
+            'version' => $this->version,
+            'region' => $this->region,
             'credentials' => [
-                'key' => config('aws.S3.credentials.key'),
-                'secret' => config('aws.S3.credentials.secret'),
+                'key' => $this->key,
+                'secret' => $this->secret,
             ],
-            'endpoint' => config('aws.S3.endpoint'),
-            'use_path_style_endpoint' => config('aws.S3.use_path_style_endpoint'),
+            'endpoint' => $this->endpoint,
+            'use_path_style_endpoint' => $this->usePathStyleEndpoint,
         ]);
     }
 

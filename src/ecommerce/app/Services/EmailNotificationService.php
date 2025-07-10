@@ -12,15 +12,13 @@ class EmailNotificationService
     private const DIRECTORY_PERMISSIONS = 0755;
     private const JSON_FLAGS = JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE;
 
-    protected string $fromEmail;
-    protected string $emailLogPath;
-    protected string $emailFilePrefix;
-
-    public function __construct(private LoggerInterface $logger, private Filesystem $filesystem)
-    {
-        $this->fromEmail = config('services.email_notification.default_from_email', 'noreply@example.com');
-        $this->emailLogPath = storage_path(config('services.email_notification.email_log_directory', 'app/emails'));
-        $this->emailFilePrefix = config('services.email_notification.email_file_prefix', 'email_');
+    public function __construct(
+        private LoggerInterface $logger,
+        private Filesystem $filesystem,
+        private string $fromEmail,
+        private string $emailLogPath,
+        private string $emailFilePrefix,
+    ) {
         $this->ensureDirectoryExists();
     }
 

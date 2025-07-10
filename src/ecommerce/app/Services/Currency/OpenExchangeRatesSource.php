@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Psr\Log\LoggerInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
 use App\Services\Support\HttpClientInterface;
+use Psr\Clock\ClockInterface;
 
 class OpenExchangeRatesSource implements CurrencySource
 {
@@ -15,18 +16,16 @@ class OpenExchangeRatesSource implements CurrencySource
 
     private const DEFAULT_RATE = 1.0;
 
-    protected string $apiKey;
-
-    protected string $apiUrl;
-
     public function __construct(
-        private LoggerInterface $logger,
-        private CacheInterface $cache,
-        private HttpClientInterface $http,
+        private readonly LoggerInterface     $logger,
+        private readonly CacheInterface      $cache,
+        private readonly HttpClientInterface $http,
+        private readonly ClockInterface      $clock,
+        private readonly string              $apiKey,
+        private readonly string              $apiUrl,
+        private readonly array               $supportedCurrencies,
     )
     {
-        $this->apiKey = config('services.open_exchange_rates.api_key');
-        $this->apiUrl = config('services.open_exchange_rates.api_url', 'https://openexchangerates.org/api/latest.json');
     }
 
     /**
@@ -39,7 +38,8 @@ class OpenExchangeRatesSource implements CurrencySource
     public function getExchangeRates(string $baseCurrency): array
     {
         $cacheKey = "exchange_rates_{$baseCurrency}";
-        $cacheDuration = now()->addHours(self::CACHE_DURATION_H);
+        $cacheDuration = $this->clock->now()
+            ->add(new \DateInterval('PT' . self::CACHE_DURATION_H . 'H'));
 
         return $this->cache->remember($cacheKey, $cacheDuration, function () use ($baseCurrency) {
             try {
@@ -54,30 +54,24 @@ class OpenExchangeRatesSource implements CurrencySource
                         'body' => $response->body(),
                     ]);
 
-                    throw new \RuntimeException(__('errors.fetch_exchange_rates_failed'));
+                    throw new \Exception(__('errors.fetch_exchange_rates_failed'));
                 }
 
                 $data = $response->json();
 
-                return $data['rates'] ?? array_map(fn() => self::DEFAULT_RATE, array_combine($this->getSupportedCurrencies(), $this->getSupportedCurrencies()));
+                return $data['rates'] ?? array_map(
+                    fn() => self::DEFAULT_RATE,
+                    array_combine($this->supportedCurrencies, $this->supportedCurrencies));
             } catch (\Exception $e) {
                 $this->logger->error(__('errors.fetch_exchange_rates_failed'), [
                     'message' => $e->getMessage(),
                     'base_currency' => $baseCurrency,
                 ]);
 
-                return array_map(fn() => self::DEFAULT_RATE, array_combine($this->getSupportedCurrencies(), $this->getSupportedCurrencies()));
+                return array_map(
+                    fn() => self::DEFAULT_RATE,
+                    array_combine($this->supportedCurrencies, $this->supportedCurrencies));
             }
         });
-    }
-
-    public function getSupportedCurrencies(): array
-    {
-        return config('services.open_exchange_rates.supported_currencies', ['BYN', 'USD', 'EUR', 'RUB']);
-    }
-
-    public function getBaseCurrency(): string
-    {
-        return config('services.open_exchange_rates.base_currency', 'USD');
     }
 }

@@ -31,8 +31,8 @@ class ProductService
         private CurrencyCalculatorService $currencyCalculator,
         private LoggerInterface $logger,
         private CacheInterface $cache,
-    ) {
-    }
+        private \Psr\Clock\ClockInterface $clock,
+    ) {}
 
     /**
      * Get all products with pagination.
@@ -57,7 +57,7 @@ class ProductService
     public function getProduct(int $id): ?array
     {
         $cacheKey = $this->getProductCacheKey($id);
-        return $this->cache->remember($cacheKey, now()->addMinutes(self::CACHE_TTL_MINUTES),
+        return $this->cache->remember($cacheKey, $this->clock->now()->add(new \DateInterval('PT' . self::CACHE_TTL_MINUTES . 'M')),
             function () use ($id) {
                 try {
                     $product = $this->productRepository->find($id);
@@ -262,7 +262,7 @@ class ProductService
             $this->cache->put(
                 $this->getProductCacheKey($id),
                 $dtoArray,
-                now()->addMinutes(self::CACHE_TTL_MINUTES)
+                $this->clock->now()->add(new \DateInterval('PT' . self::CACHE_TTL_MINUTES . 'M'))
             );
         } catch (\Exception $e) {
             $this->logger->error(__('errors.cache_failed', ['error' => $e->getMessage()]));

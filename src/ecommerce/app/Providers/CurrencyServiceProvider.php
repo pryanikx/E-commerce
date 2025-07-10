@@ -25,13 +25,18 @@ class CurrencyServiceProvider extends ServiceProvider
                 $app->make(\Psr\Log\LoggerInterface::class),
                 $app->make(\Illuminate\Contracts\Cache\Repository::class),
                 $app->make(HttpClientInterface::class),
+                $app->make(\Psr\Clock\ClockInterface::class),
+                config('services.open_exchange_rates.api_key'),
+                config('services.open_exchange_rates.api_url', 'https://openexchangerates.org/api/latest.json'),
+                config('services.open_exchange_rates.supported_currencies', ['BYN', 'USD', 'EUR', 'RUB'])
             );
         });
 
         $this->app->singleton(CurrencyCalculatorService::class, function ($app) {
             return new CurrencyCalculatorService(
                 $app->make(CurrencySource::class),
-                config('services.currency.base', self::DEFAULT_CURRENCY_BASE)
+                config('services.currency.base', 'USD'),
+                config('services.open_exchange_rates.supported_currencies', ['BYN', 'USD', 'EUR', 'RUB'])
             );
         });
     }
