@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\DTO\Auth;
 
-use App\Enums\UserRole;
-use Illuminate\Support\Facades\Hash;
-
 readonly class RegisterDTO
 {
     public string $name;
@@ -15,7 +12,7 @@ readonly class RegisterDTO
     public string $role;
 
     /**
-     * @param array $data
+     * @param array<string, mixed> $data
      */
     public function __construct(array $data)
     {

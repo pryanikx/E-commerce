@@ -19,5 +19,6 @@ class CategoryDTO
         public string $alias,
         public string $created_at,
         public string $updated_at,
-    ) {}
+    ) {
+    }
 }

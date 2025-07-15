@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\DTO\Product;
 
 use App\Models\Product;
-use App\Services\Currency\CurrencyCalculatorService;
-use Illuminate\Support\Facades\Storage;
 
+/**
+ * Data transfer object for showing product.
+ */
 readonly class ProductShowDTO
 {
     /**
@@ -18,9 +19,9 @@ readonly class ProductShowDTO
      * @param string $release_date
      * @param string $category_name
      * @param string $manufacturer_name
-     * @param array|null $prices
+     * @param array<string, float>|null $prices
      * @param string|null $image_url
-     * @param array $maintenances
+     * @param array<int, array<string, float>> $maintenances
      */
     public function __construct(
         public int $id,
@@ -33,12 +34,13 @@ readonly class ProductShowDTO
         public ?array $prices,
         public ?string $image_url,
         public array $maintenances,
-    ) {}
+    ) {
+    }
 
     /**
      * Convert DTO to array.
      *
-     * @return array<string, int|string|array|null>
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

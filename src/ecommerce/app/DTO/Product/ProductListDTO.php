@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\DTO\Product;
 
-use App\Models\Product;
-use App\Services\Currency\CurrencyCalculatorService;
-use Illuminate\Support\Facades\Storage;
-
-
+/**
+ * Data transfer object for listing products.
+ */
 readonly class ProductListDTO
 {
     /**
@@ -16,7 +14,7 @@ readonly class ProductListDTO
      * @param string $name
      * @param string $article
      * @param string $manufacturer_name
-     * @param array|null $prices
+     * @param array<string, float>|null $prices
      * @param string|null $image_url
      */
     public function __construct(
@@ -26,10 +24,13 @@ readonly class ProductListDTO
         public string $manufacturer_name,
         public ?array $prices,
         public ?string $image_url,
-    ) {}
+    ) {
+    }
 
     /**
-     * @return array<string, int|float|string|array|null>
+     * Convert DTO to array.
+     *
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

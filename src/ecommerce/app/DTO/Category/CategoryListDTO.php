@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\DTO\Category;
 
-use App\Models\Category;
-
 readonly class CategoryListDTO
 {
     /**
@@ -17,12 +15,13 @@ readonly class CategoryListDTO
         public int $id,
         public string $name,
         public string $alias,
-    ) {}
+    ) {
+    }
 
     /**
      * Convert DTO to array.
      *
-     * @return array<string, int|string>
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

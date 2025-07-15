@@ -10,7 +10,7 @@ readonly class LoginDTO
     public string $password;
 
     /**
-     * @param array $data
+     * @param array<string, mixed> $data
      */
     public function __construct(array $data)
     {
@@ -18,6 +18,11 @@ readonly class LoginDTO
         $this->password = $data['password'];
     }
 
+    /**
+     * Convert DTO to array.
+     *
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [

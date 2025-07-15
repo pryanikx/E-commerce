@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\DTO\Manufacturer;
 
-use App\Models\Manufacturer;
-
 /**
  * Data transfer object for listing manufacturers.
  */
@@ -18,10 +16,13 @@ readonly class ManufacturerListDTO
     public function __construct(
         public int $id,
         public string $name,
-    ) {}
+    ) {
+    }
 
     /**
-     * @return array<string, int|string>
+     * Convert DTO to array.
+     *
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

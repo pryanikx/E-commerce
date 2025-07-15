@@ -20,6 +20,7 @@ class ProductDTO
      * @param string|null $category_name
      * @param string $created_at
      * @param string $updated_at
+     * @param array<int, array<string, float>> $maintenances
      */
     public function __construct(
         public int $id,
@@ -35,5 +36,7 @@ class ProductDTO
         public ?string $category_name,
         public string $created_at,
         public string $updated_at,
-    ) {}
-} 
+        public array $maintenances,
+    ) {
+    }
+}

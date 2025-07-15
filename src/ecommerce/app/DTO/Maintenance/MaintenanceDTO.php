@@ -21,5 +21,6 @@ class MaintenanceDTO
         public ?string $duration,
         public string $createdAt,
         public string $updatedAt,
-    ) {}
-} 
+    ) {
+    }
+}

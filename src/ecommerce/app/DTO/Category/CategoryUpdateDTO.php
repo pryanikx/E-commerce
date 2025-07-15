@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\DTO\Category;
 
-
 readonly class CategoryUpdateDTO
 {
     public ?string $name;
     public ?string $alias;
 
     /**
-     * @param array $data
+     * @param array<string, mixed> $data
      */
     public function __construct(array $data)
     {

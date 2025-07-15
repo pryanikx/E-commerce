@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\DTO\Maintenance;
 
-use App\Models\Maintenance;
-
 /**
  * Data transfer object for listing maintenances.
  */
@@ -22,10 +20,13 @@ readonly class MaintenanceListDTO
         public string $name,
         public ?string $description,
         public ?string $duration,
-    ) {}
+    ) {
+    }
 
     /**
-     * @return array<string, int|string|null>
+     * Convert DTO to array.
+     *
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

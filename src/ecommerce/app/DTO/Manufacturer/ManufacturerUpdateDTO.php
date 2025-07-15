@@ -12,7 +12,7 @@ readonly class ManufacturerUpdateDTO
     public ?string $name;
 
     /**
-     * @param array $data
+     * @param array<string, mixed> $data
      */
     public function __construct(array $data)
     {
