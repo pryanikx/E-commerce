@@ -19,7 +19,7 @@ class ProductRepository implements ProductRepositoryInterface
      */
     public function all(): array
     {
-        return Product::with(['manufacturer'])->get()->map(fn(Product $product)
+        return Product::with(['manufacturer', 'maintenances'])->get()->map(fn(Product $product)
             => $this->mapToDTO($product))->all();
     }
 
@@ -47,6 +47,8 @@ class ProductRepository implements ProductRepositoryInterface
     public function create(array $data): ProductDTO
     {
         $product = Product::create($data);
+
+        $product->load(['manufacturer', 'category', 'maintenances']);
 
         return $this->mapToDTO($product);
     }
@@ -101,6 +103,19 @@ class ProductRepository implements ProductRepositoryInterface
      */
     private function mapToDTO(Product $product): ProductDTO
     {
+        $maintenances = null;
+        if ($product->relationLoaded('maintenances')) {
+            $maintenances = $product->maintenances->map(function ($maintenance) {
+                return (object)[
+                    'id' => $maintenance->id,
+                    'name' => $maintenance->name,
+                    'pivot' => (object)[
+                        'price' => $maintenance->pivot->price ?? 0
+                    ]
+                ];
+            })->toArray();
+        }
+
         return new ProductDTO(
             $product->id,
             $product->name,
@@ -115,6 +130,7 @@ class ProductRepository implements ProductRepositoryInterface
             $product->category?->name,
             $product->created_at?->toISOString() ?? '',
             $product->updated_at?->toISOString() ?? '',
+            $maintenances,
         );
     }
 }

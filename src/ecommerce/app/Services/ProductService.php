@@ -45,7 +45,7 @@ class ProductService
     }
 
     /**
-     * Get all products with pagination.
+     * Get all products.
      *
      * @return array|null
      */
@@ -71,19 +71,13 @@ class ProductService
 
         return $this->cache->remember(
             $cacheKey,
-            $this->clock->now()->add(new \DateInterval('PT' . self::CACHE_TTL_MINUTES . 'M')
-            ),
-
+            $this->clock->now()->add(new \DateInterval('PT' . self::CACHE_TTL_MINUTES . 'M')),
             function () use ($id) {
                 try {
                     $product = $this->productRepository->find($id);
                     $dto = $this->makeProductShowDTO($product);
-                    $dtoArray = $dto->toArray();
-                    $dtoArray['image_url'] = $this->getImageUrlOrNull($product->image_path);
-
-                    return $dtoArray;
+                    return $dto->toArray();
                 } catch (ModelNotFoundException $e) {
-
                     return null;
                 }
             });
@@ -92,31 +86,42 @@ class ProductService
     /**
      * Create a new product.
      *
-     * @param array $requestValidated
-     *
+     * @param array $data
      * @return ProductDTO
      */
-    public function createProduct(array $requestValidated): ProductDTO
+    public function createProduct(array $data): ProductDTO
     {
-        $dto = new ProductStoreDTO($requestValidated);
+        $dto = new ProductStoreDTO(
+            name: $data['name'],
+            article: $data['article'],
+            description: $data['description'],
+            release_date: $data['release_date'],
+            price: $data['price'],
+            image: $data['image'] ?? null,
+            manufacturer_id: $data['manufacturer_id'],
+            category_id: $data['category_id'],
+            maintenances: $data['maintenance_ids'] ?? [],
+        );
+
         $image_path = $this->handleImagePath($dto->image);
+        $processedMaintenances = $this->processMaintenances($dto->maintenances);
+
         $created_product = $this->productRepository->create([
             'name' => $dto->name,
             'article' => $dto->article,
             'description' => $dto->description,
             'release_date' => $dto->release_date,
             'price' => $dto->price,
-            'image_path' => $image_path ?? null,
+            'image_path' => $image_path,
             'manufacturer_id' => $dto->manufacturer_id,
             'category_id' => $dto->category_id,
         ]);
 
-        if (!empty($dto->maintenances)) {
-            $this->productRepository->attachMaintenances($created_product->id, $dto->maintenances);
+        if (!empty($processedMaintenances)) {
+            $this->productRepository->attachMaintenances($created_product->id, $processedMaintenances);
         }
 
         $this->cacheProduct($created_product->id);
-
         return $created_product;
     }
 
@@ -124,22 +129,46 @@ class ProductService
      * Update an existing product by ID.
      *
      * @param int $id
-     * @param array $requestValidated
+     * @param array $data
      * @return ProductDTO
      */
-    public function updateProduct(int $id, array $requestValidated): ProductDTO
+    public function updateProduct(int $id, array $data): ProductDTO
     {
         $product = $this->productRepository->find($id);
-        $dto = new ProductUpdateDTO($requestValidated);
-        $data = $this->prepareUpdateData($dto, $product);
-        $this->productRepository->update($id, $data);
+
+        $dto = new ProductUpdateDTO(
+            name: $data['name'] ?? null,
+            article: $data['article'] ?? null,
+            description: $data['description'] ?? null,
+            release_date: $data['release_date'] ?? null,
+            price: $data['price'] ?? null,
+            image: $data['image'] ?? null,
+            manufacturer_id: $data['manufacturer_id'] ?? null,
+            category_id: $data['category_id'] ?? null,
+            maintenances: $data['maintenance_ids'] ?? null,
+        );
+
+        $updateData = [
+            'name' => $dto->name ?? $product->name,
+            'article' => $dto->article ?? $product->article,
+            'description' => $dto->description ?? $product->description,
+            'release_date' => $dto->release_date ?? $product->release_date,
+            'price' => $dto->price ?? $product->price,
+            'manufacturer_id' => $dto->manufacturer_id ?? $product->manufacturer_id,
+            'category_id' => $dto->category_id ?? $product->category_id,
+            'image_path' => $dto->image !== null ?
+                $this->handleImagePath($dto->image, $product->image_path) :
+                $product->image_path,
+        ];
+
+        $this->productRepository->update($id, $updateData);
 
         if ($dto->maintenances !== null) {
-            $this->productRepository->attachMaintenances($id, $dto->maintenances);
+            $processedMaintenances = $this->processMaintenances($dto->maintenances);
+            $this->productRepository->attachMaintenances($id, $processedMaintenances);
         }
 
         $this->refreshProductCache($id);
-
         return $this->productRepository->find($id);
     }
 
@@ -158,40 +187,70 @@ class ProductService
     }
 
     /**
-     * Prepare data for product update.
+     * Convert Product model to ProductShowDTO.
      *
-     * @param ProductUpdateDTO $dto
      * @param ProductDTO $product
      *
-     * @return array
+     * @return ProductShowDTO
      */
-    private function prepareUpdateData(ProductUpdateDTO $dto, ProductDTO $product): array
+    private function makeProductShowDTO(ProductDTO $product): ProductShowDTO
     {
-        return [
-            'name' => $dto->name ?? $product->name,
-            'article' => $dto->article ?? $product->article,
-            'description' => $dto->description ?? $product->description,
-            'release_date' => $dto->release_date ?? $product->release_date,
-            'price' => $dto->price ?? $product->price,
-            'manufacturer_id' => $dto->manufacturer_id ?? $product->manufacturer_id,
-            'category_id' => $dto->category_id ?? $product->category_id,
-            'image_path' => $dto->image !== null ?
-                $this->handleImagePath($dto->image, $product->image_path) :
-                $product->image_path,
-        ];
+        $maintenances = [];
+
+        // Обрабатываем maintenances если они есть
+        if ($product->maintenances) {
+            $maintenances = collect($product->maintenances)->map(function ($maintenance) {
+                return [
+                    'name' => $maintenance->name,
+                    'prices' => $this->currencyCalculator->convert((float) $maintenance->pivot->price),
+                ];
+            })->toArray();
+        }
+
+        return new ProductShowDTO(
+            $product->id,
+            $product->name,
+            $product->article,
+            $product->description ?? '',
+            $product->release_date ?? '',
+            $product->category_name ?? '',
+            $product->manufacturer_name ?? '',
+            $product->price ? $this->currencyCalculator->convert($product->price) : null,
+            $this->getImageUrlOrNull($product->image_path),
+            $maintenances,
+        );
+    }
+
+    /**
+     * Convert Product model to ProductListDTO.
+     *
+     * @param ProductDTO $product
+     *
+     * @return ProductListDTO
+     */
+    private function makeProductListDTO(ProductDTO $product): ProductListDTO
+    {
+        return new ProductListDTO(
+            $product->id,
+            $product->name,
+            $product->article,
+            $product->manufacturer_name ?? '',
+            $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
+            $this->getImageUrlOrNull($product->image_path),
+        );
     }
 
     /**
      * Store an uploaded file and return its path.
      *
-     * @param UploadedFile|null $image
+     * @param mixed $image
      * @param string|null $oldPath
      *
      * @return string|null
      */
-    private function handleImagePath(?UploadedFile $image, ?string $oldPath = null): ?string
+    private function handleImagePath(mixed $image, ?string $oldPath = null): ?string
     {
-        if ($image && $image->isValid()) {
+        if ($image instanceof UploadedFile && $image->isValid()) {
             try {
                 $this->deleteOldImageIfExists($oldPath);
                 $filename = uniqid() . '.' . $image->getClientOriginalExtension();
@@ -202,7 +261,6 @@ class ProductService
                 $this->logger->error(
                     __('errors.store_image_failed', ['error' => $e->getMessage()])
                 );
-
                 return $oldPath;
             }
         }
@@ -221,9 +279,13 @@ class ProductService
     {
         if (
             $oldPath &&
-            $this->filesystem->disk(self::STORAGE_DISK)->exists(str_replace('storage/', '', $oldPath))
+            $this->filesystem->disk(
+                self::STORAGE_DISK)->exists(str_replace('storage/', '', $oldPath)
+            )
         ) {
-            $this->filesystem->disk(self::STORAGE_DISK)->delete(str_replace('storage/', '', $oldPath));
+            $this->filesystem->disk(
+                self::STORAGE_DISK)->delete(str_replace('storage/', '', $oldPath)
+            );
         }
     }
 
@@ -273,7 +335,6 @@ class ProductService
             $product = $this->productRepository->find($id);
             $dto = $this->makeProductShowDTO($product);
             $dtoArray = $dto->toArray();
-            $dtoArray['image_url'] = $this->getImageUrlOrNull($product->image_path);
 
             $this->cache->put(
                 $this->getProductCacheKey($id),
@@ -286,50 +347,6 @@ class ProductService
     }
 
     /**
-     * Convert Product model to ProductShowDTO.
-     *
-     * @param ProductDTO $product
-     *
-     * @return ProductShowDTO
-     */
-    private function makeProductShowDTO(ProductDTO $product): ProductShowDTO
-    {
-        return new ProductShowDTO(
-            $product->id,
-            $product->name,
-            $product->article,
-            $product->description,
-            $product->release_date instanceof Carbon ?
-                $product->release_date->toDateString() :
-                (string)$product->release_date,
-            $product->category_name,
-            $product->manufacturer_name,
-            $product->price ? $this->currencyCalculator->convert($product->price) : null,
-            $this->getImageUrlOrNull($product->image_path),
-            [],
-        );
-    }
-
-    /**
-     * Convert Product model to ProductListDTO.
-     *
-     * @param ProductDTO $product
-     *
-     * @return ProductListDTO
-     */
-    private function makeProductListDTO(ProductDTO $product): ProductListDTO
-    {
-        return new ProductListDTO(
-            $product->id,
-            $product->name,
-            $product->article,
-            $product->manufacturer_name,
-            $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
-            $this->getImageUrlOrNull($product->image_path),
-        );
-    }
-
-    /**
      * Get cache key for one product.
      *
      * @param int $id
@@ -339,5 +356,30 @@ class ProductService
     private function getProductCacheKey(int $id): string
     {
         return "product_{$id}";
+    }
+
+    /**
+     * Process maintenance IDs with proper typing.
+     *
+     * @param mixed $maintenanceIds
+     * @return array<int, array<string, float>>
+     */
+    private function processMaintenances(mixed $maintenanceIds): array
+    {
+        if (!is_array($maintenanceIds) || empty($maintenanceIds)) {
+            return [];
+        }
+
+        $result = [];
+
+        foreach ($maintenanceIds as $maintenance) {
+            if (is_array($maintenance) && isset($maintenance['id'], $maintenance['price'])) {
+                $id = (int) $maintenance['id'];
+                $price = (float) $maintenance['price'];
+                $result[$id] = ['price' => $price];
+            }
+        }
+
+        return $result;
     }
 }
