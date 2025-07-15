@@ -36,7 +36,6 @@ class CatalogExportConsumerCommand extends Command
             $this->startQueueWorker($config);
 
             return self::SUCCESS;
-
         } catch (\Exception $e) {
             $this->error(__('commands.consumer_start_error', ['error' => $e->getMessage()]));
 
@@ -47,7 +46,7 @@ class CatalogExportConsumerCommand extends Command
     /**
      * Get configuration from command options.
      *
-     * @return array
+     * @return array<string, int>
      */
     private function getConfiguration(): array
     {
@@ -61,7 +60,7 @@ class CatalogExportConsumerCommand extends Command
     /**
      * Display startup information.
      *
-     * @param array $config
+     * @param array<string, int> $config
      *
      * @return void
      */
@@ -79,7 +78,7 @@ class CatalogExportConsumerCommand extends Command
     /**
      * Start the queue worker.
      *
-     * @param array $config
+     * @param array<string, int> $config
      *
      * @return void
      */
