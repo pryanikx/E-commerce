@@ -4,37 +4,30 @@ declare(strict_types=1);
 
 namespace App\Services\Currency;
 
-use Illuminate\Support\Facades\Http;
+use App\Services\Currency\Clients\Contracts\CurrencyApiClientInterface;
+use App\Exceptions\Currency\CurrencyApiException;
 use Psr\Log\LoggerInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
-use App\Services\Support\HttpClientInterface;
 use Psr\Clock\ClockInterface;
 
 class OpenExchangeRatesSource implements CurrencySource
 {
     private const CACHE_DURATION_H = 24;
-
     private const DEFAULT_RATE = 1.0;
 
     public function __construct(
-        private readonly LoggerInterface     $logger,
-        private readonly CacheInterface      $cache,
-        private readonly HttpClientInterface $http,
-        private readonly ClockInterface      $clock,
-        private readonly string              $apiKey,
-        private readonly string              $apiUrl,
-        private readonly array               $supportedCurrencies,
-    )
-    {
-    }
+        private readonly CurrencyApiClientInterface $client,
+        private readonly LoggerInterface $logger,
+        private readonly CacheInterface $cache,
+        private readonly ClockInterface $clock,
+        private readonly array $supportedCurrencies,
+    ) {}
 
     /**
-     * Fetch exchange rates with base currency.
+     * Fetch exchange rates with base currency and caching.
      *
      * @param string $baseCurrency
-     *
      * @return array<string, float>
-     * @throws \Exception
      */
     public function getExchangeRates(string $baseCurrency): array
     {
@@ -44,35 +37,45 @@ class OpenExchangeRatesSource implements CurrencySource
 
         return $this->cache->remember($cacheKey, $cacheDuration, function () use ($baseCurrency) {
             try {
-                $response = $this->http->get($this->apiUrl, [
-                    'app_id' => $this->apiKey,
-                    'base' => $baseCurrency,
-                ]);
+                $rates = $this->client->fetchRates($baseCurrency);
 
-                if ($response->failed()) {
-                    $this->logger->error(__('errors.fetch_exchange_rates_failed'), [
-                        'status' => $response->status(),
-                        'body' => $response->body(),
-                    ]);
-
-                    throw new \Exception(__('errors.fetch_exchange_rates_failed'));
-                }
-
-                $data = $response->json();
-
-                return $data['rates'] ?? array_map(
-                    fn() => self::DEFAULT_RATE,
-                    array_combine($this->supportedCurrencies, $this->supportedCurrencies));
-            } catch (\Exception $e) {
-                $this->logger->error(__('errors.fetch_exchange_rates_failed'), [
-                    'message' => $e->getMessage(),
+                $this->logger->info(__('currency.rates_cached_successfully'), [
                     'base_currency' => $baseCurrency,
+                    'cache_duration_hours' => self::CACHE_DURATION_H,
+                    'rates_count' => count($rates),
                 ]);
 
-                return array_map(
-                    fn() => self::DEFAULT_RATE,
-                    array_combine($this->supportedCurrencies, $this->supportedCurrencies));
+                return $rates;
+            } catch (CurrencyApiException $e) {
+                $this->logger->warning(__('currency.using_fallback_rates'), [
+                    'error' => $e->getMessage(),
+                    'error_code' => $e->getCode(),
+                    'base_currency' => $baseCurrency,
+                    'is_temporary' => $e->isTemporary(),
+                ]);
+
+                return $this->getFallbackRates();
             }
         });
+    }
+
+    /**
+     * Get fallback rates when API fails.
+     *
+     * @return array<string, float>
+     */
+    private function getFallbackRates(): array
+    {
+        $fallbackRates = array_map(
+            fn() => self::DEFAULT_RATE,
+            array_combine($this->supportedCurrencies, $this->supportedCurrencies)
+        );
+
+        $this->logger->info(__('currency.fallback_rates_generated'), [
+            'supported_currencies' => $this->supportedCurrencies,
+            'default_rate' => self::DEFAULT_RATE,
+        ]);
+
+        return $fallbackRates;
     }
 }

@@ -11,9 +11,9 @@ class CurrencyCalculatorService
     private const PRECISION = 2;
 
     public function __construct(
-        private CurrencySource $source,
-        private string $baseCurrency,
-        private array $supportedCurrencies,
+        private readonly CurrencySource $source,
+        private readonly string $baseCurrency,
+        private readonly array $supportedCurrencies,
     ) {}
 
     /**
