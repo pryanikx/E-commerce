@@ -9,7 +9,6 @@ use Psr\Log\LoggerInterface;
 
 class EmailNotificationService
 {
-    private const DIRECTORY_PERMISSIONS = 0755;
     private const JSON_FLAGS = JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE;
 
     public function __construct(

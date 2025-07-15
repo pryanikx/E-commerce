@@ -30,7 +30,6 @@ class CatalogExportServiceProvider extends ServiceProvider
                 config('export.directory'),
                 config('export.file_prefix'),
                 config('export.file_extension'),
-                config('export.directory_permissions'),
             );
         });
 

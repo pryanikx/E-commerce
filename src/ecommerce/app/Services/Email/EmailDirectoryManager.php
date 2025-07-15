@@ -8,8 +8,6 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 
 class EmailDirectoryManager
 {
-    private const DIRECTORY_PERMISSIONS = 0755;
-
     public function __construct(private Filesystem $filesystem) {}
 
     public function ensureDirectoryExists(string $path): void
@@ -18,4 +16,4 @@ class EmailDirectoryManager
             $this->filesystem->makeDirectory($path);
         }
     }
-} 
+}
