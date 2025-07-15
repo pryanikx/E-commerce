@@ -7,7 +7,7 @@ namespace App\Jobs;
 use App\Services\ProductExportService;
 use App\Services\S3UploadService;
 use App\Services\Support\StorageUploaderInterface;
-use App\Services\EmailNotificationService;
+use App\Services\Email\EmailNotificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -33,9 +33,15 @@ class ExportCatalogJob implements ShouldQueue
     public int $timeout = 600;
     public int $tries = 3;
 
+    /**
+     * @param string $exportId
+     * @param string $adminEmail
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         protected readonly string $exportId,
         protected readonly string $adminEmail,
+        protected readonly LoggerInterface $logger
     ) {
     }
 
@@ -45,7 +51,6 @@ class ExportCatalogJob implements ShouldQueue
      * @param ProductExportService $exportService
      * @param StorageUploaderInterface $uploader
      * @param EmailNotificationService $emailService
-     * @param LoggerInterface $logger
      *
      * @return void
      * @throws \Throwable
@@ -54,10 +59,9 @@ class ExportCatalogJob implements ShouldQueue
         ProductExportService $exportService,
         StorageUploaderInterface $uploader,
         EmailNotificationService $emailService,
-        LoggerInterface $logger
     ): void {
         try {
-            $logger->info(__('messages.export_started'), [
+            $this->logger->info(__('messages.export_started'), [
                 self::CONTEXT_EXPORT_ID => $this->exportId,
                 self::CONTEXT_ADMIN_EMAIL => $this->adminEmail
             ]);
@@ -75,7 +79,7 @@ class ExportCatalogJob implements ShouldQueue
             ]);
 
         } catch (\Throwable $exception) {
-            $this->handleExportFailure($emailService, $exception, $logger);
+            $this->handleExportFailure($emailService, $exception, $this->logger);
 
             throw $exception;
         }
