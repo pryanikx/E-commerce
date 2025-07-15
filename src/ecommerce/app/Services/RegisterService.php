@@ -34,12 +34,9 @@ class RegisterService
         $dto = $this->makeRegisterDTO($requestValidated);
         $data = $dto->toArray();
         $data['password'] = $this->hashPassword($data['password']);
-        $created_user = $this->registerRepository->register($data);
 
-        return [
-            'user' => $created_user['user'],
-            'token' => $created_user['token'],
-        ];
+
+        return $this->registerRepository->register($data);
     }
 
     /**

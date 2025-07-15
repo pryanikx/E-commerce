@@ -28,11 +28,8 @@ class LoginService
     public function login(array $requestValidated): array
     {
         $dto = new LoginDTO($requestValidated);
-        $user_data = $this->loginRepository->login($dto->toArray());
-        return [
-            'token' => $user_data['token'],
-            'user' => $user_data['user'],
-        ];
+
+        return $this->loginRepository->login($dto->toArray());
     }
 
     /**

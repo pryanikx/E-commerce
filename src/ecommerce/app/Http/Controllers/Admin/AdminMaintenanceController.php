@@ -32,7 +32,10 @@ class AdminMaintenanceController extends Controller
             return response()->json(['message' => __('messages.empty_maintenances')], 200);
         }
 
-        return response()->json($maintenances, 200);
+        return response()->json([
+            'data' => $maintenances,
+            ], 200
+        );
     }
 
     /**

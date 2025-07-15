@@ -34,7 +34,10 @@ class AdminManufacturerController extends Controller
             return response()->json(['message' => __('messages.empty_manufacturers')], 200);
         }
 
-        return response()->json($manufacturers, 200);
+        return response()->json([
+            'data' => $manufacturers
+            ], 200
+        );
     }
 
     /**

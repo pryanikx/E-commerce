@@ -52,9 +52,8 @@ class ProductService
     public function getAll(): ?array
     {
         $products = $this->productRepository->all();
-        return [
-            'data' => array_map(fn($product) => $this->makeProductListDTO($product)->toArray(), $products),
-        ];
+
+        return array_map(fn($product) => $this->makeProductListDTO($product)->toArray(), $products);
     }
 
     /**
@@ -76,6 +75,7 @@ class ProductService
                 try {
                     $product = $this->productRepository->find($id);
                     $dto = $this->makeProductShowDTO($product);
+
                     return $dto->toArray();
                 } catch (ModelNotFoundException $e) {
                     return null;

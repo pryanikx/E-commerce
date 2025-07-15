@@ -34,9 +34,7 @@ class MaintenanceService
     public function getAll(): array
     {
         $maintenances = $this->maintenanceRepository->all();
-        return [
-            'data' => array_map(fn($maintenance) => $this->makeMaintenanceListDTO($maintenance)->toArray(), $maintenances),
-        ];
+        return array_map(fn($maintenance) => $this->makeMaintenanceListDTO($maintenance)->toArray(), $maintenances);
     }
 
     /**

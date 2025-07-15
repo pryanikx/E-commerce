@@ -32,9 +32,13 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $result = $this->registerService->register($request->validated());
+        $userData = $this->registerService->register($request->validated());
 
-        return response()->json($result);
+        return response()->json([
+                'token' => $userData['token'],
+                'user' => $userData['user'],
+            ], 200
+        );
     }
 
     /**
@@ -47,9 +51,12 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         try {
-            $result = $this->loginService->login($request->validated());
+            $userData = $this->loginService->login($request->validated());
 
-            return response()->json($result, 200);
+            return response()->json([
+                'token' => $userData['token'],
+                'user' => $userData['user'],
+            ], 200);
         } catch (\Exception $exception) {
             return response()->json(['error' => $exception->getMessage()], 401);
         }

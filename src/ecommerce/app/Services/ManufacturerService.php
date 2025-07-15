@@ -34,13 +34,11 @@ class ManufacturerService
     public function getAll(): array
     {
         $manufacturers = $this->manufacturerRepository->all();
-        return [
-            'data' => array_map(
+        return array_map(
                 fn($manufacturer) =>
                 $this->makeManufacturerListDTO($manufacturer)->toArray(),
                 $manufacturers
-            ),
-        ];
+            );
     }
 
     /**

@@ -36,15 +36,14 @@ class CategoryService
     /**
      * Get all categories.
      *
-     * @return array|null
+     * @return array
      */
-    public function getAll(): ?array
+    public function getAll(): array
     {
         $categories = $this->categoryRepository->all();
-        return [
-            'data' => array_map(fn($category) =>
-                $this->makeCategoryListDTO($category)->toArray(), $categories),
-        ];
+
+        return array_map(fn($category) =>
+        $this->makeCategoryListDTO($category)->toArray(), $categories);
     }
 
     /**
@@ -67,8 +66,10 @@ class CategoryService
         $products = $this->categoryRepository->getProductsForCategory($id, $filters, $sorters, $page);
 
         return [
-            'data' => $products->map(fn($product) => $this->makeProductListDTO($product)->toArray())->toArray(),
-            'meta' => [
+            'products' => $products->map(fn($product) =>
+            $this->makeProductListDTO($product)->toArray())->toArray(),
+
+            'pagination' => [
                 'currentPage' => $products->currentPage(),
                 'perPage' => $products->perPage(),
                 'total' => $products->total(),
