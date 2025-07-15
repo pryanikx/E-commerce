@@ -44,6 +44,7 @@ class EmailServiceProvider extends ServiceProvider
             return new EmailNotificationService(
                 $app->make(\Psr\Log\LoggerInterface::class),
                 $app->make(EmailFileLogger::class),
+                $app->make(\Psr\Clock\ClockInterface::class),
             );
         });
     }
@@ -57,4 +58,4 @@ class EmailServiceProvider extends ServiceProvider
     {
         //
     }
-} 
+}

@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Email;
 
+use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 
 class EmailNotificationService
 {
     public function __construct(
-        private LoggerInterface $logger,
-        private EmailFileLogger $fileLogger,
+        private readonly LoggerInterface $logger,
+        private readonly EmailFileLogger $fileLogger,
+        private readonly ClockInterface $clock,
     ) {}
 
     /**
@@ -88,7 +90,7 @@ class EmailNotificationService
      */
     private function buildSuccessEmail(string $exportId, string $s3Key, array $stats): string
     {
-        $currentTime = now()->format('d.m.Y H:i:s');
+        $currentTime = $this->clock->now()->format('d.m.Y H:i:s');
         return view('emails.export_success', [
             'exportId' => $exportId,
             's3Key' => $s3Key,
@@ -102,11 +104,11 @@ class EmailNotificationService
      */
     private function buildFailureEmail(string $exportId, string $errorMessage): string
     {
-        $currentTime = now()->format('d.m.Y H:i:s');
+        $currentTime = $this->clock->now()->format('d.m.Y H:i:s');
         return view('emails.export_failure', [
             'exportId' => $exportId,
             'errorMessage' => $errorMessage,
             'currentTime' => $currentTime,
         ])->render();
     }
-} 
+}
