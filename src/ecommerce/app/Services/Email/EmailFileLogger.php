@@ -35,7 +35,7 @@ class EmailFileLogger
         $this->saveHtmlVersion($to, $subject, $content, $exportId);
     }
 
-    public function saveHtmlVersion(string $to, string $subject, string $content, string $exportId): void
+    private function saveHtmlVersion(string $to, string $subject, string $content, string $exportId): void
     {
         $htmlFilePath = $this->emailLogPath . "/" . $this->emailFilePrefix . "{$exportId}.html";
         $htmlContent = $this->htmlBuilder->buildHtmlWrapper($to, $subject, $content, $this->fromEmail);
@@ -46,4 +46,4 @@ class EmailFileLogger
     {
         return $this->emailLogPath . "/" . $this->emailFilePrefix . "{$exportId}.json";
     }
-} 
+}
