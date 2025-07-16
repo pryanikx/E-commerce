@@ -16,23 +16,23 @@ readonly class ProductShowDTO
      * @param string $name
      * @param string $article
      * @param string $description
-     * @param string $release_date
-     * @param string $category_name
-     * @param string $manufacturer_name
+     * @param string $releaseDate
+     * @param string $categoryName
+     * @param string $manufacturerName
      * @param array<string, float>|null $prices
-     * @param string|null $image_url
-     * @param array<int, array<string, float>> $maintenances
+     * @param string|null $imageUrl
+     * @param array<int, mixed>|null $maintenances
      */
     public function __construct(
         public int $id,
         public string $name,
         public string $article,
         public string $description,
-        public string $release_date,
-        public string $category_name,
-        public string $manufacturer_name,
+        public string $releaseDate,
+        public string $categoryName,
+        public string $manufacturerName,
         public ?array $prices,
-        public ?string $image_url,
+        public ?string $imageUrl,
         public array $maintenances,
     ) {
     }
@@ -49,11 +49,11 @@ readonly class ProductShowDTO
             'name' => $this->name,
             'article' => $this->article,
             'description' => $this->description,
-            'release_date' => $this->release_date,
-            'category_name' => $this->category_name,
-            'manufacturer_name' => $this->manufacturer_name,
+            'release_date' => $this->releaseDate,
+            'category_name' => $this->categoryName,
+            'manufacturer_name' => $this->manufacturerName,
             'prices' => $this->prices,
-            'image_url' => $this->image_url,
+            'image_url' => $this->imageUrl,
             'maintenances' => $this->maintenances,
         ];
     }

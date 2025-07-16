@@ -10,33 +10,28 @@ class ProductDTO
      * @param int $id
      * @param string $name
      * @param string $article
-     * @param string|null $description
-     * @param string|null $release_date
+     * @param string $description
+     * @param string $releaseDate
      * @param float $price
-     * @param string|null $image_path
-     * @param int $manufacturer_id
-     * @param string|null $manufacturer_name
-     * @param int $category_id
-     * @param string|null $category_name
-     * @param string $created_at
-     * @param string $updated_at
-     * @param array<int, array<string, float>> $maintenances
+     * @param string|null $imagePath
+     * @param int $manufacturerId
+     * @param string $manufacturerName
+     * @param int $categoryId
+     * @param string $categoryName
+     * @param array<int, mixed>|null $maintenances
      */
     public function __construct(
         public int $id,
         public string $name,
         public string $article,
-        public ?string $description,
-        public ?string $release_date,
+        public string $description,
+        public string $releaseDate,
         public float $price,
-        public ?string $image_path,
-        public int $manufacturer_id,
-        public ?string $manufacturer_name,
-        public int $category_id,
-        public ?string $category_name,
-        public string $created_at,
-        public string $updated_at,
-        public array $maintenances,
-    ) {
-    }
+        public ?string $imagePath,
+        public int $manufacturerId,
+        public string $manufacturerName,
+        public int $categoryId,
+        public string $categoryName,
+        public ?array $maintenances,
+    ) {}
 }

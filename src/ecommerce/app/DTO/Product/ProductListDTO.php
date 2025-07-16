@@ -13,17 +13,17 @@ readonly class ProductListDTO
      * @param int $id
      * @param string $name
      * @param string $article
-     * @param string $manufacturer_name
+     * @param string $manufacturerName
      * @param array<string, float>|null $prices
-     * @param string|null $image_url
+     * @param string|null $imageUrl
      */
     public function __construct(
         public int $id,
         public string $name,
         public string $article,
-        public string $manufacturer_name,
+        public string $manufacturerName,
         public ?array $prices,
-        public ?string $image_url,
+        public ?string $imageUrl,
     ) {
     }
 
@@ -38,9 +38,9 @@ readonly class ProductListDTO
             'id' => $this->id,
             'name' => $this->name,
             'article' => $this->article,
-            'manufacturer_name' => $this->manufacturer_name,
+            'manufacturer_name' => $this->manufacturerName,
             'prices' => $this->prices,
-            'image_url' => $this->image_url,
+            'image_url' => $this->imageUrl,
         ];
     }
 }

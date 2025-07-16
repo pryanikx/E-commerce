@@ -8,8 +8,6 @@ use App\DTO\Product\ProductDTO;
 
 interface ProductRepositoryInterface
 {
-    const PER_PAGE = 20;
-
     /**
      * Get all products from the database.
      *
@@ -29,7 +27,7 @@ interface ProductRepositoryInterface
     /**
      * Create a new product.
      *
-     * @param array $data
+     * @param array<string, mixed> $data
      *
      * @return ProductDTO
      */
@@ -39,7 +37,7 @@ interface ProductRepositoryInterface
      * Update an existing product.
      *
      * @param int $id
-     * @param array $data
+     * @param array<string, mixed> $data
      *
      * @return bool
      */
@@ -58,7 +56,7 @@ interface ProductRepositoryInterface
      * Attach maintenances to a product.
      *
      * @param int $id
-     * @param array $maintenances
+     * @param array<int, mixed> $maintenances
      *
      * @return void
      */

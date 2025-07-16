@@ -9,16 +9,27 @@ namespace App\DTO\Product;
  */
 readonly class ProductStoreDTO
 {
+    /**
+     * @param string $name
+     * @param string $article
+     * @param string $description
+     * @param string $releaseDate
+     * @param float $price
+     * @param mixed $image
+     * @param int $manufacturerId
+     * @param int $categoryId
+     * @param array<int, mixed>|null $maintenances
+     */
     public function __construct(
         public string $name,
         public string $article,
         public string $description,
-        public string $release_date,
+        public string $releaseDate,
         public float $price,
         public mixed $image,
-        public int $manufacturer_id,
-        public int $category_id,
-        public array $maintenances = [],
+        public int $manufacturerId,
+        public int $categoryId,
+        public ?array $maintenances,
     ) {
     }
 }

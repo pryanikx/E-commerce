@@ -18,7 +18,7 @@ class ProductRepository implements ProductRepositoryInterface
     public function all(): array
     {
         return Product::with(['manufacturer', 'maintenances'])->get()->map(fn (Product $product)
-            => $this->mapToDTO($product))->all();
+        => $this->mapToDTO($product))->all();
     }
 
     /**
@@ -38,7 +38,7 @@ class ProductRepository implements ProductRepositoryInterface
     /**
      * Create a new product.
      *
-     * @param array $data
+     * @param array<string, mixed> $data
      *
      * @return ProductDTO
      */
@@ -55,7 +55,7 @@ class ProductRepository implements ProductRepositoryInterface
      * Update an existing product.
      *
      * @param int $id
-     * @param array $data
+     * @param array<string, mixed> $data
      *
      * @return bool
      */
@@ -82,7 +82,7 @@ class ProductRepository implements ProductRepositoryInterface
      * Attach maintenances to a product.
      *
      * @param int $id
-     * @param array $maintenances
+     * @param array<int, mixed> $maintenances
      *
      * @return void
      */
@@ -102,33 +102,32 @@ class ProductRepository implements ProductRepositoryInterface
     private function mapToDTO(Product $product): ProductDTO
     {
         $maintenances = null;
+
         if ($product->relationLoaded('maintenances')) {
             $maintenances = $product->maintenances->map(function ($maintenance) {
-                return (object) [
+                return [
                     'id' => $maintenance->id,
                     'name' => $maintenance->name,
-                    'pivot' => (object) [
-                        'price' => $maintenance->pivot->price ?? 0
+                    'pivot' => [
+                        'price' => (float) ($maintenance->pivot->price ?? 0)
                     ]
                 ];
             })->toArray();
         }
 
         return new ProductDTO(
-            $product->id,
-            $product->name,
-            $product->article,
-            $product->description,
-            $product->release_date?->toDateString(),
-            (float) $product->price,
-            $product->image_path,
-            $product->manufacturer_id,
-            $product->manufacturer?->name,
-            $product->category_id,
-            $product->category?->name,
-            $product->created_at?->toISOString() ?? '',
-            $product->updated_at?->toISOString() ?? '',
-            $maintenances,
+            id: $product->id,
+            name: $product->name,
+            article: $product->article,
+            description: $product->description,
+            releaseDate: $product->release_date->toDateString(),
+            price: (float) $product->price,
+            imagePath: $product->image_path,
+            manufacturerId: $product->manufacturer_id,
+            manufacturerName: $product->manufacturer->name,
+            categoryId: $product->category_id,
+            categoryName: $product->category->name,
+            maintenances: $maintenances,
         );
     }
 }
