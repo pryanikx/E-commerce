@@ -9,21 +9,35 @@ use Psr\Log\LoggerInterface;
 
 class EmailNotificationService
 {
+    /**
+     * @param LoggerInterface $logger
+     * @param EmailFileLogger $fileLogger
+     * @param ClockInterface $clock
+     */
     public function __construct(
         private readonly LoggerInterface $logger,
         private readonly EmailFileLogger $fileLogger,
         private readonly ClockInterface $clock,
-    ) {}
+    ) {
+    }
 
     /**
-     * Send export success notification email
+     * Send export success notification email.
+     *
+     * @param string $adminEmail
+     * @param string $exportId
+     * @param string $s3Key ,
+     * @param array $stats
+     *
+     * @return void
+     * @throws \Throwable
      */
     public function sendExportSuccessNotification(
         string $adminEmail,
         string $exportId,
         string $s3Key,
         array $stats
-    ): bool {
+    ): void {
         try {
             $subject = __('notifications.export_success_subject', ['export_id' => $exportId]);
             $emailContent = $this->buildSuccessEmail($exportId, $s3Key, $stats);
@@ -36,9 +50,6 @@ class EmailNotificationService
                 'export_id' => $exportId,
                 'file_path' => $this->fileLogger->getEmailFilePath($exportId)
             ]);
-
-            return true;
-
         } catch (\Exception $e) {
             $this->logger->error(__('errors.export_success_notification_failed'), [
                 'export_id' => $exportId,
@@ -46,18 +57,25 @@ class EmailNotificationService
                 'error' => $e->getMessage()
             ]);
 
-            return false;
+            throw $e;
         }
     }
 
     /**
-     * Send export failure notification email
+     * Send export failure notification email.
+     *
+     * @param string $adminEmail
+     * @param string $exportId
+     * @param string $errorMessage
+     *
+     * @return void
+     * @throws \Throwable
      */
     public function sendExportFailureNotification(
         string $adminEmail,
         string $exportId,
         string $errorMessage
-    ): bool {
+    ): void {
         try {
             $subject = __('notifications.export_failure_subject', ['export_id' => $exportId]);
             $emailContent = $this->buildFailureEmail($exportId, $errorMessage);
@@ -72,8 +90,6 @@ class EmailNotificationService
                 'file_path' => $this->fileLogger->getEmailFilePath($errorFileId)
             ]);
 
-            return true;
-
         } catch (\Exception $e) {
             $this->logger->error(__('errors.export_failure_notification_failed'), [
                 'export_id' => $exportId,
@@ -81,16 +97,24 @@ class EmailNotificationService
                 'error' => $e->getMessage()
             ]);
 
-            return false;
+            throw $e;
         }
     }
 
     /**
-     * Build success email content
+     * Build success email content.
+     *
+     * @param string $exportId
+     * @param string $s3Key
+     * @param array $stats
+     *
+     * @return string
+     * @throws \Throwable
      */
     private function buildSuccessEmail(string $exportId, string $s3Key, array $stats): string
     {
         $currentTime = $this->clock->now()->format('d.m.Y H:i:s');
+
         return view('emails.export_success', [
             'exportId' => $exportId,
             's3Key' => $s3Key,
@@ -100,11 +124,18 @@ class EmailNotificationService
     }
 
     /**
-     * Build failure email content
+     * Build failure email content.
+     *
+     * @param string $exportId
+     * @param string $errorMessage
+     *
+     * @return string
+     * @throws \Throwable
      */
     private function buildFailureEmail(string $exportId, string $errorMessage): string
     {
         $currentTime = $this->clock->now()->format('d.m.Y H:i:s');
+
         return view('emails.export_failure', [
             'exportId' => $exportId,
             'errorMessage' => $errorMessage,

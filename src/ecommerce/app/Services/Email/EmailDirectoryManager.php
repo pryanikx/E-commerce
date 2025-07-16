@@ -8,8 +8,18 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 
 class EmailDirectoryManager
 {
-    public function __construct(private Filesystem $filesystem) {}
+    /**
+     * @param Filesystem $filesystem
+     */
+    public function __construct(private readonly Filesystem $filesystem) {}
 
+    /**
+     * Ensure the directory from $path exists.
+     *
+     * @param string $path
+     *
+     * @return void
+     */
     public function ensureDirectoryExists(string $path): void
     {
         if (!$this->filesystem->exists($path)) {

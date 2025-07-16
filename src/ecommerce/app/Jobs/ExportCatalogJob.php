@@ -111,8 +111,10 @@ class ExportCatalogJob implements ShouldQueue
      * @return string
      * @throws \Exception
      */
-    private function generateCsvFile(ProductExportService $exportService, LoggerInterface $logger): string
-    {
+    private function generateCsvFile(
+        ProductExportService $exportService,
+        LoggerInterface $logger
+    ): string {
         $csvFilePath = $exportService->exportToCSV($this->exportId);
 
         if (!file_exists($csvFilePath)) {
@@ -138,8 +140,11 @@ class ExportCatalogJob implements ShouldQueue
      * @return string
      * @throws \Exception
      */
-    private function uploadToStorage(StorageUploaderInterface $uploader, string $csvFilePath, LoggerInterface $logger): string
-    {
+    private function uploadToStorage(
+        StorageUploaderInterface $uploader,
+        string $csvFilePath,
+        LoggerInterface $logger
+    ): string {
         $storageKey = $uploader->uploadCatalogExport($csvFilePath, $this->exportId);
 
         if (!$storageKey) {
@@ -163,6 +168,7 @@ class ExportCatalogJob implements ShouldQueue
      * @param LoggerInterface $logger
      *
      * @return void
+     * @throws \Throwable
      */
     private function sendSuccessNotification(
         EmailNotificationService $emailService,

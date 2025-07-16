@@ -12,6 +12,15 @@ class EmailFileLogger
 {
     private const JSON_FLAGS = JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE;
 
+    /**
+     * @param Filesystem $filesystem
+     * @param EmailHtmlBuilder $htmlBuilder
+     * @param EmailDirectoryManager $directoryManager
+     * @param ClockInterface $clock
+     * @param string $emailLogPath
+     * @param string $emailFilePrefix
+     * @param string $fromEmail
+     */
     public function __construct(
         private readonly Filesystem $filesystem,
         private readonly EmailHtmlBuilder $htmlBuilder,
@@ -24,6 +33,17 @@ class EmailFileLogger
         $this->directoryManager->ensureDirectoryExists($this->emailLogPath);
     }
 
+    /**
+     * Save email to file.
+     *
+     * @param string $to
+     * @param string $subject
+     * @param string $content
+     * @param string $exportId
+     *
+     * @return void
+     * @throws \Throwable
+     */
     public function saveEmailToFile(string $to, string $subject, string $content, string $exportId): void
     {
         $filePath = $this->getEmailFilePath($exportId);
@@ -40,6 +60,17 @@ class EmailFileLogger
         $this->saveHtmlVersion($to, $subject, $content, $exportId);
     }
 
+    /**
+     * Save email in html version.
+     *
+     * @param string $to
+     * @param string $subject
+     * @param string $content
+     * @param string $exportId
+     *
+     * @return void
+     * @throws \Throwable
+     */
     private function saveHtmlVersion(string $to, string $subject, string $content, string $exportId): void
     {
         $htmlFilePath = $this->emailLogPath . "/" . $this->emailFilePrefix . "{$exportId}.html";
@@ -47,6 +78,13 @@ class EmailFileLogger
         $this->filesystem->put($htmlFilePath, $htmlContent);
     }
 
+    /**
+     * Get an email file path.
+     *
+     * @param string $exportId
+     *
+     * @return string
+     */
     public function getEmailFilePath(string $exportId): string
     {
         return $this->emailLogPath . "/" . $this->emailFilePrefix . "{$exportId}.json";
