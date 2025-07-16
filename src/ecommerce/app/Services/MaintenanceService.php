@@ -94,11 +94,11 @@ class MaintenanceService
      */
     public function deleteMaintenance(int $id): bool
     {
-        $is_deleted = $this->maintenanceRepository->delete($id);
+        $isDeleted = $this->maintenanceRepository->delete($id);
 
         $this->cacheMaintenances();
 
-        return $is_deleted;
+        return $isDeleted;
     }
 
     /**

@@ -132,11 +132,11 @@ class CategoryService
      */
     public function deleteCategory(int $id): bool
     {
-        $is_deleted = $this->categoryRepository->delete($id);
+        $isDeleted = $this->categoryRepository->delete($id);
 
         $this->cacheCategories();
 
-        return $is_deleted;
+        return $isDeleted;
     }
 
     /**
