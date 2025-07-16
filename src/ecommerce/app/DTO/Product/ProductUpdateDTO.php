@@ -19,5 +19,6 @@ readonly class ProductUpdateDTO
         public ?int $manufacturer_id = null,
         public ?int $category_id = null,
         public ?array $maintenances = null,
-    ) {}
+    ) {
+    }
 }

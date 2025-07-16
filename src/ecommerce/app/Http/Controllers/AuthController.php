@@ -34,10 +34,12 @@ class AuthController extends Controller
     {
         $userData = $this->registerService->register($request->validated());
 
-        return response()->json([
+        return response()->json(
+            [
                 'token' => $userData['token'],
                 'user' => $userData['user'],
-            ], 200
+            ],
+            200
         );
     }
 

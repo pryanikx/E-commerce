@@ -11,7 +11,9 @@ class EmailDirectoryManager
     /**
      * @param Filesystem $filesystem
      */
-    public function __construct(private readonly Filesystem $filesystem) {}
+    public function __construct(private readonly Filesystem $filesystem)
+    {
+    }
 
     /**
      * Ensure the directory from $path exists.

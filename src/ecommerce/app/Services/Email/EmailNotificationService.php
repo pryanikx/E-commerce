@@ -89,7 +89,6 @@ class EmailNotificationService
                 'export_id' => $exportId,
                 'file_path' => $this->fileLogger->getEmailFilePath($errorFileId)
             ]);
-
         } catch (\Exception $e) {
             $this->logger->error(__('errors.export_failure_notification_failed'), [
                 'export_id' => $exportId,

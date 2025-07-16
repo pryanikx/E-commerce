@@ -19,8 +19,7 @@ class RegisterService
     public function __construct(
         private RegisterRepositoryInterface $registerRepository,
         private Hasher $hasher,
-    )
-    {
+    ) {
     }
 
     /**

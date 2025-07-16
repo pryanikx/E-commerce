@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTO\Maintenance\MaintenanceDTO;
 use App\DTO\Maintenance\MaintenanceListDTO;
 use App\DTO\Maintenance\MaintenanceStoreDTO;
 use App\DTO\Maintenance\MaintenanceUpdateDTO;
-use App\DTO\Maintenance\MaintenanceDTO;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
@@ -22,8 +22,7 @@ class MaintenanceService
     public function __construct(
         private MaintenanceRepositoryInterface $maintenanceRepository,
         private CacheInterface $cache,
-    )
-    {
+    ) {
     }
 
     /**
@@ -34,7 +33,7 @@ class MaintenanceService
     public function getAll(): array
     {
         $maintenances = $this->maintenanceRepository->all();
-        return array_map(fn($maintenance) => $this->makeMaintenanceListDTO($maintenance)->toArray(), $maintenances);
+        return array_map(fn ($maintenance) => $this->makeMaintenanceListDTO($maintenance)->toArray(), $maintenances);
     }
 
     /**
@@ -110,7 +109,7 @@ class MaintenanceService
     private function cacheMaintenances(): void
     {
         $maintenances = $this->maintenanceRepository->all();
-        $data = array_map(fn($maintenance) => $this->makeMaintenanceListDTO($maintenance)->toArray(), $maintenances);
+        $data = array_map(fn ($maintenance) => $this->makeMaintenanceListDTO($maintenance)->toArray(), $maintenances);
         $this->cache->put(self::CACHE_KEY, $data);
     }
 

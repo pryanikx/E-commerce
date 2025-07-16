@@ -11,7 +11,6 @@ use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\Filters\ProductFilter;
 use App\Services\Filters\ProductSorter;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -34,7 +33,7 @@ class CategoryRepository implements CategoryRepositoryInterface
      */
     public function all(): array
     {
-        return Category::all()->map(fn(Category $category)
+        return Category::all()->map(fn (Category $category)
         => $this->mapToDTO($category))->all();
     }
 
@@ -108,8 +107,7 @@ class CategoryRepository implements CategoryRepositoryInterface
         array $filters = [],
         array $sorters = [],
         int $page = self::DEFAULT_PAGE_NUMBER
-    ): LengthAwarePaginator
-    {
+    ): LengthAwarePaginator {
         $category = Category::findOrFail($id);
 
         $query = $category->products();

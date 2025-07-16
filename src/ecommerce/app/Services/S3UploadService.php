@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use Aws\S3\S3Client;
-use Aws\Exception\AwsException;
-use Psr\Log\LoggerInterface;
 use App\Services\Support\StorageUploaderInterface;
+use Aws\Exception\AwsException;
+use Aws\S3\S3Client;
+use Psr\Log\LoggerInterface;
 
 class S3UploadService implements StorageUploaderInterface
 {
@@ -51,7 +51,7 @@ class S3UploadService implements StorageUploaderInterface
      *
      * @param string $filePath
      * @param string $exportId
-     * 
+     *
      * @return string|null
      * @throws \Exception
      */
@@ -90,7 +90,6 @@ class S3UploadService implements StorageUploaderInterface
             throw new \Exception(
                 __('errors.s3_upload_failed') . ": " . $result['@metadata']['statusCode']
             );
-
         } catch (AwsException $e) {
             $this->logger->error(__('messages.s3_aws_error'), [
                 self::CONTEXT_EXPORT_ID => $exportId,
@@ -100,7 +99,6 @@ class S3UploadService implements StorageUploaderInterface
             ]);
 
             return null;
-
         } catch (\Exception $e) {
             $this->logger->error(__('messages.s3_general_error'), [
                 self::CONTEXT_EXPORT_ID => $exportId,
@@ -116,7 +114,7 @@ class S3UploadService implements StorageUploaderInterface
      * Check if file exists in S3 storage
      *
      * @param string $s3Key
-     * 
+     *
      * @return bool
      */
     public function fileExists(string $s3Key): bool
@@ -128,7 +126,6 @@ class S3UploadService implements StorageUploaderInterface
             ]);
 
             return true;
-
         } catch (AwsException $e) {
             if ($e->getAwsErrorCode() === self::NOT_FOUND_ERROR) {
                 return false;

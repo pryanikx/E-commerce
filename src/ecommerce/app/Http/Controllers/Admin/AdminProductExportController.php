@@ -34,7 +34,6 @@ class AdminProductExportController extends Controller
                 'export_id' => $exportId,
                 'status' => self::STATUS_QUEUED
             ]);
-
         } catch (\Exception $e) {
             return $this->errorResponse(
                 __('messages.catalog_export_start_failed'),

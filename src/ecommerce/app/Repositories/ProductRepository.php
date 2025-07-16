@@ -7,8 +7,6 @@ namespace App\Repositories;
 use App\DTO\Product\ProductDTO;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductRepository implements ProductRepositoryInterface
 {
@@ -19,7 +17,7 @@ class ProductRepository implements ProductRepositoryInterface
      */
     public function all(): array
     {
-        return Product::with(['manufacturer', 'maintenances'])->get()->map(fn(Product $product)
+        return Product::with(['manufacturer', 'maintenances'])->get()->map(fn (Product $product)
             => $this->mapToDTO($product))->all();
     }
 
@@ -106,10 +104,10 @@ class ProductRepository implements ProductRepositoryInterface
         $maintenances = null;
         if ($product->relationLoaded('maintenances')) {
             $maintenances = $product->maintenances->map(function ($maintenance) {
-                return (object)[
+                return (object) [
                     'id' => $maintenance->id,
                     'name' => $maintenance->name,
-                    'pivot' => (object)[
+                    'pivot' => (object) [
                         'price' => $maintenance->pivot->price ?? 0
                     ]
                 ];
@@ -122,7 +120,7 @@ class ProductRepository implements ProductRepositoryInterface
             $product->article,
             $product->description,
             $product->release_date?->toDateString(),
-            (float)$product->price,
+            (float) $product->price,
             $product->image_path,
             $product->manufacturer_id,
             $product->manufacturer?->name,

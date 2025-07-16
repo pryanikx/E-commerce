@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repositories\Contracts;
 
 use App\DTO\Maintenance\MaintenanceDTO;
-use Illuminate\Database\Eloquent\Collection;
 
 interface MaintenanceRepositoryInterface
 {

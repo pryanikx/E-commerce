@@ -7,7 +7,6 @@ namespace App\Repositories;
 use App\DTO\Maintenance\MaintenanceDTO;
 use App\Models\Maintenance;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 
 class MaintenanceRepository implements MaintenanceRepositoryInterface
 {
@@ -18,7 +17,7 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
      */
     public function all(): array
     {
-        return Maintenance::all()->map(fn(Maintenance $maintenance) =>
+        return Maintenance::all()->map(fn (Maintenance $maintenance) =>
             $this->mapToDTO($maintenance))->all();
     }
 

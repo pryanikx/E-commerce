@@ -12,8 +12,6 @@ use Illuminate\Http\JsonResponse;
 
 class AdminManufacturerController extends Controller
 {
-
-
     /**
      * @param ManufacturerService $manufacturerService
      */
@@ -34,9 +32,11 @@ class AdminManufacturerController extends Controller
             return response()->json(['message' => __('messages.empty_manufacturers')], 200);
         }
 
-        return response()->json([
+        return response()->json(
+            [
             'data' => $manufacturers
-            ], 200
+            ],
+            200
         );
     }
 

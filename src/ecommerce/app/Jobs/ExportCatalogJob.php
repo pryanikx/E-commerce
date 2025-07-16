@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Services\ProductExportService;
-use App\Services\S3UploadService;
-use App\Services\Support\StorageUploaderInterface;
 use App\Services\Email\EmailNotificationService;
+use App\Services\ProductExportService;
+use App\Services\Support\StorageUploaderInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -17,7 +16,10 @@ use Psr\Log\LoggerInterface;
 
 class ExportCatalogJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     private const CONTEXT_EXPORT_ID = 'export_id';
     private const CONTEXT_ADMIN_EMAIL = 'admin_email';
@@ -77,7 +79,6 @@ class ExportCatalogJob implements ShouldQueue
                 self::CONTEXT_S3_KEY => $storageKey,
                 self::CONTEXT_STATS => $stats
             ]);
-
         } catch (\Throwable $exception) {
             $this->handleExportFailure($emailService, $exception, $this->logger);
 
@@ -202,8 +203,7 @@ class ExportCatalogJob implements ShouldQueue
         EmailNotificationService $emailService,
         \Throwable $exception,
         LoggerInterface $logger
-    ): void
-    {
+    ): void {
         $logger->error(__('messages.export_failed'), [
             self::CONTEXT_EXPORT_ID => $this->exportId,
             self::CONTEXT_ERROR => $exception->getMessage(),
@@ -221,7 +221,6 @@ class ExportCatalogJob implements ShouldQueue
                 self::CONTEXT_EXPORT_ID => $this->exportId,
                 self::CONTEXT_ADMIN_EMAIL => $this->adminEmail
             ]);
-
         } catch (\Throwable $emailException) {
             $logger->error(__('messages.failure_notification_failed'), [
                 self::CONTEXT_EXPORT_ID => $this->exportId,

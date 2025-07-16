@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Http\Controllers\User\ProductController;
-use App\Services\EmailNotificationService;
 use App\Services\ProductExportService;
 use App\Services\S3UploadService;
-use Illuminate\Support\ServiceProvider;
-use App\Services\Support\CsvWriterFactoryInterface;
 use App\Services\Support\CsvWriterFactory;
+use App\Services\Support\CsvWriterFactoryInterface;
 use App\Services\Support\StorageUploaderInterface;
+use Illuminate\Support\ServiceProvider;
 
 class CatalogExportServiceProvider extends ServiceProvider
 {

@@ -17,7 +17,6 @@ class RegisterDTO
         public string $email,
         public string $password,
         public string $role
-    )
-    {
+    ) {
     }
 }

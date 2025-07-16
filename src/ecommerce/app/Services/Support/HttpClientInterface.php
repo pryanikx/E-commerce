@@ -9,4 +9,4 @@ use Illuminate\Http\Client\Response;
 interface HttpClientInterface
 {
     public function get(string $url, array $query = []): Response;
-} 
+}

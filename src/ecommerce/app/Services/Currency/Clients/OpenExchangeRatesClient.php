@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Currency\Clients;
 
+use App\Exceptions\Currency\CurrencyApiException;
 use App\Services\Currency\Clients\Contracts\CurrencyApiClientInterface;
 use App\Services\Support\HttpClientInterface;
-use App\Exceptions\Currency\CurrencyApiException;
 use Psr\Log\LoggerInterface;
 
 readonly class OpenExchangeRatesClient implements CurrencyApiClientInterface
@@ -16,7 +16,8 @@ readonly class OpenExchangeRatesClient implements CurrencyApiClientInterface
         private LoggerInterface $logger,
         private string $apiKey,
         private string $apiUrl,
-    ) {}
+    ) {
+    }
 
     /**
      * Fetch raw exchange rates data from API.
@@ -63,7 +64,6 @@ readonly class OpenExchangeRatesClient implements CurrencyApiClientInterface
             ]);
 
             return $data['rates'];
-
         } catch (CurrencyApiException $e) {
             throw $e;
         } catch (\Exception $e) {

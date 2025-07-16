@@ -13,7 +13,7 @@ interface CsvWriterFactoryInterface
      *
      * @param string $path
      * @param string $mode
-     * 
+     *
      * @return Writer
      */
     public function createFromPath(string $path, string $mode): Writer;

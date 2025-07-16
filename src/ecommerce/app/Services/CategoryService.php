@@ -12,8 +12,8 @@ use App\DTO\Product\ProductListDTO;
 use App\Models\Product;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\Currency\CurrencyCalculatorService;
-use Illuminate\Support\Str;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
+use Illuminate\Support\Str;
 
 class CategoryService
 {
@@ -29,8 +29,7 @@ class CategoryService
         private readonly CategoryRepositoryInterface $categoryRepository,
         private readonly CurrencyCalculatorService $currencyCalculator,
         private readonly CacheInterface $cache,
-    )
-    {
+    ) {
     }
 
     /**
@@ -42,7 +41,7 @@ class CategoryService
     {
         $categories = $this->categoryRepository->all();
 
-        return array_map(fn($category) =>
+        return array_map(fn ($category) =>
         $this->makeCategoryListDTO($category)->toArray(), $categories);
     }
 
@@ -61,12 +60,11 @@ class CategoryService
         array $filters = [],
         array $sorters = [],
         int $page = self::DEFAULT_PAGE_NUMBER
-    ): array
-    {
+    ): array {
         $products = $this->categoryRepository->getProductsForCategory($id, $filters, $sorters, $page);
 
         return [
-            'products' => $products->map(fn($product) =>
+            'products' => $products->map(fn ($product) =>
             $this->makeProductListDTO($product)->toArray())->toArray(),
 
             'pagination' => [
@@ -161,7 +159,7 @@ class CategoryService
     private function cacheCategories(): void
     {
         $categories = $this->categoryRepository->all();
-        $data = array_map(fn($category) => $this->makeCategoryListDTO($category)->toArray(), $categories);
+        $data = array_map(fn ($category) => $this->makeCategoryListDTO($category)->toArray(), $categories);
         $this->cache->put(self::CACHE_KEY, $data);
     }
 
@@ -201,8 +199,8 @@ class CategoryService
         }
         return new CategoryListDTO(
             $category['id'] ?? $category->id,
-                $category['name'] ?? $category->name,
-                $category['alias'] ?? $category->alias
+            $category['name'] ?? $category->name,
+            $category['alias'] ?? $category->alias
         );
     }
 }

@@ -7,7 +7,6 @@ namespace App\Repositories;
 use App\DTO\Manufacturer\ManufacturerDTO;
 use App\Models\Manufacturer;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 
 class ManufacturerRepository implements ManufacturerRepositoryInterface
 {
@@ -18,7 +17,7 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
      */
     public function all(): array
     {
-        return Manufacturer::all()->map(fn(Manufacturer $manufacturer)
+        return Manufacturer::all()->map(fn (Manufacturer $manufacturer)
             => $this->mapToDTO($manufacturer))->all();
     }
 

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use Illuminate\Contracts\Cache\Repository;
-use Illuminate\Support\ServiceProvider;
 use App\Services\Currency\Clients\Contracts\CurrencyApiClientInterface;
-use App\Services\Currency\CurrencySource;
 use App\Services\Currency\Clients\OpenExchangeRatesClient;
-use App\Services\Currency\OpenExchangeRatesSource;
 use App\Services\Currency\CurrencyCalculatorService;
+use App\Services\Currency\CurrencySource;
+use App\Services\Currency\OpenExchangeRatesSource;
 use App\Services\Support\HttpClientInterface;
 use App\Services\Support\LaravelHttpClient;
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Support\ServiceProvider;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 

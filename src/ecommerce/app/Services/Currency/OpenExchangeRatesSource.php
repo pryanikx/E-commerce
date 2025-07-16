@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Currency;
 
-use App\Services\Currency\Clients\Contracts\CurrencyApiClientInterface;
 use App\Exceptions\Currency\CurrencyApiException;
-use Psr\Log\LoggerInterface;
+use App\Services\Currency\Clients\Contracts\CurrencyApiClientInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
 use Psr\Clock\ClockInterface;
+use Psr\Log\LoggerInterface;
 
 class OpenExchangeRatesSource implements CurrencySource
 {
@@ -21,7 +21,8 @@ class OpenExchangeRatesSource implements CurrencySource
         private readonly CacheInterface $cache,
         private readonly ClockInterface $clock,
         private readonly array $supportedCurrencies,
-    ) {}
+    ) {
+    }
 
     /**
      * Fetch exchange rates with base currency and caching.
@@ -67,7 +68,7 @@ class OpenExchangeRatesSource implements CurrencySource
     private function getFallbackRates(): array
     {
         $fallbackRates = array_map(
-            fn() => self::DEFAULT_RATE,
+            fn () => self::DEFAULT_RATE,
             array_combine($this->supportedCurrencies, $this->supportedCurrencies)
         );
 

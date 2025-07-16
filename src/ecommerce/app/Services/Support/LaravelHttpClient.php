@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Support;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Http;
 
 class LaravelHttpClient implements HttpClientInterface
 {
@@ -13,4 +13,4 @@ class LaravelHttpClient implements HttpClientInterface
     {
         return Http::get($url, $query);
     }
-} 
+}

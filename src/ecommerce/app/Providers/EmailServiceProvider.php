@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use Illuminate\Contracts\Filesystem\Filesystem;
-use Illuminate\Support\ServiceProvider;
-use App\Services\Email\EmailHtmlBuilder;
 use App\Services\Email\EmailDirectoryManager;
 use App\Services\Email\EmailFileLogger;
+use App\Services\Email\EmailHtmlBuilder;
 use App\Services\Email\EmailNotificationService;
+use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Support\ServiceProvider;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 

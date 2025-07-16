@@ -19,5 +19,6 @@ readonly class ProductStoreDTO
         public int $manufacturer_id,
         public int $category_id,
         public array $maintenances = [],
-    ) {}
+    ) {
+    }
 }

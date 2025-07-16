@@ -14,7 +14,8 @@ class CurrencyCalculatorService
         private readonly CurrencySource $source,
         private readonly string $baseCurrency,
         private readonly array $supportedCurrencies,
-    ) {}
+    ) {
+    }
 
     /**
      * Convert a price to multiple currencies.

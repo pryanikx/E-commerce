@@ -12,4 +12,4 @@ class CsvWriterFactory implements CsvWriterFactoryInterface
     {
         return Writer::createFromPath($path, $mode);
     }
-} 
+}

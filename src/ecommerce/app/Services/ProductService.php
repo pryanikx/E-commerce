@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTO\Product\ProductDTO;
 use App\DTO\Product\ProductListDTO;
 use App\DTO\Product\ProductShowDTO;
 use App\DTO\Product\ProductStoreDTO;
 use App\DTO\Product\ProductUpdateDTO;
-use App\DTO\Product\ProductDTO;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Services\Currency\CurrencyCalculatorService;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
-use Psr\Clock\ClockInterface;
-use Psr\Log\LoggerInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\UploadedFile;
+use Psr\Clock\ClockInterface;
+use Psr\Log\LoggerInterface;
 
 class ProductService
 {
@@ -40,8 +38,7 @@ class ProductService
         private CacheInterface $cache,
         private ClockInterface $clock,
         private FilesystemFactory $filesystem,
-    )
-    {
+    ) {
     }
 
     /**
@@ -53,7 +50,7 @@ class ProductService
     {
         $products = $this->productRepository->all();
 
-        return array_map(fn($product) => $this->makeProductListDTO($product)->toArray(), $products);
+        return array_map(fn ($product) => $this->makeProductListDTO($product)->toArray(), $products);
     }
 
     /**
@@ -80,7 +77,8 @@ class ProductService
                 } catch (ModelNotFoundException $e) {
                     return null;
                 }
-            });
+            }
+        );
     }
 
     /**
@@ -280,11 +278,15 @@ class ProductService
         if (
             $oldPath &&
             $this->filesystem->disk(
-                self::STORAGE_DISK)->exists(str_replace('storage/', '', $oldPath)
+                self::STORAGE_DISK
+            )->exists(
+                str_replace('storage/', '', $oldPath)
             )
         ) {
             $this->filesystem->disk(
-                self::STORAGE_DISK)->delete(str_replace('storage/', '', $oldPath)
+                self::STORAGE_DISK
+            )->delete(
+                str_replace('storage/', '', $oldPath)
             );
         }
     }
@@ -301,7 +303,8 @@ class ProductService
             $imagePath &&
             $imagePath !== '/' &&
             $this->filesystem->disk(
-                self::STORAGE_DISK)->exists(str_replace('storage/', '', $imagePath))
+                self::STORAGE_DISK
+            )->exists(str_replace('storage/', '', $imagePath))
         ) {
             return asset($imagePath);
         }

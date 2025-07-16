@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTO\Manufacturer\ManufacturerDTO;
 use App\DTO\Manufacturer\ManufacturerListDTO;
 use App\DTO\Manufacturer\ManufacturerStoreDTO;
 use App\DTO\Manufacturer\ManufacturerUpdateDTO;
-use App\DTO\Manufacturer\ManufacturerDTO;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
@@ -22,8 +22,7 @@ class ManufacturerService
     public function __construct(
         private readonly ManufacturerRepositoryInterface $manufacturerRepository,
         private readonly CacheInterface                  $cache,
-    )
-    {
+    ) {
     }
 
     /**
@@ -35,10 +34,10 @@ class ManufacturerService
     {
         $manufacturers = $this->manufacturerRepository->all();
         return array_map(
-                fn($manufacturer) =>
-                $this->makeManufacturerListDTO($manufacturer)->toArray(),
-                $manufacturers
-            );
+            fn ($manufacturer) =>
+            $this->makeManufacturerListDTO($manufacturer)->toArray(),
+            $manufacturers
+        );
     }
 
     /**
@@ -110,7 +109,7 @@ class ManufacturerService
     private function cacheManufacturers(): void
     {
         $manufacturers = $this->manufacturerRepository->all();
-        $data = array_map(fn($manufacturer) => $this->makeManufacturerListDTO($manufacturer)->toArray(), $manufacturers);
+        $data = array_map(fn ($manufacturer) => $this->makeManufacturerListDTO($manufacturer)->toArray(), $manufacturers);
         $this->cache->put(self::CACHE_KEY, $data);
     }
 
@@ -133,7 +132,7 @@ class ManufacturerService
 
         return new ManufacturerListDTO(
             $manufacturer['id'] ?? $manufacturer->id,
-                $manufacturer['name'] ?? $manufacturer->name
+            $manufacturer['name'] ?? $manufacturer->name
         );
     }
 }
