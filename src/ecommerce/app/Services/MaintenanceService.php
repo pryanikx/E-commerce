@@ -28,7 +28,7 @@ class MaintenanceService
     /**
      * Get all maintenances.
      *
-     * @return array
+     * @return array<int, array<string, mixed>>
      */
     public function getAll(): array
     {
@@ -39,7 +39,7 @@ class MaintenanceService
     /**
      * Create new maintenance.
      *
-     * @param array $requestValidated
+     * @param array<string, mixed> $requestValidated
      *
      * @return MaintenanceDTO
      */
@@ -62,7 +62,7 @@ class MaintenanceService
      * Update existing maintenance by ID.
      *
      * @param int $id
-     * @param array $requestValidated
+     * @param array<string, mixed> $requestValidated
      *
      * @return MaintenanceDTO
      */

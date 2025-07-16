@@ -38,7 +38,7 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
     /**
      * Create new maintenance.
      *
-     * @param array $array
+     * @param array<string, mixed> $array
      *
      * @return MaintenanceDTO
      */
@@ -53,7 +53,7 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
      * Update existing maintenance.
      *
      * @param int $id
-     * @param array $data
+     * @param array<string, mixed> $data
      *
      * @return bool
      */
@@ -90,8 +90,6 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
             $maintenance->name,
             $maintenance->description,
             $maintenance->duration,
-            $maintenance->created_at?->toISOString() ?? '',
-            $maintenance->updated_at?->toISOString() ?? '',
         );
     }
 }

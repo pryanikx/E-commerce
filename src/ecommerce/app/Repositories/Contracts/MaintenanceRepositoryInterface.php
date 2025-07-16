@@ -27,7 +27,7 @@ interface MaintenanceRepositoryInterface
     /**
      * Create new maintenance.
      *
-     * @param array $array
+     * @param array<string, mixed> $array
      *
      * @return MaintenanceDTO
      */
@@ -37,7 +37,7 @@ interface MaintenanceRepositoryInterface
      * Update existing maintenance.
      *
      * @param int $id
-     * @param array $data
+     * @param array<string, mixed> $data
      *
      * @return bool
      */
