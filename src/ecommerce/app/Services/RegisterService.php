@@ -14,6 +14,7 @@ class RegisterService
 {
     /**
      * @param RegisterRepositoryInterface $registerRepository
+     * @param Hasher $hasher
      */
     public function __construct(
         private RegisterRepositoryInterface $registerRepository,
@@ -25,35 +26,22 @@ class RegisterService
     /**
      * Register a new user.
      *
-     * @param array $requestValidated
+     * @param array<string, string> $requestValidated
      *
-     * @return array
+     * @return array<string, string>
      */
     public function register(array $requestValidated): array
     {
-        $dto = $this->makeRegisterDTO($requestValidated);
-        $data = $dto->toArray();
-        $data['password'] = $this->hashPassword($data['password']);
+        $password = $this->hashPassword($requestValidated['password']);
 
+        $dto = new RegisterDTO(
+            name: $requestValidated['name'],
+            email: $requestValidated['email'],
+            password: $password,
+            role: UserRole::USER->value,
+        );
 
-        return $this->registerRepository->register($data);
-    }
-
-    /**
-     * Create a new RegisterDTO.
-     *
-     * @param array $data
-     *
-     * @return RegisterDTO
-     */
-    private function makeRegisterDTO(array $data): RegisterDTO
-    {
-        return new RegisterDTO([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
-            'role' => UserRole::USER->value,
-        ]);
+        return $this->registerRepository->register((array) $dto);
     }
 
     /**

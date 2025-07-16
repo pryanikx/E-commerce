@@ -12,7 +12,7 @@ class LoginService
 {
 
     public function __construct(
-        private readonly LoginRepositoryInterface $loginRepository,
+        private LoginRepositoryInterface $loginRepository,
     )
     {
     }
@@ -20,20 +20,23 @@ class LoginService
     /**
      * Login an existing user/admin.
      *
-     * @param array $requestValidated
+     * @param array<string, string> $requestValidated
      *
-     * @return array
+     * @return array<string, string>
      * @throws \Exception
      */
     public function login(array $requestValidated): array
     {
-        $dto = new LoginDTO($requestValidated);
+        $dto = new LoginDTO(
+            email: $requestValidated['email'],
+            password: $requestValidated['password'],
+        );
 
-        return $this->loginRepository->login($dto->toArray());
+        return $this->loginRepository->login((array) $dto);
     }
 
     /**
-     * Logout user/admin
+     * Logout user/admin.
      *
      * @param User $user
      *

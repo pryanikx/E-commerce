@@ -10,13 +10,13 @@ use App\Repositories\Contracts\RegisterRepositoryInterface;
 class RegisterRepository implements RegisterRepositoryInterface
 {
     /**
-     * register user
+     * Register user
      *
-     * @param array $credentials
+     * @param array<string, string> $credentials
      *
-     * return array
+     * @return array<string, string>
      */
-    public function register(array $credentials): array
+    public function Register(array $credentials): array
     {
         $user = User::create($credentials);
 

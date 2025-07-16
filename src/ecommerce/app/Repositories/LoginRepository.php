@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\Auth;
 class LoginRepository implements LoginRepositoryInterface
 {
     /**
-     * login user
+     * Login user.
      *
-     * @param array $credentials
+     * @param array<string, string> $credentials
      *
-     * @return array
+     * @return array<string, string>
      * @throws \Exception
      */
     public function login(array $credentials): array
@@ -34,7 +34,7 @@ class LoginRepository implements LoginRepositoryInterface
     }
 
     /**
-     * logout user;
+     * Logout user.
      *
      * @param User $user
      */
