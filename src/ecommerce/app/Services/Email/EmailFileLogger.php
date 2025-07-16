@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Email;
 
+use App\DTO\Email\EmailDTO;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Psr\Clock\ClockInterface;
 
@@ -26,13 +27,15 @@ class EmailFileLogger
     public function saveEmailToFile(string $to, string $subject, string $content, string $exportId): void
     {
         $filePath = $this->getEmailFilePath($exportId);
-        $emailData = [
-            'timestamp' => $this->clock->now()->format('Y-m-d H:i:s'),
-            'to' => $to,
-            'from' => $this->fromEmail,
-            'subject' => $subject,
-            'content' => $content
-        ];
+
+        $emailData = new EmailDTO(
+            timestamp: $this->clock->now()->format('Y-m-d H:i:s'),
+            to: $to,
+            from: $this->fromEmail,
+            subject: $subject,
+            content: $content,
+        );
+
         $this->filesystem->put($filePath, json_encode($emailData, self::JSON_FLAGS));
         $this->saveHtmlVersion($to, $subject, $content, $exportId);
     }
