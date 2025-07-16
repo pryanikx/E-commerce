@@ -6,6 +6,7 @@ namespace App\Repositories\Contracts;
 
 use App\DTO\Category\CategoryDTO;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -45,7 +46,7 @@ interface CategoryRepositoryInterface
      * Update an existing category.
      *
      * @param int $id
-     * @param array $data
+     * @param array<string, mixed> $data
      *
      * @return bool
      */
@@ -64,11 +65,11 @@ interface CategoryRepositoryInterface
      * Get paginated products for a category.
      *
      * @param int $id
-     * @param array $filters
-     * @param array $sorters
+     * @param array<string, mixed> $filters
+     * @param array<string, string> $sorters
      * @param int $page
      *
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator<int, Product>
      */
     public function getProductsForCategory(
         int $id,
@@ -80,20 +81,20 @@ interface CategoryRepositoryInterface
     /**
      * Apply sorters to the query.
      *
-     * @param Builder|HasMany $query
-     * @param array $sorters
+     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
+     * @param array<string, string> $sorters
      *
-     * @return Builder|HasMany
+     * @return Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model>
      */
     public function sort(Builder|HasMany $query, array $sorters): Builder|HasMany;
 
     /**
      * Apply filters to the query.
      *
-     * @param Builder|HasMany $query
-     * @param array $filters
+     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
+     * @param array<string, mixed> $filters
      *
-     * @return Builder|HasMany
+     * @return Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model>
      */
     public function filter(Builder|HasMany $query, array $filters): Builder|HasMany;
 

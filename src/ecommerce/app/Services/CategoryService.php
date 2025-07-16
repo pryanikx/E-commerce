@@ -27,8 +27,8 @@ class CategoryService
      */
     public function __construct(
         private readonly CategoryRepositoryInterface $categoryRepository,
-        private readonly CurrencyCalculatorService   $currencyCalculator,
-        private readonly CacheInterface              $cache,
+        private readonly CurrencyCalculatorService $currencyCalculator,
+        private readonly CacheInterface $cache,
     )
     {
     }
@@ -36,7 +36,7 @@ class CategoryService
     /**
      * Get all categories.
      *
-     * @return array
+     * @return array<int, array<string, mixed>>
      */
     public function getAll(): array
     {
@@ -50,11 +50,11 @@ class CategoryService
      * Get paginated products of the specified category.
      *
      * @param int $id
-     * @param array $filters
-     * @param array $sorters
+     * @param array<string, mixed> $filters
+     * @param array<string, string> $sorters
      * @param int $page
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function getProductsForCategory(
         int $id,
@@ -81,7 +81,7 @@ class CategoryService
     /**
      * Create a new category.
      *
-     * @param array $requestValidated
+     * @param array<string, string> $requestValidated
      *
      * @return CategoryDTO
      */
@@ -103,7 +103,7 @@ class CategoryService
      * Update an existing category by ID.
      *
      * @param int $id
-     * @param array $requestValidated
+     * @param array<string, string> $requestValidated
      *
      * @return CategoryDTO
      */
@@ -166,7 +166,7 @@ class CategoryService
     }
 
     /**
-     * Convert Product model to ProductListDTO.
+     * Convert a Product model to ProductListDTO.
      *
      * @param Product $product
      *

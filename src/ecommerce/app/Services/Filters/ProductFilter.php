@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Filters;
 
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -12,10 +13,10 @@ class ProductFilter
     /**
      * Apply filters to the product query.
      *
-     * @param Builder|HasMany $query
+     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
      * @param array<string, mixed> $filters
      *
-     * @return Builder|HasMany
+     * @return Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model>
      */
     public function applyFilters(Builder|HasMany $query, array $filters): Builder|HasMany
     {
@@ -33,7 +34,7 @@ class ProductFilter
     /**
      * Apply a single filter to the query.
      *
-     * @param Builder|HasMany $query
+     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
      * @param string $filter
      * @param mixed $value
      *

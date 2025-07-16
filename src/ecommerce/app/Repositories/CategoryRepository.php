@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\DTO\Category\CategoryDTO;
 use App\Models\Category;
+use App\Models\Product;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\Filters\ProductFilter;
 use App\Services\Filters\ProductSorter;
@@ -13,7 +14,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Pagination\LengthAwarePaginator;
-
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
@@ -35,7 +35,7 @@ class CategoryRepository implements CategoryRepositoryInterface
     public function all(): array
     {
         return Category::all()->map(fn(Category $category)
-            => $this->mapToDTO($category))->all();
+        => $this->mapToDTO($category))->all();
     }
 
     /**
@@ -70,7 +70,7 @@ class CategoryRepository implements CategoryRepositoryInterface
      * Update an existing category.
      *
      * @param int $id
-     * @param array $data
+     * @param array<string, mixed> $data
      *
      * @return bool
      */
@@ -97,11 +97,11 @@ class CategoryRepository implements CategoryRepositoryInterface
      * Get paginated products for a category.
      *
      * @param int $id
-     * @param array $filters
-     * @param array $sorters
+     * @param array<string, mixed> $filters
+     * @param array<string, string> $sorters
      * @param int $page
      *
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator<int, Product>
      */
     public function getProductsForCategory(
         int $id,
@@ -124,10 +124,10 @@ class CategoryRepository implements CategoryRepositoryInterface
     /**
      * Apply sorters to the query.
      *
-     * @param Builder|HasMany $query
-     * @param array $sorters
+     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
+     * @param array<string, string> $sorters
      *
-     * @return Builder|HasMany
+     * @return Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model>
      */
     public function sort(Builder|HasMany $query, array $sorters): Builder|HasMany
     {
@@ -137,10 +137,10 @@ class CategoryRepository implements CategoryRepositoryInterface
     /**
      * Apply filters to the query.
      *
-     * @param Builder|HasMany $query
-     * @param array $filters
+     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
+     * @param array<string, mixed> $filters
      *
-     * @return Builder|HasMany
+     * @return Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model>
      */
     public function filter(Builder|HasMany $query, array $filters): Builder|HasMany
     {
@@ -160,8 +160,6 @@ class CategoryRepository implements CategoryRepositoryInterface
             $category->id,
             $category->name,
             $category->alias,
-            $category->created_at?->toISOString() ?? '',
-            $category->updated_at?->toISOString() ?? '',
         );
     }
 }
