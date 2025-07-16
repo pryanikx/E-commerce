@@ -27,7 +27,7 @@ interface ManufacturerRepositoryInterface
     /**
      * Create a new manufacturer.
      *
-     * @param array $array
+     * @param array<string, mixed> $array
      *
      * @return ManufacturerDTO
      */
@@ -37,7 +37,7 @@ interface ManufacturerRepositoryInterface
      * Update an existing manufacturer.
      *
      * @param int $id
-     * @param array $data
+     * @param array<string, mixed> $data
      *
      * @return bool
      */

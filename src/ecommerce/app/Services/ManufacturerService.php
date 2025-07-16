@@ -28,7 +28,7 @@ class ManufacturerService
     /**
      * Get all manufacturers.
      *
-     * @return array
+     * @return array<int, array<string, mixed>>
      */
     public function getAll(): array
     {
@@ -43,7 +43,7 @@ class ManufacturerService
     /**
      * Create a new manufacturer.
      *
-     * @param array $requestValidated
+     * @param array<string, mixed> $requestValidated
      *
      * @return ManufacturerDTO
      */
@@ -64,7 +64,7 @@ class ManufacturerService
      * Update an existing manufacturer by ID.
      *
      * @param int $id
-     * @param array $requestValidated
+     * @param array<string, mixed> $requestValidated
      *
      * @return ManufacturerDTO
      */
@@ -94,11 +94,11 @@ class ManufacturerService
      */
     public function deleteManufacturer(int $id): ?bool
     {
-        $is_deleted = $this->manufacturerRepository->delete($id);
+        $isDeleted = $this->manufacturerRepository->delete($id);
 
         $this->cacheManufacturers();
 
-        return $is_deleted;
+        return $isDeleted;
     }
 
     /**

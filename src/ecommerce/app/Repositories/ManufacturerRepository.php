@@ -38,7 +38,7 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
     /**
      * Create a new manufacturer.
      *
-     * @param array $array
+     * @param array<string, mixed> $array
      *
      * @return ManufacturerDTO
      */
@@ -53,7 +53,7 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
      * Update an existing manufacturer.
      *
      * @param int $id
-     * @param array $data
+     * @param array<string, mixed> $data
      *
      * @return bool
      */
@@ -88,8 +88,6 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
         return new ManufacturerDTO(
             $manufacturer->id,
             $manufacturer->name,
-            $manufacturer->created_at?->toISOString() ?? '',
-            $manufacturer->updated_at?->toISOString() ?? '',
         );
     }
 }
