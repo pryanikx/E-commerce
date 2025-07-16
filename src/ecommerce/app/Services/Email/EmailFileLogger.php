@@ -5,18 +5,20 @@ declare(strict_types=1);
 namespace App\Services\Email;
 
 use Illuminate\Contracts\Filesystem\Filesystem;
+use Psr\Clock\ClockInterface;
 
 class EmailFileLogger
 {
     private const JSON_FLAGS = JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE;
 
     public function __construct(
-        private Filesystem $filesystem,
-        private EmailHtmlBuilder $htmlBuilder,
-        private EmailDirectoryManager $directoryManager,
-        private string $emailLogPath,
-        private string $emailFilePrefix,
-        private string $fromEmail,
+        private readonly Filesystem $filesystem,
+        private readonly EmailHtmlBuilder $htmlBuilder,
+        private readonly EmailDirectoryManager $directoryManager,
+        private readonly ClockInterface $clock,
+        private readonly string $emailLogPath,
+        private readonly string $emailFilePrefix,
+        private readonly string $fromEmail,
     ) {
         $this->directoryManager->ensureDirectoryExists($this->emailLogPath);
     }
@@ -25,7 +27,7 @@ class EmailFileLogger
     {
         $filePath = $this->getEmailFilePath($exportId);
         $emailData = [
-            'timestamp' => now()->format('Y-m-d H:i:s'),
+            'timestamp' => $this->clock->now()->format('Y-m-d H:i:s'),
             'to' => $to,
             'from' => $this->fromEmail,
             'subject' => $subject,

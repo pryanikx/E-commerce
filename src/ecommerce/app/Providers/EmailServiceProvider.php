@@ -34,6 +34,7 @@ class EmailServiceProvider extends ServiceProvider
                 $app->make(\Illuminate\Contracts\Filesystem\Filesystem::class),
                 $app->make(EmailHtmlBuilder::class),
                 $app->make(EmailDirectoryManager::class),
+                $app->make(\Psr\Clock\ClockInterface::class),
                 storage_path(config('services.email_notification.email_log_directory', 'app/emails')),
                 config('services.email_notification.email_file_prefix', 'email_'),
                 config('services.email_notification.default_from_email', 'noreply@example.com'),
