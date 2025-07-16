@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DTO\Auth;
 
-class RegisterDTO
+readonly class RegisterDTO
 {
     /**
      * @param string $name

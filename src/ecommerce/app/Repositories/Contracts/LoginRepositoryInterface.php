@@ -9,16 +9,17 @@ use App\Models\User;
 interface LoginRepositoryInterface
 {
     /**
-     * login user
+     * Login a user.
      *
-     * @param array $credentials
+     * @param array<string, string> $credentials
      *
-     * @return array
+     * @return array<string, mixed>
+     * @throws \Exception
      */
     public function login(array $credentials): array;
 
     /**
-     * logout user;
+     * Logout a user.
      *
      * @param User $user
      */

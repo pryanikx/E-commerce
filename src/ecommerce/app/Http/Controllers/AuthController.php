@@ -18,7 +18,7 @@ class AuthController extends Controller
      * @param RegisterService $registerService
      */
     public function __construct(
-        private readonly LoginService    $loginService,
+        private readonly LoginService $loginService,
         private readonly RegisterService $registerService,
     ) {
     }
@@ -44,7 +44,7 @@ class AuthController extends Controller
     }
 
     /**
-     * login an existing user/admin.
+     * Login an existing user/admin.
      *
      * @param LoginRequest $request
      *
@@ -65,7 +65,7 @@ class AuthController extends Controller
     }
 
     /**
-     * logout a user/admin.
+     * Logout a user/admin.
      *
      * @param Request $request
      *
@@ -73,7 +73,13 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $this->loginService->logout($request->user());
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['error' => __('auth.unauthenticated')], 401);
+        }
+
+        $this->loginService->logout($user);
 
         return response()->json(['message' => __('messages.logout')]);
     }

@@ -10,11 +10,11 @@ use App\Repositories\Contracts\RegisterRepositoryInterface;
 class RegisterRepository implements RegisterRepositoryInterface
 {
     /**
-     * Register user
+     * Register a user.
      *
      * @param array<string, string> $credentials
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     public function Register(array $credentials): array
     {

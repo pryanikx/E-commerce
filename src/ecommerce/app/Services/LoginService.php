@@ -11,7 +11,7 @@ use App\Repositories\Contracts\LoginRepositoryInterface;
 class LoginService
 {
     public function __construct(
-        private LoginRepositoryInterface $loginRepository,
+        private readonly LoginRepositoryInterface $loginRepository,
     ) {
     }
 

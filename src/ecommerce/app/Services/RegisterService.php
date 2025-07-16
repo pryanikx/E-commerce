@@ -17,8 +17,8 @@ class RegisterService
      * @param Hasher $hasher
      */
     public function __construct(
-        private RegisterRepositoryInterface $registerRepository,
-        private Hasher $hasher,
+        private readonly RegisterRepositoryInterface $registerRepository,
+        private readonly Hasher $hasher,
     ) {
     }
 

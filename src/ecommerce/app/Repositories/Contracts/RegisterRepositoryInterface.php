@@ -7,11 +7,11 @@ namespace App\Repositories\Contracts;
 interface RegisterRepositoryInterface
 {
     /**
-     * register user
+     * Register a user.
      *
-     * @param array $credentials
+     * @param array<string, string> $credentials
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function register(array $credentials): array;
 }
