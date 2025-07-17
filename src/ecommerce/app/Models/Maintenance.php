@@ -16,7 +16,7 @@ class Maintenance extends Model
     ];
 
     /**
-     * @return BelongsToMany
+     * @return BelongsToMany<Product, Maintenance>
      */
     public function products(): BelongsToMany
     {

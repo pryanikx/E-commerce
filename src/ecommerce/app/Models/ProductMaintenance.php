@@ -17,11 +17,17 @@ class ProductMaintenance extends Model
         'price'
     ];
 
+    /**
+     * @return BelongsTo<Product, ProductMaintenance>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /**
+     * @return BelongsTo<Maintenance, ProductMaintenance>
+     */
     public function maintenance(): BelongsTo
     {
         return $this->belongsTo(Maintenance::class);

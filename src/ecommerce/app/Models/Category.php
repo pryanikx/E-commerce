@@ -15,7 +15,7 @@ class Category extends Model
     ];
 
     /**
-     * @return HasMany
+     * @return HasMany<Product, Category>
      */
     public function products(): HasMany
     {

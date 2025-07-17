@@ -17,7 +17,7 @@ class Manufacturer extends Model
     ];
 
     /**
-     * @return HasMany
+     * @return HasMany<Product, Manufacturer>
      */
     public function product(): HasMany
     {
