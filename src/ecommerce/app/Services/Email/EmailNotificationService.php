@@ -27,7 +27,7 @@ class EmailNotificationService
      * @param string $adminEmail
      * @param string $exportId
      * @param string $s3Key ,
-     * @param array $stats
+     * @param array<string, mixed> $stats
      *
      * @return void
      * @throws \Throwable
@@ -105,7 +105,7 @@ class EmailNotificationService
      *
      * @param string $exportId
      * @param string $s3Key
-     * @param array $stats
+     * @param array<string, mixed> $stats
      *
      * @return string
      * @throws \Throwable

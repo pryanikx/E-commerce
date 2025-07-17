@@ -56,12 +56,13 @@ class EmailFileLogger
             content: $content,
         );
 
-        $this->filesystem->put($filePath, json_encode($emailData, self::JSON_FLAGS));
+        $jsonContent = json_encode($emailData, self::JSON_FLAGS);
+        $this->filesystem->put($filePath, $jsonContent !== false ? $jsonContent : '{}');
         $this->saveHtmlVersion($to, $subject, $content, $exportId);
     }
 
     /**
-     * Save email in html version.
+     * Save email in HTML version.
      *
      * @param string $to
      * @param string $subject
