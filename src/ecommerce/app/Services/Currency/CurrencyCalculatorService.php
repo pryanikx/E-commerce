@@ -10,6 +10,11 @@ class CurrencyCalculatorService
 
     private const PRECISION = 2;
 
+    /**
+     * @param CurrencySource $source
+     * @param string $baseCurrency
+     * @param array<string> $supportedCurrencies
+     */
     public function __construct(
         private readonly CurrencySource $source,
         private readonly string $baseCurrency,
@@ -21,10 +26,11 @@ class CurrencyCalculatorService
      * Convert a price to multiple currencies.
      *
      * @param float $price
-     * @param array<string> $targetCurrencies
+     * @param array<string>|null $targetCurrencies
+     *
      * @return array<string, float>
      */
-    public function convert(float $price, array $targetCurrencies = null): array
+    public function convert(float $price, ?array $targetCurrencies = null): array
     {
         $targetCurrencies = $targetCurrencies ?? $this->supportedCurrencies;
         $rates = $this->source->getExchangeRates($this->baseCurrency);

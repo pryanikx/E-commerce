@@ -20,7 +20,7 @@ readonly class OpenExchangeRatesClient implements CurrencyApiClientInterface
     }
 
     /**
-     * Fetch raw exchange rates data from API.
+     * Fetch raw exchange rates data from the API.
      *
      * @param string $baseCurrency
      * @return array<string, float>

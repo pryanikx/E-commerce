@@ -15,6 +15,13 @@ class OpenExchangeRatesSource implements CurrencySource
     private const CACHE_DURATION_H = 24;
     private const DEFAULT_RATE = 1.0;
 
+    /**
+     * @param CurrencyApiClientInterface $client
+     * @param LoggerInterface $logger
+     * @param CacheInterface $cache
+     * @param ClockInterface $clock
+     * @param array<string> $supportedCurrencies
+     */
     public function __construct(
         private readonly CurrencyApiClientInterface $client,
         private readonly LoggerInterface $logger,
@@ -28,7 +35,9 @@ class OpenExchangeRatesSource implements CurrencySource
      * Fetch exchange rates with base currency and caching.
      *
      * @param string $baseCurrency
+     *
      * @return array<string, float>
+     * @throws \Exception
      */
     public function getExchangeRates(string $baseCurrency): array
     {
@@ -61,7 +70,7 @@ class OpenExchangeRatesSource implements CurrencySource
     }
 
     /**
-     * Get fallback rates when API fails.
+     * Get fallback rates when the API fails.
      *
      * @return array<string, float>
      */
