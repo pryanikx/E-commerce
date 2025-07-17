@@ -47,7 +47,7 @@ class S3UploadService implements StorageUploaderInterface
     }
 
     /**
-     * Upload catalog export file to S3 storage
+     * Upload a catalog export file to S3 storage.
      *
      * @param string $filePath
      * @param string $exportId
@@ -111,7 +111,7 @@ class S3UploadService implements StorageUploaderInterface
     }
 
     /**
-     * Check if file exists in S3 storage
+     * Check if file exists in S3 storage.
      *
      * @param string $s3Key
      *
