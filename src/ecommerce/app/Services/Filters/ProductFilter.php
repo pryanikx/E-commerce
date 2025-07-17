@@ -13,10 +13,11 @@ class ProductFilter
     /**
      * Apply filters to the product query.
      *
-     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     * @param Builder<Product>|HasMany<Product, TModel> $query
      * @param array<string, mixed> $filters
      *
-     * @return Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model>
+     * @return Builder<Product>|HasMany<Product, TModel>
      */
     public function applyFilters(Builder|HasMany $query, array $filters): Builder|HasMany
     {
@@ -34,7 +35,8 @@ class ProductFilter
     /**
      * Apply a single filter to the query.
      *
-     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     * @param Builder<Product>|HasMany<Product, TModel> $query
      * @param string $filter
      * @param mixed $value
      *

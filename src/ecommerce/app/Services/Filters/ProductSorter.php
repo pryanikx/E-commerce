@@ -21,10 +21,11 @@ class ProductSorter
     /**
      * Apply sorting to the product query.
      *
-     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     * @param Builder<Product>|HasMany<Product, TModel> $query
      * @param array<string, string> $sorters
      *
-     * @return Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model>
+     * @return Builder<Product>|HasMany<Product, TModel>
      */
     public function applySorters(Builder|HasMany $query, array $sorters): Builder|HasMany
     {

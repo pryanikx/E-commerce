@@ -176,7 +176,7 @@ class CategoryService
             $product->id,
             $product->name,
             $product->article,
-            $product->manufacturer->name,
+            $product->manufacturer->name ?? '',
             $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
             $product->image_path ? asset($product->image_path) : null,
         );
