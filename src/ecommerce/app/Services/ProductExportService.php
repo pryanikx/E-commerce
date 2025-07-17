@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Product;
+use App\Services\Support\CsvWriterFactoryInterface;
 use League\Csv\ByteSequence;
 use League\Csv\Writer;
 use Psr\Log\LoggerInterface;
-use App\Services\Support\CsvWriterFactoryInterface;
 
 class ProductExportService
 {
-    private const STARTING_PAGE = 1;
-
     private const CSV_HEADERS = [
         'ID',
         'Name',
@@ -22,6 +19,7 @@ class ProductExportService
         'Price_USD',
         'Price_EUR',
         'Price_RUB',
+        'Price_BYN',
         'Image_URL',
     ];
 
@@ -33,13 +31,15 @@ class ProductExportService
         private string $filePrefix,
         private string $fileExtension,
         private int $directoryPermissions,
-    ) {}
+    ) {
+    }
 
     /**
      * Export all products to CSV file
      *
      * @param string $exportId
-     * @return string Path to the created CSV file
+     *
+     * @return string
      * @throws \Exception
      */
     public function exportToCSV(string $exportId): string
@@ -57,7 +57,6 @@ class ProductExportService
             ]);
 
             return $filePath;
-
         } catch (\Exception $e) {
             $this->logger->error(__('errors.catalog_export_failed'), [
                 'export_id' => $exportId,
@@ -70,22 +69,17 @@ class ProductExportService
     }
 
     /**
-     * Get export statistics
+     * Get statistics for export.
      *
-     * @return array
+     * @return array<string, int>
      */
     public function getExportStats(): array
     {
-        return [
-            'total_products' => Product::count(),
-            'products_with_images' => Product::whereNotNull('image_path')->count(),
-            'products_with_manufacturer' => Product::whereHas('manufacturer')->count(),
-            'products_with_category' => Product::whereHas('category')->count(),
-        ];
+        return $this->productService->getStats();
     }
 
     /**
-     * Create export file path and ensure directory exists
+     * Create an export file path and ensure the directory exists
      *
      * @param string $exportId
      * @return string
@@ -130,11 +124,19 @@ class ProductExportService
      *
      * @param Writer $csv
      * @param string $exportId
-     * @return int Total number of exported products
+     *
+     * @return int
      */
     private function exportProductsToCSV(Writer $csv, string $exportId): int
     {
-        $products = $this->productService->getAll()['data'] ?? [];
+        $products = $this->productService->getAll() ?? [];
+
+        if (empty($products)) {
+            $this->logger->error(__('messages.empty_products'), [
+                'export_id' => $exportId,
+            ]);
+        }
+
         return $this->processProducts($csv, $products);
     }
 
@@ -142,8 +144,9 @@ class ProductExportService
      * Process all products and add to CSV
      *
      * @param Writer $csv
-     * @param array $products
-     * @return int Number of products processed
+     * @param array<int, mixed> $products
+     *
+     * @return int
      */
     private function processProducts(Writer $csv, array $products): int
     {
@@ -159,8 +162,8 @@ class ProductExportService
     /**
      * Prepare product row data from API response
      *
-     * @param array $productData
-     * @return array
+     * @param array<string, mixed> $productData
+     * @return array<string|int|float>
      */
     private function prepareProductRowFromAPI(array $productData): array
     {
@@ -172,6 +175,7 @@ class ProductExportService
             $productData['prices']['USD'] ?? 0,
             $productData['prices']['EUR'] ?? 0,
             $productData['prices']['RUB'] ?? 0,
+            $productData['prices']['BYN'] ?? 0,
             $productData['image_url'],
         ];
     }

@@ -11,6 +11,20 @@ use App\Repositories\Contracts\ProductRepositoryInterface;
 class ProductRepository implements ProductRepositoryInterface
 {
     /**
+     * Get statistics for products.
+     *
+     * @return array<string, int>
+     */
+    public function getStats(): array
+    {
+        return [
+            'total_products' => Product::count(),
+            'products_with_images' => Product::whereNotNull('image_path')->count(),
+            'products_with_manufacturer' => Product::whereHas('manufacturer')->count(),
+            'products_with_category' => Product::whereHas('category')->count(),
+        ];
+    }
+    /**
      * Get all products from the database.
      *
      * @return ProductDTO[]

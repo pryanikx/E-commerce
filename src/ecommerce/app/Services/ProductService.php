@@ -42,6 +42,16 @@ class ProductService
     }
 
     /**
+     * Get statistics for products.
+     *
+     * @return array<string, int>
+     */
+    public function getStats(): array
+    {
+        return $this->productRepository->getStats();
+    }
+
+    /**
      * Get all products.
      *
      * @return array<int, array<string, mixed>>|null
@@ -230,12 +240,12 @@ class ProductService
     private function makeProductListDTO(ProductDTO $product): ProductListDTO
     {
         return new ProductListDTO(
-            $product->id,
-            $product->name,
-            $product->article,
-            $product->manufacturerName ?? '',
-            $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
-            $this->getImageUrlOrNull($product->imagePath),
+            id: $product->id,
+            name: $product->name,
+            article: $product->article,
+            manufacturerName: $product->manufacturerName ?? '',
+            prices: $product->price ? $this->currencyCalculator->convert((float) $product->price) : null,
+            imageUrl: $this->getImageUrlOrNull($product->imagePath),
         );
     }
 

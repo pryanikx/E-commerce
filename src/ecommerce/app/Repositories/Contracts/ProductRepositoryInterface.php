@@ -9,6 +9,13 @@ use App\DTO\Product\ProductDTO;
 interface ProductRepositoryInterface
 {
     /**
+     * Get statistics for products.
+     *
+     * @return array<string, int>
+     */
+    public function getStats(): array;
+
+    /**
      * Get all products from the database.
      *
      * @return ProductDTO[]
