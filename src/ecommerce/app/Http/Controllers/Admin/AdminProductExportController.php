@@ -8,6 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ExportCatalogJob;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use Psr\Log\LoggerInterface;
 
 class AdminProductExportController extends Controller
 {
@@ -23,11 +25,12 @@ class AdminProductExportController extends Controller
     public function exportCatalog(): JsonResponse
     {
         try {
+            /** @var User|null $user */
             $user = $this->getAuthenticatedUser();
 
             $exportId = $this->generateExportId();
 
-            $this->dispatchExportJob($exportId, $user->email);
+            $this->dispatchExportJob($exportId, $user->email ?? '');
 
             return $this->successResponse([
                 'message' => __('messages.catalog_export_started'),
@@ -70,14 +73,17 @@ class AdminProductExportController extends Controller
      */
     private function dispatchExportJob(string $exportId, string $userEmail): void
     {
-        ExportCatalogJob::dispatch($exportId, $userEmail)
-            ->onQueue(self::QUEUE_NAME);
+        ExportCatalogJob::dispatch(
+            $exportId,
+            $userEmail,
+            app(LoggerInterface::class)
+        )->onQueue(self::QUEUE_NAME);
     }
 
     /**
      * Return success response
      *
-     * @param array $data
+     * @param array<string, mixed> $data
      * @return JsonResponse
      */
     private function successResponse(array $data): JsonResponse
