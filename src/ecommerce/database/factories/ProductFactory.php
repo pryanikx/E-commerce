@@ -26,8 +26,8 @@ class ProductFactory extends Factory
             'release_date' => fake()->date(),
             'price' => fake()->randomFloat(2, 1, 999999),
             'image_path' => fake()->filePath(),
-            'category_id' => Category::inRandomOrder()->first()->id,
-            'manufacturer_id' => Manufacturer::inRandomOrder()->first()->id,
+            'category_id' => optional(Category::inRandomOrder()->first())->id ?? 1,
+            'manufacturer_id' => optional(Manufacturer::inRandomOrder()->first())->id ?? 1,
         ];
     }
 }

@@ -13,7 +13,7 @@ class ProductMaintenanceSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run()
+    public function run(): void
     {
         $products = Product::all();
         $maintenances = Maintenance::all();
