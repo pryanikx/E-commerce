@@ -1,0 +1,30 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+    level: 8
+    reportUnmatchedIgnoredErrors: false
+    paths:
+       - app
+       - routes
+       - database
+       - resources
+    excludePaths:
+       - vendor
+       - storage
+       - bootstrap/cache
+
+    ignoreErrors:
+        # Ignore covariance/template errors in Eloquent relationships
+        - '#should return Illuminate\\Database\\Eloquent\\Relations\\(HasMany|BelongsTo|BelongsToMany)<.*> but returns Illuminate\\Database\\Eloquent\\Relations\\(HasMany|BelongsTo|BelongsToMany)<.*>#'
+        - '#Template type TDeclaringModel on class Illuminate\\Database\\Eloquent\\Relations\\(HasMany|BelongsTo|BelongsToMany) is not covariant#'
+        - '#The @extends tag of class .* describes Illuminate\\Database\\Eloquent\\Factories\\HasFactory but the class extends.*#'
+        - '#Class .* uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types: TFactory#'
+        # Existing ignoreError example
+        - message: '#Method App\\Services\\Support\\LaravelHttpClient::get\(\) has Illuminate\\Http\\Client\\ConnectionException in PHPDoc @throws tag but it''s not thrown#'
+          path: app/Services/Support/LaravelHttpClient.php
+
+#
+#    excludePaths:
+#        - ./*/*/FileToBeExcluded.php
