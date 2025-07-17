@@ -134,13 +134,13 @@ class ProductRepository implements ProductRepositoryInterface
             name: $product->name,
             article: $product->article,
             description: $product->description,
-            releaseDate: $product->release_date->toDateString(),
+            releaseDate: (string) $product->release_date,
             price: (float) $product->price,
             imagePath: $product->image_path,
             manufacturerId: $product->manufacturer_id,
-            manufacturerName: $product->manufacturer->name,
+            manufacturerName: $product->manufacturer->name ?? '',
             categoryId: $product->category_id,
-            categoryName: $product->category->name,
+            categoryName: $product->category->name ?? '',
             maintenances: $maintenances,
         );
     }

@@ -25,6 +25,14 @@ class LoginRepository implements LoginRepositoryInterface
         }
 
         $user = Auth::user();
+
+        if (!$user) {
+            return [
+                'token' => null,
+                'user' => null,
+            ];
+        }
+        
         $token = $user->createToken('token')->plainTextToken;
 
         return [
