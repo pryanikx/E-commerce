@@ -130,3 +130,18 @@ clear-cache:
 	$(ARTISAN) config:clear
 	$(ARTISAN) route:clear
 	$(ARTISAN) view:clear
+
+.PHONY: php-stan
+phpstan:
+    ./vendor/bin/phpstan analyse --level=8 --no-progress --memory-limit=2G
+
+.PHONY: php-stan
+php-cs-fixer:
+    ./src/ecommerce/vendor/bin/php-cs-fixer fix --dry-run --diff
+
+.PHONY: php-cs-fixer-fix
+php-cs-fixer-fix:
+    ./src/ecommerce/vendor/bin/php-cs-fixer fix
+
+.PHONY: phpstan-and-fix
+phpstan-and-fix: phpstan php-cs-fixer-fix
