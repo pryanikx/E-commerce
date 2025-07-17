@@ -33,5 +33,6 @@ class ProductDTO
         public int $categoryId,
         public string $categoryName,
         public ?array $maintenances,
-    ) {}
+    ) {
+    }
 }

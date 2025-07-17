@@ -32,7 +32,7 @@ class LoginRepository implements LoginRepositoryInterface
                 'user' => null,
             ];
         }
-        
+
         $token = $user->createToken('token')->plainTextToken;
 
         return [
