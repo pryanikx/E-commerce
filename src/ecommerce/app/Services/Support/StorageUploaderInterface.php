@@ -7,7 +7,8 @@ namespace App\Services\Support;
 interface StorageUploaderInterface
 {
     /**
-     * Download file from storage to upload
+     * Download a file from storage to upload
+     *
      * @param string $filePath
      * @param string $exportId
      *

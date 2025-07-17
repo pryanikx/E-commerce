@@ -9,7 +9,7 @@ use League\Csv\Writer;
 interface CsvWriterFactoryInterface
 {
     /**
-     * Create a CSV Writer instance from a file path
+     * Create a CSV Writer instance from a file path.
      *
      * @param string $path
      * @param string $mode

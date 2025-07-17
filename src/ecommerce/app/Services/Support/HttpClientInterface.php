@@ -8,5 +8,13 @@ use Illuminate\Http\Client\Response;
 
 interface HttpClientInterface
 {
+    /**
+     * Http get query.
+     *
+     * @param string $url
+     * @param array<string> $query
+     *
+     * @return Response
+     */
     public function get(string $url, array $query = []): Response;
 }
