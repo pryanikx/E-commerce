@@ -33,7 +33,7 @@ readonly class ProductShowDTO
         public string $manufacturerName,
         public ?array $prices,
         public ?string $imageUrl,
-        public array $maintenances,
+        public ?array $maintenances,
     ) {
     }
 
