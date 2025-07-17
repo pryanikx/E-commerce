@@ -16,7 +16,7 @@ class AdminProductExportController extends Controller
     private const STATUS_QUEUED = 'queued';
 
     /**
-     * Export product catalog to CSV and send to RabbitMQ queue
+     * Export product catalog to CSV and send to RabbitMQ queue.
      *
      * @return JsonResponse
      */
@@ -43,7 +43,7 @@ class AdminProductExportController extends Controller
     }
 
     /**
-     * Get authenticated user
+     * Get authenticated user.
      *
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
      */
@@ -53,7 +53,7 @@ class AdminProductExportController extends Controller
     }
 
     /**
-     * Generate unique export ID
+     * Generate unique export ID.
      *
      * @return string
      */
@@ -63,7 +63,7 @@ class AdminProductExportController extends Controller
     }
 
     /**
-     * Dispatch export job to queue
+     * Dispatch export job to queue.
      *
      * @param string $exportId
      * @param string $userEmail

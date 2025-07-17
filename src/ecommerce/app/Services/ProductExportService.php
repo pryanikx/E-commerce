@@ -30,7 +30,6 @@ class ProductExportService
         private string $exportDirectory,
         private string $filePrefix,
         private string $fileExtension,
-        private int $directoryPermissions,
     ) {
     }
 
@@ -100,7 +99,7 @@ class ProductExportService
     private function ensureDirectoryExists(string $directory): void
     {
         if (!is_dir($directory)) {
-            mkdir($directory, $this->directoryPermissions, true);
+            mkdir($directory);
         }
     }
 
