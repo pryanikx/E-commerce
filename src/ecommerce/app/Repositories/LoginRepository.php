@@ -6,10 +6,14 @@ namespace App\Repositories;
 
 use App\Models\User;
 use App\Repositories\Contracts\LoginRepositoryInterface;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 
 class LoginRepository implements LoginRepositoryInterface
 {
+    public function __construct(
+        private readonly AuthFactory $auth
+    ) {}
+
     /**
      * Login a user.
      *
@@ -20,11 +24,14 @@ class LoginRepository implements LoginRepositoryInterface
      */
     public function login(array $credentials): array
     {
-        if (!Auth::attempt($credentials)) {
-            throw new \Exception(__('auth.failed'));
+        if (!$this->auth->guard()->attempt($credentials)) {
+            return [
+                'token' => null,
+                'user' => null,
+            ];
         }
 
-        $user = Auth::user();
+        $user = $this->auth->guard()->user();
 
         if (!$user) {
             return [

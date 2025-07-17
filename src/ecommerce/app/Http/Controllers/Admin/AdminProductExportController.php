@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ExportCatalogJob;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Psr\Log\LoggerInterface;
 
 class AdminProductExportController extends Controller
@@ -16,6 +16,10 @@ class AdminProductExportController extends Controller
     private const EXPORT_ID_PREFIX = 'catalog_export_';
     private const QUEUE_NAME = 'catalog_export';
     private const STATUS_QUEUED = 'queued';
+
+    public function __construct(
+        private readonly AuthFactory $auth
+    ) {}
 
     /**
      * Export product catalog to CSV and send to RabbitMQ queue.
@@ -52,7 +56,7 @@ class AdminProductExportController extends Controller
      */
     private function getAuthenticatedUser()
     {
-        return Auth::user();
+        return $this->auth->guard()->user();
     }
 
     /**

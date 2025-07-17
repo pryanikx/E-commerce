@@ -49,6 +49,12 @@ class RepositoryServiceProvider extends ServiceProvider
             RegisterRepositoryInterface::class,
             RegisterRepository::class
         );
+        $this->app->bind(
+            \Illuminate\Contracts\Auth\Factory::class,
+            function ($app) {
+                return $app['auth'];
+            }
+        );
         $this->app->singleton(\App\Services\ProductService::class, function ($app) {
             return new \App\Services\ProductService(
                 $app->make(\App\Repositories\Contracts\ProductRepositoryInterface::class),
