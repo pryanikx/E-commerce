@@ -10,7 +10,6 @@ use App\Services\Support\ImageService;
 use App\Transformers\ProductTransformer;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Psr\Log\LoggerInterface;
 
 class ProductService
 {
