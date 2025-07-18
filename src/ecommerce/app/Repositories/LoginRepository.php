@@ -12,7 +12,8 @@ class LoginRepository implements LoginRepositoryInterface
 {
     public function __construct(
         private readonly AuthFactory $auth
-    ) {}
+    ) {
+    }
 
     /**
      * Login a user.

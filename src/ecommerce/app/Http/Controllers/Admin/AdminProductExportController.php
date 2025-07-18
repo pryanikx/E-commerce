@@ -7,8 +7,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Jobs\ExportCatalogJob;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
+use Illuminate\Http\JsonResponse;
 use Psr\Log\LoggerInterface;
 
 class AdminProductExportController extends Controller
@@ -19,7 +19,8 @@ class AdminProductExportController extends Controller
 
     public function __construct(
         private readonly AuthFactory $auth
-    ) {}
+    ) {
+    }
 
     /**
      * Export product catalog to CSV and send to RabbitMQ queue.
