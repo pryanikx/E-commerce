@@ -122,10 +122,8 @@ class ProductRepository implements ProductRepositoryInterface
                 return [
                     'id' => $maintenance->id,
                     'name' => $maintenance->name,
-                    'pivot' => [
-                        'price' => (float) ($maintenance->pivot->price ?? 0)
-                    ]
-                ];
+                    'price' => (float) ($maintenance->pivot->price ?? 0),
+                    ];
             })->toArray();
         }
 

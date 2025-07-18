@@ -47,7 +47,6 @@ class CurrencyServiceProvider extends ServiceProvider
             );
         });
 
-        // Калькулятор валют
         $this->app->singleton(CurrencyCalculatorService::class, function ($app) {
             return new CurrencyCalculatorService(
                 $app->make(CurrencySource::class),

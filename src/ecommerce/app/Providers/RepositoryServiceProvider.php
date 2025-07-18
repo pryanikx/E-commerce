@@ -55,16 +55,6 @@ class RepositoryServiceProvider extends ServiceProvider
                 return $app['auth'];
             }
         );
-        $this->app->singleton(\App\Services\ProductService::class, function ($app) {
-            return new \App\Services\ProductService(
-                $app->make(\App\Repositories\Contracts\ProductRepositoryInterface::class),
-                $app->make(\App\Services\Currency\CurrencyCalculatorService::class),
-                $app->make(\Psr\Log\LoggerInterface::class),
-                $app->make(\Illuminate\Contracts\Cache\Repository::class),
-                $app->make(\Psr\Clock\ClockInterface::class),
-                $app->make(\Illuminate\Contracts\Filesystem\Factory::class),
-            );
-        });
     }
 
     /**

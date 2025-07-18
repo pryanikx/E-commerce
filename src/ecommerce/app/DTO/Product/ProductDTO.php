@@ -12,7 +12,7 @@ class ProductDTO
      * @param string $article
      * @param string $description
      * @param string $releaseDate
-     * @param float $price
+     * @param float|array<string, float> $price,
      * @param string|null $imagePath
      * @param int $manufacturerId
      * @param string $manufacturerName
@@ -26,7 +26,7 @@ class ProductDTO
         public string $article,
         public string $description,
         public string $releaseDate,
-        public float $price,
+        public float|array $price,
         public ?string $imagePath,
         public int $manufacturerId,
         public string $manufacturerName,
