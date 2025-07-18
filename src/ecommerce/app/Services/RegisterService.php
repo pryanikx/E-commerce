@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTO\Auth\RegisterDTO;
 use App\Enums\UserRole;
-use App\Models\User;
 use App\Repositories\Contracts\RegisterRepositoryInterface;
 use Illuminate\Contracts\Hashing\Hasher;
 
@@ -33,14 +31,14 @@ class RegisterService
     {
         $password = $this->hashPassword($requestValidated['password']);
 
-        $dto = new RegisterDTO(
-            name: $requestValidated['name'],
-            email: $requestValidated['email'],
-            password: $password,
-            role: UserRole::USER->value,
-        );
+        $userData = [
+            'name' => $requestValidated['name'],
+            'email' => $requestValidated['email'],
+            'password' => $password,
+            'role' => UserRole::USER->value,
+        ];
 
-        return $this->registerRepository->register((array) $dto);
+        return $this->registerRepository->register($userData);
     }
 
     /**

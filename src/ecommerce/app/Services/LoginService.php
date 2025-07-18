@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTO\Auth\LoginDTO;
 use App\Models\User;
 use App\Repositories\Contracts\LoginRepositoryInterface;
 
@@ -25,12 +24,7 @@ class LoginService
      */
     public function login(array $requestValidated): array
     {
-        $dto = new LoginDTO(
-            email: $requestValidated['email'],
-            password: $requestValidated['password'],
-        );
-
-        return $this->loginRepository->login((array) $dto);
+        return $this->loginRepository->login($requestValidated);
     }
 
     /**
