@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTO\Maintenance\MaintenanceDTO;
-use App\DTO\Maintenance\MaintenanceListDTO;
-use App\DTO\Maintenance\MaintenanceStoreDTO;
-use App\DTO\Maintenance\MaintenanceUpdateDTO;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
