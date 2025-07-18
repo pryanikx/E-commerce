@@ -54,8 +54,8 @@ class CategoryController extends Controller
         );
 
         return response()->json([
-            'data' => $result['products'],
-            'meta' => $result['pagination']
+            'data' => $result->products,
+            'meta' => $result->pagination
         ]);
     }
 }

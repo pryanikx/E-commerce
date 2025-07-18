@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\DTO\Category\CategoryDTO;
+use App\DTO\Category\ProductsCategoryDTO;
+use App\DTO\Product\ProductListDTO;
 use App\Models\Category;
 use App\Models\Product;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
@@ -100,14 +102,14 @@ class CategoryRepository implements CategoryRepositoryInterface
      * @param array<string, string> $sorters
      * @param int $page
      *
-     * @return LengthAwarePaginator<int, Product>
+     * @return ProductsCategoryDTO
      */
     public function getProductsForCategory(
         int $id,
         array $filters = [],
         array $sorters = [],
         int $page = self::DEFAULT_PAGE_NUMBER
-    ): LengthAwarePaginator {
+    ): ProductsCategoryDTO {
         $category = Category::findOrFail($id);
 
         $query = $category->products();
@@ -116,7 +118,9 @@ class CategoryRepository implements CategoryRepositoryInterface
 
         $query = $this->productSorter->applySorters($query, $sorters);
 
-        return $query->paginate(self::PER_PAGE, ['*'], 'page', $page);
+        $products = $query->paginate(self::PER_PAGE, ['*'], 'page', $page);
+
+        return $this->mapPaginateToDTO($products);
     }
 
     /**
@@ -159,5 +163,35 @@ class CategoryRepository implements CategoryRepositoryInterface
             $category->name,
             $category->alias,
         );
+    }
+
+    /**
+     * @param LengthAwarePaginator<int, Product> $products
+     *
+     * @return ProductsCategoryDTO
+     */
+    public function mapPaginateToDTO(LengthAwarePaginator $products): ProductsCategoryDTO
+    {
+        $productsDTO = $products->map(fn ($product) => (new ProductListDTO(
+            id: $product->id,
+            name: $product->name,
+            article: $product->article,
+            manufacturerName: $product->manufacturer->name ?? '',
+            price: $product->price,
+            imageUrl: $product->image_path ? asset($product->image_path) : null,
+        ))->toArray());
+
+        $pagination = [
+            'current_page' => $products->currentPage(),
+            'per_page' => $products->perPage(),
+            'total' => $products->total(),
+            'last_page' => $products->lastPage(),
+        ];
+
+        return
+            (new ProductsCategoryDTO(
+                products: $productsDTO->toArray(),
+                pagination: $pagination,
+            ));
     }
 }

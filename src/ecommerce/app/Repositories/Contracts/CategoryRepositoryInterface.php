@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Contracts;
 
 use App\DTO\Category\CategoryDTO;
+use App\DTO\Category\ProductsCategoryDTO;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
@@ -68,14 +69,14 @@ interface CategoryRepositoryInterface
      * @param array<string, string> $sorters
      * @param int $page
      *
-     * @return LengthAwarePaginator<int, Product>
+     * @return ProductsCategoryDTO
      */
     public function getProductsForCategory(
         int $id,
         array $filters = [],
         array $sorters = [],
         int $page = self::DEFAULT_PAGE_NUMBER
-    ): LengthAwarePaginator;
+    ): ProductsCategoryDTO;
 
     /**
      * Apply sorters to the query.
@@ -105,4 +106,11 @@ interface CategoryRepositoryInterface
      * @return CategoryDTO
      */
     public function mapToDTO(Category $category): CategoryDTO;
+
+    /**
+     * @param LengthAwarePaginator<int, Product> $products
+     *
+     * @return ProductsCategoryDTO
+     */
+    public function mapPaginateToDTO(LengthAwarePaginator $products): ProductsCategoryDTO;
 }
