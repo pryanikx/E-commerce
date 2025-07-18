@@ -28,12 +28,11 @@ class MaintenanceService
     /**
      * Get all maintenances.
      *
-     * @return array<int, array<string, mixed>>
+     * @return MaintenanceDTO[]
      */
     public function getAll(): array
     {
-        $maintenances = $this->maintenanceRepository->all();
-        return array_map(fn ($maintenance) => $this->makeMaintenanceListDTO($maintenance)->toArray(), $maintenances);
+        return $this->maintenanceRepository->all();
     }
 
     /**
@@ -45,12 +44,10 @@ class MaintenanceService
      */
     public function createMaintenance(array $requestValidated): MaintenanceDTO
     {
-        $dto = new MaintenanceStoreDTO($requestValidated);
-
         $maintenance = $this->maintenanceRepository->create([
-            'name' => $dto->name,
-            'description' => $dto->description,
-            'duration' => $dto->duration,
+            'name' => $requestValidated['name'],
+            'description' => $requestValidated['description'],
+            'duration' => $requestValidated['duration'],
         ]);
 
         $this->cacheMaintenances();
@@ -70,12 +67,10 @@ class MaintenanceService
     {
         $maintenance = $this->maintenanceRepository->find($id);
 
-        $dto = new MaintenanceUpdateDTO($requestValidated);
-
         $data = [
-            'name' => $dto->name ?? $maintenance->name,
-            'description' => $dto->description ?? $maintenance->description,
-            'duration' => $dto->duration ?? $maintenance->duration,
+            'name' => $requestValidated['name'] ?? $maintenance->name,
+            'description' => $requestValidated['description'] ?? $maintenance->description,
+            'duration' => $requestValidated['duration'] ?? $maintenance->duration,
         ];
 
         $this->maintenanceRepository->update($id, $data);
@@ -109,37 +104,7 @@ class MaintenanceService
     private function cacheMaintenances(): void
     {
         $maintenances = $this->maintenanceRepository->all();
-        $data = array_map(fn ($maintenance) => $this->makeMaintenanceListDTO($maintenance)->toArray(), $maintenances);
-        $this->cache->put(self::CACHE_KEY, $data);
-    }
 
-    /**
-     * Make DTO for maintenances.
-     *
-     * @param mixed $maintenance
-     *
-     * @return MaintenanceListDTO
-     */
-    private function makeMaintenanceListDTO(mixed $maintenance): MaintenanceListDTO
-    {
-        if ($maintenance instanceof MaintenanceListDTO) {
-            return $maintenance;
-        }
-
-        if ($maintenance instanceof MaintenanceDTO) {
-            return new MaintenanceListDTO(
-                $maintenance->id,
-                $maintenance->name,
-                $maintenance->description,
-                $maintenance->duration
-            );
-        }
-
-        return new MaintenanceListDTO(
-            $maintenance['id'] ?? $maintenance->id,
-            $maintenance['name'] ?? $maintenance->name,
-            $maintenance['description'] ?? $maintenance->description,
-            $maintenance['duration'] ?? $maintenance->duration
-        );
+        $this->cache->put(self::CACHE_KEY, $maintenances);
     }
 }
