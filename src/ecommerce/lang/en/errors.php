@@ -23,4 +23,5 @@ return [
     'catalog_export_failed' => 'Catalog export failed',
     'cache_failed' => 'Failed to cache: :error',
     'store_image_failed' => 'Failed to store image: :error',
+    'deletion_failed' => 'Failed to delete data with ID: :id.',
 ];

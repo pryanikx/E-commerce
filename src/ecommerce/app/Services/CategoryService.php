@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\DTO\Category\CategoryDTO;
 use App\DTO\Category\ProductsCategoryDTO;
+use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
 use Illuminate\Support\Str;
@@ -103,15 +104,16 @@ class CategoryService
      *
      * @param int $id
      *
-     * @return bool
+     * @return void
+     * @throws DeleteDataException
      */
-    public function deleteCategory(int $id): bool
+    public function deleteCategory(int $id): void
     {
-        $isDeleted = $this->categoryRepository->delete($id);
+        if (!$this->categoryRepository->delete($id)) {
+            throw new DeleteDataException(__('errors.deletion_failed', ['id' => $id]));
+        }
 
         $this->cacheCategories();
-
-        return $isDeleted;
     }
 
     /**
