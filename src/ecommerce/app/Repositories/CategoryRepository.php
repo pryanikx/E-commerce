@@ -12,8 +12,6 @@ use App\Models\Product;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\Filters\ProductFilter;
 use App\Services\Filters\ProductSorter;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class CategoryRepository implements CategoryRepositoryInterface

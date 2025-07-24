@@ -8,8 +8,6 @@ use App\DTO\Category\CategoryDTO;
 use App\DTO\Category\ProductsCategoryDTO;
 use App\Models\Category;
 use App\Models\Product;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface CategoryRepositoryInterface
