@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\UserRole;
-use App\Repositories\Contracts\RegisterRepositoryInterface;
+use App\Models\User;
 use Illuminate\Contracts\Hashing\Hasher;
 
 class RegisterService
 {
     /**
-     * @param RegisterRepositoryInterface $registerRepository
      * @param Hasher $hasher
      */
     public function __construct(
-        private readonly RegisterRepositoryInterface $registerRepository,
         private readonly Hasher $hasher,
     ) {
     }
@@ -25,20 +23,23 @@ class RegisterService
      *
      * @param array<string, string> $requestValidated
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     public function register(array $requestValidated): array
     {
-        $password = $this->hashPassword($requestValidated['password']);
-
-        $userData = [
+        $user = User::create([
             'name' => $requestValidated['name'],
             'email' => $requestValidated['email'],
-            'password' => $password,
-            'role' => UserRole::USER->value,
-        ];
+            'password' => $this->hashPassword($requestValidated['password']),
+            'role' => UserRole::USER->value
+        ]);
 
-        return $this->registerRepository->register($userData);
+        $token = $user->createToken('token')->plainTextToken;
+
+        return [
+            'user' => $user,
+            'token' => $token
+        ];
     }
 
     /**

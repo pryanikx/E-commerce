@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
-use App\Repositories\Contracts\LoginRepositoryInterface;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 
 class LoginService
 {
+    /**
+     * @param AuthFactory $auth
+     */
     public function __construct(
-        private readonly LoginRepositoryInterface $loginRepository,
+        private readonly AuthFactory $auth
     ) {
     }
 
@@ -19,12 +22,33 @@ class LoginService
      *
      * @param array<string, string> $requestValidated
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      * @throws \Exception
      */
     public function login(array $requestValidated): array
     {
-        return $this->loginRepository->login($requestValidated);
+        if (!$this->auth->guard()->attempt($requestValidated)) {
+            return [
+                'token' => null,
+                'user' => null,
+            ];
+        }
+
+        $user = $this->auth->guard()->user();
+
+        if (!$user) {
+            return [
+                'token' => null,
+                'user' => null,
+            ];
+        }
+
+        $token = $user->createToken('token')->plainTextToken;
+
+        return [
+            'token' => $token,
+            'user' => $user,
+        ];
     }
 
     /**
@@ -36,6 +60,6 @@ class LoginService
      */
     public function logout(User $user): void
     {
-        $this->loginRepository->logout($user);
+        $user->currentAccessToken()->delete();
     }
 }
