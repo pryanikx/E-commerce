@@ -6,13 +6,19 @@ namespace App\Services\Currency\Clients;
 
 use App\Exceptions\Currency\CurrencyApiException;
 use App\Services\Currency\Clients\Contracts\CurrencyApiClientInterface;
-use App\Services\Support\HttpClientInterface;
+use Illuminate\Http\Client\Factory as HttpFactoryInterface;
 use Psr\Log\LoggerInterface;
 
 readonly class OpenExchangeRatesClient implements CurrencyApiClientInterface
 {
+    /**
+     * @param HttpFactoryInterface $http
+     * @param LoggerInterface $logger
+     * @param string $apiKey
+     * @param string $apiUrl
+     */
     public function __construct(
-        private HttpClientInterface $http,
+        private HttpFactoryInterface $http,
         private LoggerInterface $logger,
         private string $apiKey,
         private string $apiUrl,

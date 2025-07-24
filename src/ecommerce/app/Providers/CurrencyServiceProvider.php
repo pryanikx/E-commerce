@@ -9,9 +9,8 @@ use App\Services\Currency\Clients\OpenExchangeRatesClient;
 use App\Services\Currency\CurrencyCalculatorService;
 use App\Services\Currency\CurrencySource;
 use App\Services\Currency\OpenExchangeRatesSource;
-use App\Services\Support\HttpClient;
-use App\Services\Support\HttpClientInterface;
 use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Http\Client\Factory as HttpFactoryInterface;
 use Illuminate\Support\ServiceProvider;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
@@ -20,11 +19,9 @@ class CurrencyServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(HttpClientInterface::class, HttpClient::class);
-
         $this->app->bind(CurrencyApiClientInterface::class, function ($app) {
             return new OpenExchangeRatesClient(
-                $app->make(HttpClientInterface::class),
+                $app->make(HttpFactoryInterface::class),
                 $app->make(LoggerInterface::class),
                 config('services.open_exchange_rates.api_key'),
                 config(
