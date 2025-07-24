@@ -10,7 +10,7 @@ use App\Services\Currency\CurrencyCalculatorService;
 use App\Services\Currency\CurrencySource;
 use App\Services\Currency\OpenExchangeRatesSource;
 use App\Services\Support\HttpClientInterface;
-use App\Services\Support\LaravelHttpClient;
+use App\Services\Support\HttpClient;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\ServiceProvider;
 use Psr\Clock\ClockInterface;
@@ -20,7 +20,7 @@ class CurrencyServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(HttpClientInterface::class, LaravelHttpClient::class);
+        $this->app->singleton(HttpClientInterface::class, HttpClient::class);
 
         $this->app->bind(CurrencyApiClientInterface::class, function ($app) {
             return new OpenExchangeRatesClient(
