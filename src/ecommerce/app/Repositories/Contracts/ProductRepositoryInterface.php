@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace App\Repositories\Contracts;
 
 use App\DTO\Product\ProductDTO;
+use App\DTO\Product\ProductStatsDTO;
 
 interface ProductRepositoryInterface
 {
     /**
      * Get statistics for products.
      *
-     * @return array<string, int>
+     * @return ProductStatsDTO
      */
-    public function getStats(): array;
+    public function getStats(): ProductStatsDTO;
 
     /**
      * Get all products from the database.

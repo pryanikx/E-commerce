@@ -70,7 +70,7 @@ class ExportCatalogJob implements ShouldQueue
 
             $csvFilePath = $this->generateCsvFile($exportService);
             $storageKey = $this->uploadToStorage($uploader, $csvFilePath);
-            $stats = $exportService->getExportStats();
+            $stats = (array) $exportService->getExportStats();
 
             $this->sendSuccessNotification($emailService, $storageKey, $stats);
 

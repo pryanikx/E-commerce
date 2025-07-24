@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\DTO\Product\ProductDTO;
+use App\DTO\Product\ProductStatsDTO;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 
@@ -13,16 +14,16 @@ class ProductRepository implements ProductRepositoryInterface
     /**
      * Get statistics for products.
      *
-     * @return array<string, int>
+     * @return ProductStatsDTO
      */
-    public function getStats(): array
+    public function getStats(): ProductStatsDTO
     {
-        return [
-            'total_products' => Product::count(),
-            'products_with_images' => Product::whereNotNull('image_path')->count(),
-            'products_with_manufacturer' => Product::whereHas('manufacturer')->count(),
-            'products_with_category' => Product::whereHas('category')->count(),
-        ];
+        return new ProductStatsDTO(
+            totalProducts: Product::count(),
+            productsWithImages: Product::whereNotNull('image_path')->count(),
+            productsWithManufacturer: Product::whereHas('manufacturer')->count(),
+            productsWithCategory: Product::whereHas('category')->count(),
+        );
     }
     /**
      * Get all products from the database.

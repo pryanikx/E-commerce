@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTO\Product\ProductDTO;
+use App\DTO\Product\ProductStatsDTO;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Services\Support\ImageService;
 use App\Transformers\ProductTransformer;
@@ -32,9 +33,9 @@ class ProductService
     /**
      * Get statistics for products.
      *
-     * @return array<string, int>
+     * @return ProductStatsDTO
      */
-    public function getStats(): array
+    public function getStats(): ProductStatsDTO
     {
         return $this->productRepository->getStats();
     }
