@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\DeleteDataException;
 use App\Http\Controllers\User\ProductController;
 use App\Http\Requests\Product\ProductStoreRequest;
 use App\Http\Requests\Product\ProductUpdateRequest;
@@ -46,13 +47,12 @@ class AdminProductController extends ProductController
      * @param int $id
      *
      * @return JsonResponse
+     * @throws DeleteDataException
      */
     public function destroy(int $id): JsonResponse
     {
-        if ($this->productService->deleteProduct($id)) {
-            return response()->json(['message' => __('messages.deleted')], 200);
-        }
+        $this->productService->deleteProduct($id);
 
-        return response()->json(['message' => __('messages.no_product')], 200);
+        return response()->json(['message' => __('messages.deleted')], 200);
     }
 }

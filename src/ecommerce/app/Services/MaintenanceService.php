@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTO\Maintenance\MaintenanceDTO;
+use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
@@ -82,15 +83,16 @@ class MaintenanceService
      *
      * @param int $id
      *
-     * @return bool
+     * @return void
+     * @throws DeleteDataException
      */
-    public function deleteMaintenance(int $id): bool
+    public function deleteMaintenance(int $id): void
     {
-        $isDeleted = $this->maintenanceRepository->delete($id);
+        if (!$this->maintenanceRepository->delete($id)) {
+            throw new DeleteDataException(__('errors.deletion_failed', ['id' => $id]));
+        }
 
         $this->cacheMaintenances();
-
-        return $isDeleted;
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTO\Manufacturer\ManufacturerDTO;
+use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
@@ -78,15 +79,16 @@ class ManufacturerService
      *
      * @param int $id
      *
-     * @return bool|null
+     * @return void
+     * @throws DeleteDataException
      */
-    public function deleteManufacturer(int $id): ?bool
+    public function deleteManufacturer(int $id): void
     {
-        $isDeleted = $this->manufacturerRepository->delete($id);
+        if (!$this->manufacturerRepository->delete($id)) {
+            throw new DeleteDataException(__('errors.deletion_failed', ['id' => $id]));
+        }
 
         $this->cacheManufacturers();
-
-        return $isDeleted;
     }
 
     /**

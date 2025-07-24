@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\DeleteDataException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacturer\ManufacturerStoreRequest;
 use App\Http\Requests\Manufacturer\ManufacturerUpdateRequest;
@@ -75,13 +76,12 @@ class AdminManufacturerController extends Controller
      * @param int $id
      *
      * @return JsonResponse
+     * @throws DeleteDataException
      */
     public function destroy(int $id): JsonResponse
     {
-        if ($this->manufacturerService->deleteManufacturer($id)) {
-            return response()->json(['message' => __('messages.deleted')], 200);
-        }
+        $this->manufacturerService->deleteManufacturer($id);
 
-        return response()->json(['message' => __('messages.empty_manufacturers')], 200);
+        return response()->json(['message' => __('messages.deleted')], 200);
     }
 }

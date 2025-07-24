@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\DeleteDataException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Maintenance\MaintenanceStoreRequest;
 use App\Http\Requests\Maintenance\MaintenanceUpdateRequest;
@@ -75,13 +76,12 @@ class AdminMaintenanceController extends Controller
      * @param int $id
      *
      * @return JsonResponse
+     * @throws DeleteDataException
      */
     public function destroy(int $id): JsonResponse
     {
-        if ($this->maintenanceService->deleteMaintenance($id)) {
-            return response()->json(['message' => __('messages.deleted')], 200);
-        }
+        $this->maintenanceService->deleteMaintenance($id);
 
-        return response()->json(['message' => __('messages.empty_maintenances')], 200);
+        return response()->json(['message' => __('messages.deleted')], 200);
     }
 }

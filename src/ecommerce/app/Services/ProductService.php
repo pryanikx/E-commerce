@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\DTO\Product\ProductDTO;
 use App\DTO\Product\ProductStatsDTO;
+use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Services\Support\ImageService;
 use App\Transformers\ProductTransformer;
@@ -158,15 +159,16 @@ class ProductService
      *
      * @param int $id
      *
-     * @return bool
+     * @return void
+     * @throws DeleteDataException
      */
-    public function deleteProduct(int $id): bool
+    public function deleteProduct(int $id): void
     {
-        $isDeleted = $this->productRepository->delete($id);
+        if (!$this->productRepository->delete($id)) {
+            throw new DeleteDataException(__('errors.deletion_failed', ['id' => $id]));
+        }
 
         $this->cache->forget($this->getProductCacheKey($id));
-
-        return $isDeleted;
     }
 
     /**
