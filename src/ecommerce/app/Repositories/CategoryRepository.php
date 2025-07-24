@@ -153,17 +153,13 @@ class CategoryRepository implements CategoryRepositoryInterface
             imageUrl: $product->image_path ? asset($product->image_path) : null,
         ))->toArray());
 
-        $pagination = [
-            'current_page' => $products->currentPage(),
-            'per_page' => $products->perPage(),
-            'total' => $products->total(),
-            'last_page' => $products->lastPage(),
-        ];
-
         return
             (new ProductsCategoryDTO(
                 products: $productsDTO->toArray(),
-                pagination: $pagination,
+                currentPage: $products->currentPage(),
+                perPage: $products->perPage(),
+                total: $products->total(),
+                lastPage: $products->lastPage(),
             ));
     }
 }
