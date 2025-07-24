@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTO\Product\ProductStatsDTO;
 use App\Services\Support\CsvWriterFactoryInterface;
 use League\Csv\ByteSequence;
 use League\Csv\Writer;
@@ -70,9 +71,9 @@ class ProductExportService
     /**
      * Get statistics for export.
      *
-     * @return array<string, int>
+     * @return ProductStatsDTO
      */
-    public function getExportStats(): array
+    public function getExportStats(): ProductStatsDTO
     {
         return $this->productService->getStats();
     }
@@ -88,6 +89,7 @@ class ProductExportService
         $filename = $this->filePrefix . $exportId . $this->fileExtension;
         $filePath = storage_path($this->exportDirectory . '/' . $filename);
         $this->ensureDirectoryExists(dirname($filePath));
+
         return $filePath;
     }
 
@@ -115,6 +117,7 @@ class ProductExportService
         $csv = $this->csvWriterFactory->createFromPath($filePath, 'w+');
         $csv->setOutputBOM(ByteSequence::BOM_UTF8);
         $csv->insertOne(self::CSV_HEADERS);
+
         return $csv;
     }
 
@@ -150,11 +153,13 @@ class ProductExportService
     private function processProducts(Writer $csv, array $products): int
     {
         $processed = 0;
+
         foreach ($products as $productData) {
             $row = $this->prepareProductRowFromAPI($productData);
             $csv->insertOne($row);
             $processed++;
         }
+
         return $processed;
     }
 
