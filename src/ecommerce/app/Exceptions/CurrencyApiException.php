@@ -8,8 +8,10 @@ use Exception;
 
 class CurrencyApiException extends Exception
 {
+    private const DEFAULT_ERROR_MESSAGE = 'Currency API error';
+
     public function __construct(
-        string $message = 'Currency API error',
+        string $message = self::DEFAULT_ERROR_MESSAGE,
         int $code = 0,
         ?\Throwable $previous = null
     ) {
