@@ -154,12 +154,12 @@ class CategoryRepository implements CategoryRepositoryInterface
         ))->toArray());
 
         return
-            (new ProductsCategoryDTO(
+            new ProductsCategoryDTO(
                 products: $productsDTO->toArray(),
                 currentPage: $products->currentPage(),
                 perPage: $products->perPage(),
                 total: $products->total(),
                 lastPage: $products->lastPage(),
-            ));
+            );
     }
 }
