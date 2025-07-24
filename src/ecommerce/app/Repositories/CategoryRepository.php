@@ -124,32 +124,6 @@ class CategoryRepository implements CategoryRepositoryInterface
     }
 
     /**
-     * Apply sorters to the query.
-     *
-     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
-     * @param array<string, string> $sorters
-     *
-     * @return Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model>
-     */
-    public function sort(Builder|HasMany $query, array $sorters): Builder|HasMany
-    {
-        return $this->productSorter->applySorters($query, $sorters);
-    }
-
-    /**
-     * Apply filters to the query.
-     *
-     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
-     * @param array<string, mixed> $filters
-     *
-     * @return Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model>
-     */
-    public function filter(Builder|HasMany $query, array $filters): Builder|HasMany
-    {
-        return $this->productFilter->applyFilters($query, $filters);
-    }
-
-    /**
      * Map Eloquent model to DTO.
      *
      * @param Category $category

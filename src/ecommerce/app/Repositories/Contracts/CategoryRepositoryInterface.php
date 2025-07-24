@@ -79,26 +79,6 @@ interface CategoryRepositoryInterface
     ): ProductsCategoryDTO;
 
     /**
-     * Apply sorters to the query.
-     *
-     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
-     * @param array<string, string> $sorters
-     *
-     * @return Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model>
-     */
-    public function sort(Builder|HasMany $query, array $sorters): Builder|HasMany;
-
-    /**
-     * Apply filters to the query.
-     *
-     * @param Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model> $query
-     * @param array<string, mixed> $filters
-     *
-     * @return Builder<Product>|HasMany<Product, \Illuminate\Database\Eloquent\Model>
-     */
-    public function filter(Builder|HasMany $query, array $filters): Builder|HasMany;
-
-    /**
      * Map Eloquent model to DTO.
      *
      * @param Category $category
