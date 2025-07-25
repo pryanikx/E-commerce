@@ -25,6 +25,15 @@ class ProductExportService
         'Image_URL',
     ];
 
+    /**
+     * @param ProductService $productService
+     * @param LoggerInterface $logger
+     * @param CsvWriterFactoryInterface $csvWriterFactory
+     * @param StorageServiceInterface $storageService
+     * @param string $exportDirectory
+     * @param string $filePrefix
+     * @param string $fileExtension
+     */
     public function __construct(
         private ProductService $productService,
         private LoggerInterface $logger,
