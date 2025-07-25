@@ -90,7 +90,7 @@ class ProductService
     {
         $imagePath = $this->imageService->handleImagePath($requestValidated['image']);
         $processedMaintenances = $this->transformer->
-        processMaintenancesForSave($requestValidated['maintenances']);
+        formatMaintenancesForStorage($requestValidated['maintenances']);
 
         $createdProduct = $this->productRepository->create([
             'name' => $requestValidated['name'],
@@ -141,7 +141,7 @@ class ProductService
 
         if ($requestValidated['maintenances'] !== null) {
             $processedMaintenances = $this->transformer->
-            processMaintenancesForSave($requestValidated['maintenances']);
+            formatMaintenancesForStorage($requestValidated['maintenances']);
 
             $this->productRepository->attachMaintenances($id, $processedMaintenances);
         }
