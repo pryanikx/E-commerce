@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Email;
 
 use App\DTO\Email\EmailDTO;
+use App\Services\Support\StorageServiceInterface;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Psr\Clock\ClockInterface;
 
@@ -17,7 +18,8 @@ class EmailFileLogger
      * @param EmailHtmlBuilder $htmlBuilder
      * @param EmailDirectoryManager $directoryManager
      * @param ClockInterface $clock
-     * @param string $emailLogPath
+     * @param StorageServiceInterface $storageService
+     * @param string $emailLogDirectory
      * @param string $emailFilePrefix
      * @param string $fromEmail
      */
@@ -26,11 +28,12 @@ class EmailFileLogger
         private readonly EmailHtmlBuilder $htmlBuilder,
         private readonly EmailDirectoryManager $directoryManager,
         private readonly ClockInterface $clock,
-        private readonly string $emailLogPath,
+        private readonly StorageServiceInterface $storageService,
+        private readonly string $emailLogDirectory,
         private readonly string $emailFilePrefix,
         private readonly string $fromEmail,
     ) {
-        $this->directoryManager->ensureDirectoryExists($this->emailLogPath);
+        $this->directoryManager->ensureDirectoryExists($this->storageService->path($this->emailLogDirectory));
     }
 
     /**
@@ -74,8 +77,15 @@ class EmailFileLogger
      */
     private function saveHtmlVersion(string $to, string $subject, string $content, string $exportId): void
     {
-        $htmlFilePath = $this->emailLogPath . "/" . $this->emailFilePrefix . "{$exportId}.html";
-        $htmlContent = $this->htmlBuilder->buildHtmlWrapper($to, $subject, $content, $this->fromEmail);
+        $htmlFilePath = $this->storageService->path(
+            $this->emailLogDirectory . "/" . $this->emailFilePrefix . "{$exportId}.html"
+        );
+        $htmlContent = $this->htmlBuilder->buildHtmlWrapper(
+            $to,
+            $subject,
+            $content,
+            $this->fromEmail
+        );
         $this->filesystem->put($htmlFilePath, $htmlContent);
     }
 
@@ -88,6 +98,8 @@ class EmailFileLogger
      */
     public function getEmailFilePath(string $exportId): string
     {
-        return $this->emailLogPath . "/" . $this->emailFilePrefix . "{$exportId}.json";
+        return $this->storageService->path(
+            $this->emailLogDirectory . "/" . $this->emailFilePrefix . "{$exportId}.json"
+        );
     }
 }

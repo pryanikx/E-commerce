@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Services\ProductExportService;
+use App\Services\ProductService;
 use App\Services\S3UploadService;
 use App\Services\Support\CsvWriterFactory;
 use App\Services\Support\CsvWriterFactoryInterface;
+use App\Services\Support\StorageServiceInterface;
 use App\Services\Support\StorageUploaderInterface;
 use Illuminate\Support\ServiceProvider;
+use Psr\Log\LoggerInterface;
 
 class CatalogExportServiceProvider extends ServiceProvider
 {
@@ -22,9 +25,10 @@ class CatalogExportServiceProvider extends ServiceProvider
 
         $this->app->singleton(ProductExportService::class, function ($app) {
             return new ProductExportService(
-                $app->make(\App\Services\ProductService::class),
-                $app->make(\Psr\Log\LoggerInterface::class),
-                $app->make(\App\Services\Support\CsvWriterFactoryInterface::class),
+                $app->make(ProductService::class),
+                $app->make(LoggerInterface::class),
+                $app->make(CsvWriterFactoryInterface::class),
+                $app->make(StorageServiceInterface::class),
                 config('export.directory'),
                 config('export.file_prefix'),
                 config('export.file_extension'),
@@ -33,7 +37,7 @@ class CatalogExportServiceProvider extends ServiceProvider
 
         $this->app->singleton(S3UploadService::class, function ($app) {
             return new S3UploadService(
-                $app->make(\Psr\Log\LoggerInterface::class),
+                $app->make(LoggerInterface::class),
                 config('aws.S3.bucket'),
                 config('aws.S3.region'),
                 config('aws.S3.version'),

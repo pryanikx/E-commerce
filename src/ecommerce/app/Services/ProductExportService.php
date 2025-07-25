@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\DTO\Product\ProductStatsDTO;
 use App\Services\Support\CsvWriterFactoryInterface;
+use App\Services\Support\StorageServiceInterface;
 use League\Csv\ByteSequence;
 use League\Csv\Writer;
 use Psr\Log\LoggerInterface;
@@ -28,6 +29,7 @@ class ProductExportService
         private ProductService $productService,
         private LoggerInterface $logger,
         private CsvWriterFactoryInterface $csvWriterFactory,
+        private StorageServiceInterface $storageService,
         private string $exportDirectory,
         private string $filePrefix,
         private string $fileExtension,
@@ -87,7 +89,7 @@ class ProductExportService
     private function createExportFile(string $exportId): string
     {
         $filename = $this->filePrefix . $exportId . $this->fileExtension;
-        $filePath = storage_path($this->exportDirectory . '/' . $filename);
+        $filePath = $this->storageService->path($this->exportDirectory . '/' . $filename);
         $this->ensureDirectoryExists(dirname($filePath));
 
         return $filePath;
@@ -100,8 +102,8 @@ class ProductExportService
      */
     private function ensureDirectoryExists(string $directory): void
     {
-        if (!is_dir($directory)) {
-            mkdir($directory);
+        if (!$this->storageService->exists($directory)) {
+            $this->storageService->makeDirectory($directory);
         }
     }
 

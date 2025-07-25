@@ -8,6 +8,7 @@ use App\Services\Email\EmailDirectoryManager;
 use App\Services\Email\EmailFileLogger;
 use App\Services\Email\EmailHtmlBuilder;
 use App\Services\Email\EmailNotificationService;
+use App\Services\Support\StorageServiceInterface;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\ServiceProvider;
 use Psr\Clock\ClockInterface;
@@ -38,7 +39,8 @@ class EmailServiceProvider extends ServiceProvider
                 $app->make(EmailHtmlBuilder::class),
                 $app->make(EmailDirectoryManager::class),
                 $app->make(ClockInterface::class),
-                storage_path(config('services.email_notification.email_log_directory', 'app/emails')),
+                $app->make(StorageServiceInterface::class),
+                config('services.email_notification.email_log_directory', 'app/emails'),
                 config('services.email_notification.email_file_prefix', 'email_'),
                 config('services.email_notification.default_from_email', 'noreply@example.com'),
             );
