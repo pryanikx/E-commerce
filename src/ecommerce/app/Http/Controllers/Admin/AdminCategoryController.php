@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\DTO\Category\CategoryStoreDTO;
+use app\DTO\Category\CategoryUpdateDTO;
 use App\Exceptions\DeleteDataException;
 use App\Http\Controllers\User\CategoryController;
 use App\Http\Requests\Category\CategoryStoreRequest;
@@ -21,7 +23,14 @@ class AdminCategoryController extends CategoryController
      */
     public function store(CategoryStoreRequest $request): JsonResponse
     {
-        $category = $this->categoryService->createCategory($request->validated());
+        $requestValidated = $request->validated();
+
+        $category = $this->categoryService->createCategory(
+            new CategoryStoreDTO(
+                $requestValidated['name'],
+                $requestValidated['alias'],
+            )
+        );
 
         return response()->json($category, 201);
     }
@@ -36,7 +45,15 @@ class AdminCategoryController extends CategoryController
      */
     public function update(int $id, CategoryUpdateRequest $request): JsonResponse
     {
-        $category = $this->categoryService->updateCategory($id, $request->validated());
+        $requestValidated = $request->validated();
+
+        $category = $this->categoryService->updateCategory(
+            new CategoryUpdateDTO(
+                $requestValidated['id'],
+                $requestValidated['name'],
+                $requestValidated['alias'],
+            )
+        );
 
         return response()->json($category, 200);
     }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTO\Category\CategoryDTO;
+use app\DTO\Category\CategoryStoreDTO;
+use app\DTO\Category\CategoryUpdateDTO;
 use App\DTO\Category\ProductsCategoryDTO;
 use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
@@ -58,16 +60,13 @@ class CategoryService
     /**
      * Create a new category.
      *
-     * @param array<string, string> $requestValidated
+     * @param CategoryStoreDTO $dto
      *
      * @return CategoryDTO
      */
-    public function createCategory(array $requestValidated): CategoryDTO
+    public function createCategory(CategoryStoreDTO $dto): CategoryDTO
     {
-        $category = $this->categoryRepository->create([
-            'name' => $requestValidated['name'],
-            'alias' => $requestValidated['alias'],
-        ]);
+        $category = $this->categoryRepository->create($dto);
 
         $this->cacheCategories();
 
@@ -77,26 +76,20 @@ class CategoryService
     /**
      * Update an existing category by ID.
      *
-     * @param int $id
-     * @param array<string, string> $requestValidated
-     *
+     * @param CategoryUpdateDTO $dto
      * @return CategoryDTO
      */
-    public function updateCategory(int $id, array $requestValidated): CategoryDTO
+    public function updateCategory(CategoryUpdateDTO $dto): CategoryDTO
     {
-        $category = $this->categoryRepository->find($id);
+        $category = $this->categoryRepository->find($dto->id);
 
-        $data = [
-            'name' => $requestValidated['name'] ?? $category->name,
-            'alias' => $requestValidated['alias'] ??
-                ($requestValidated['name'] ? Str::slug($requestValidated['name']) : $category->alias),
-        ];
+        $dto->name = $dto->name ?? $category->name;
+        $dto->alias = $dto->alias ?? Str::slug($dto->name);
 
-        $this->categoryRepository->update($id, $data);
-
+        $this->categoryRepository->update($dto);
         $this->cacheCategories();
 
-        return $this->categoryRepository->find($id);
+        return $this->categoryRepository->find($dto->id);
     }
 
     /**

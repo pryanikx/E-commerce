@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\DTO\Category\CategoryDTO;
+use app\DTO\Category\CategoryStoreDTO;
+use app\DTO\Category\CategoryUpdateDTO;
 use App\DTO\Category\ProductsCategoryDTO;
 use App\DTO\Product\ProductListDTO;
 use App\Models\Category;
@@ -54,13 +56,13 @@ class CategoryRepository implements CategoryRepositoryInterface
     /**
      * Create a new category.
      *
-     * @param array<string, mixed> $data
+     * @param CategoryStoreDTO $dto
      *
      * @return CategoryDTO
      */
-    public function create(array $data): CategoryDTO
+    public function create(CategoryStoreDTO $dto): CategoryDTO
     {
-        $category = Category::create($data);
+        $category = Category::create((array) $dto);
 
         return $this->mapToDTO($category);
     }
@@ -68,16 +70,15 @@ class CategoryRepository implements CategoryRepositoryInterface
     /**
      * Update an existing category.
      *
-     * @param int $id
-     * @param array<string, mixed> $data
+     * @param CategoryUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(int $id, array $data): bool
+    public function update(CategoryUpdateDTO $dto): bool
     {
-        $category = Category::findOrFail($id);
+        $category = Category::findOrFail($dto->id);
 
-        return $category->update($data);
+        return $category->update((array) $dto);
     }
 
     /**

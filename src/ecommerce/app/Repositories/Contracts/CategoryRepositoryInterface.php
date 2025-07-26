@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories\Contracts;
 
 use App\DTO\Category\CategoryDTO;
+use app\DTO\Category\CategoryStoreDTO;
+use app\DTO\Category\CategoryUpdateDTO;
 use App\DTO\Category\ProductsCategoryDTO;
 use App\Models\Category;
 use App\Models\Product;
@@ -34,21 +36,20 @@ interface CategoryRepositoryInterface
     /**
      * Create a new category.
      *
-     * @param array<string, mixed> $data
+     * @param CategoryStoreDTO $dto
      *
      * @return CategoryDTO
      */
-    public function create(array $data): CategoryDTO;
+    public function create(CategoryStoreDTO $dto): CategoryDTO;
 
     /**
      * Update an existing category.
      *
-     * @param int $id
-     * @param array<string, mixed> $data
+     * @param CategoryUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(int $id, array $data): bool;
+    public function update(CategoryUpdateDTO $dto): bool;
 
     /**
      * Delete a category by ID.
