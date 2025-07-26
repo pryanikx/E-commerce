@@ -32,7 +32,7 @@ class LoginService
      */
     public function login(LoginDTO $dto): UserDTO|array
     {
-        if (!$this->auth->guard()->attempt($dto->toArray())) {
+        if (!$this->auth->guard()->attempt((array) $dto)) {
             return [
                 'token' => null,
                 'user' => null

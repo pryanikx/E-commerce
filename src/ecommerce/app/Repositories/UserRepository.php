@@ -19,7 +19,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function create(RegisterDTO $dto): UserDTO
     {
-        $user = User::create($dto->toArray());
+        $user = User::create((array) $dto);
         $token = $this->createAccessToken($user);
 
         return $this->mapToDTO($user, $token);

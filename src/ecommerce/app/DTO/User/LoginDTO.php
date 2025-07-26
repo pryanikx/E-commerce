@@ -15,17 +15,4 @@ class LoginDTO
         public string $password,
     ) {
     }
-
-    /**
-     * Convert DTO to array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(): array
-    {
-        return [
-            'email' => $this->email,
-            'password' => $this->password,
-        ];
-    }
 }

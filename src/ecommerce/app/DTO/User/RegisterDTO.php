@@ -19,19 +19,4 @@ class RegisterDTO
         public string $role,
     ) {
     }
-
-    /**
-     * Convert DTO to array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(): array
-    {
-        return [
-            'name' => $this->name,
-            'email' => $this->email,
-            'password' => $this->password,
-            'role' => $this->role,
-        ];
-    }
 }
