@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories\Contracts;
 
 use App\DTO\Category\CategoryDTO;
-use app\DTO\Category\CategoryStoreDTO;
-use app\DTO\Category\CategoryUpdateDTO;
+use App\DTO\Category\CategoryStoreDTO;
+use App\DTO\Category\CategoryUpdateDTO;
 use App\DTO\Category\ProductsCategoryDTO;
 use App\Models\Category;
 use App\Models\Product;

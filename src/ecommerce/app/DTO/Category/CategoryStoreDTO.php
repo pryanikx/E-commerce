@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\DTO\Category;
+namespace App\DTO\Category;
 
 class CategoryStoreDTO
 {

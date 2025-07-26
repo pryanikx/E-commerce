@@ -51,4 +51,13 @@ interface UserRepositoryInterface
      * @return bool
      */
     public function delete(int $id): bool;
+
+    /**
+     * Map Eloquent model to DTO.
+     *
+     * @param User $user
+     * @param string|null $token
+     * @return UserDTO
+     */
+    public function mapToDTO(User $user, ?string $token = null): UserDTO;
 }

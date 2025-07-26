@@ -40,6 +40,14 @@ class LoginService
         }
 
         $user = $this->auth->guard()->user();
+
+        if (!$user) {
+            return [
+                'token' => null,
+                'user' => null
+            ];
+        }
+
         $token = $this->userRepository->createAccessToken($user);
 
         return $this->userRepository->mapToDTO($user, $token);

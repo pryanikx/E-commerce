@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\DTO\Category\CategoryStoreDTO;
-use app\DTO\Category\CategoryUpdateDTO;
+use App\DTO\Category\CategoryUpdateDTO;
 use App\Exceptions\DeleteDataException;
 use App\Http\Controllers\User\CategoryController;
 use App\Http\Requests\Category\CategoryStoreRequest;

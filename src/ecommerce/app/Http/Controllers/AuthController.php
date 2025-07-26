@@ -45,13 +45,7 @@ class AuthController extends Controller
             )
         );
 
-        return response()->json(
-            [
-                'token' => $user->token,
-                'user' => $user,
-            ],
-            200
-        );
+        return response()->json($user, 200);
     }
 
     /**
@@ -73,13 +67,7 @@ class AuthController extends Controller
                 )
             );
 
-            return response()->json(
-                [
-                    'token' => $user->token,
-                    'user' => $user,
-                ],
-                200
-            );
+            return response()->json($user, 200);
         } catch (\Exception $exception) {
             return response()->json(['error' => $exception->getMessage()], 401);
         }
