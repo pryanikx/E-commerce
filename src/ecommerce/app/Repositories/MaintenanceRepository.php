@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTO\Maintenance\MaintenanceDTO;
+use App\DTO\Maintenance\MaintenanceStoreDTO;
+use App\DTO\Maintenance\MaintenanceUpdateDTO;
 use App\Models\Maintenance;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 
 class MaintenanceRepository implements MaintenanceRepositoryInterface
 {
     /**
-     * Get all maintenances from the database
+     * Get all maintenances from the database.
      *
-     * @return Collection
+     * @return MaintenanceDTO[]
      */
-    public function all(): Collection
+    public function all(): array
     {
-        return Maintenance::all();
+        return Maintenance::all()->map(fn (Maintenance $maintenance) =>
+            $this->mapToDTO($maintenance))->all();
     }
 
     /**
@@ -25,36 +28,41 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
      *
      * @param int $id
      *
-     * @return Maintenance
+     * @return MaintenanceDTO
      */
-    public function find(int $id): Maintenance
+    public function find(int $id): MaintenanceDTO
     {
-        return Maintenance::findOrFail($id);
+        $maintenance = Maintenance::findOrFail($id);
+
+        return $this->mapToDTO($maintenance);
     }
 
     /**
      * Create new maintenance.
      *
-     * @param array $array
+     * @param MaintenanceStoreDTO $dto
      *
-     * @return Maintenance
+     * @return MaintenanceDTO
      */
-    public function create(array $array): Maintenance
+    public function create(MaintenanceStoreDTO $dto): MaintenanceDTO
     {
-        return Maintenance::create($array);
+        $maintenance = Maintenance::create($dto->toArray());
+
+        return $this->mapToDTO($maintenance);
     }
 
     /**
      * Update existing maintenance.
      *
-     * @param Maintenance $maintenance
-     * @param array $data
+     * @param MaintenanceUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(Maintenance $maintenance, array $data): bool
+    public function update(MaintenanceUpdateDTO $dto): bool
     {
-        return $maintenance->update($data);
+        $maintenance = Maintenance::findOrFail($dto->id);
+
+        return $maintenance->update($dto->toArray());
     }
 
     /**
@@ -67,5 +75,22 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
     public function delete(int $id): bool
     {
         return (bool) Maintenance::destroy($id);
+    }
+
+    /**
+     * Map Eloquent model to DTO.
+     *
+     * @param Maintenance $maintenance
+     *
+     * @return MaintenanceDTO
+     */
+    private function mapToDTO(Maintenance $maintenance): MaintenanceDTO
+    {
+        return new MaintenanceDTO(
+            $maintenance->id,
+            $maintenance->name,
+            $maintenance->description,
+            $maintenance->duration,
+        );
     }
 }

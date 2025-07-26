@@ -14,25 +14,17 @@ class CatalogExportConsumerCommand extends Command
     private const QUEUE_CONNECTION = 'rabbitmq';
     private const QUEUE_NAME = 'catalog_export';
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'catalog:export-consumer
                             {--timeout=' . self::DEFAULT_TIMEOUT . ' : Timeout for each job in seconds}
                             {--tries=' . self::DEFAULT_TRIES . ' : Number of tries for failed jobs}
                             {--memory=' . self::DEFAULT_MEMORY . ' : Memory limit in MB}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Start consuming catalog export jobs from RabbitMQ queue';
 
     /**
      * Execute the console command.
+     *
+     * @return int
      */
     public function handle(): int
     {
@@ -44,7 +36,6 @@ class CatalogExportConsumerCommand extends Command
             $this->startQueueWorker($config);
 
             return self::SUCCESS;
-
         } catch (\Exception $e) {
             $this->error(__('commands.consumer_start_error', ['error' => $e->getMessage()]));
 
@@ -53,9 +44,9 @@ class CatalogExportConsumerCommand extends Command
     }
 
     /**
-     * Get configuration from command options
+     * Get configuration from command options.
      *
-     * @return array
+     * @return array<string, int>
      */
     private function getConfiguration(): array
     {
@@ -67,9 +58,11 @@ class CatalogExportConsumerCommand extends Command
     }
 
     /**
-     * Display startup information
+     * Display startup information.
      *
-     * @param array $config
+     * @param array<string, int> $config
+     *
+     * @return void
      */
     private function displayStartupInfo(array $config): void
     {
@@ -83,9 +76,11 @@ class CatalogExportConsumerCommand extends Command
     }
 
     /**
-     * Start the queue worker
+     * Start the queue worker.
      *
-     * @param array $config
+     * @param array<string, int> $config
+     *
+     * @return void
      */
     private function startQueueWorker(array $config): void
     {

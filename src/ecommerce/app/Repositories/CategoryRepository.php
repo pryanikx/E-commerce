@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTO\Category\CategoryDTO;
+use App\DTO\Category\CategoryStoreDTO;
+use App\DTO\Category\CategoryUpdateDTO;
+use App\DTO\Category\ProductsCategoryDTO;
+use App\DTO\Product\ProductListDTO;
 use App\Models\Category;
+use App\Models\Product;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\Filters\ProductFilter;
 use App\Services\Filters\ProductSorter;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Pagination\LengthAwarePaginator;
-
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
@@ -29,11 +31,12 @@ class CategoryRepository implements CategoryRepositoryInterface
     /**
      * Get all categories from the database.
      *
-     * @return Collection<int, Category>
+     * @return CategoryDTO[]
      */
-    public function all(): Collection
+    public function all(): array
     {
-        return Category::all();
+        return Category::all()->map(fn (Category $category)
+        => $this->mapToDTO($category))->all();
     }
 
     /**
@@ -41,36 +44,41 @@ class CategoryRepository implements CategoryRepositoryInterface
      *
      * @param int $id
      *
-     * @return Category
+     * @return CategoryDTO
      */
-    public function find(int $id): Category
+    public function find(int $id): CategoryDTO
     {
-        return Category::findOrFail($id);
+        $category = Category::findOrFail($id);
+
+        return $this->mapToDTO($category);
     }
 
     /**
      * Create a new category.
      *
-     * @param array<string, mixed> $data
+     * @param CategoryStoreDTO $dto
      *
-     * @return Category
+     * @return CategoryDTO
      */
-    public function create(array $data): Category
+    public function create(CategoryStoreDTO $dto): CategoryDTO
     {
-        return Category::create($data);
+        $category = Category::create($dto->toArray());
+
+        return $this->mapToDTO($category);
     }
 
     /**
      * Update an existing category.
      *
-     * @param Category $category
-     * @param array $data
+     * @param CategoryUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(Category $category, array $data): bool
+    public function update(CategoryUpdateDTO $dto): bool
     {
-        return $category->update($data);
+        $category = Category::findOrFail($dto->id);
+
+        return $category->update($dto->toArray());
     }
 
     /**
@@ -89,20 +97,19 @@ class CategoryRepository implements CategoryRepositoryInterface
      * Get paginated products for a category.
      *
      * @param int $id
-     * @param array $filters
-     * @param array $sorters
+     * @param array<string, mixed> $filters
+     * @param array<string, string> $sorters
      * @param int $page
      *
-     * @return LengthAwarePaginator
+     * @return ProductsCategoryDTO
      */
     public function getProductsForCategory(
         int $id,
         array $filters = [],
         array $sorters = [],
         int $page = self::DEFAULT_PAGE_NUMBER
-    ): LengthAwarePaginator
-    {
-        $category = $this->find($id);
+    ): ProductsCategoryDTO {
+        $category = Category::findOrFail($id);
 
         $query = $category->products();
 
@@ -110,32 +117,50 @@ class CategoryRepository implements CategoryRepositoryInterface
 
         $query = $this->productSorter->applySorters($query, $sorters);
 
-        return $query->paginate(self::PER_PAGE, ['*'], 'page', $page);
+        $products = $query->paginate(self::PER_PAGE, ['*'], 'page', $page);
+
+        return $this->mapPaginateToDTO($products);
     }
 
     /**
-     * Apply sorters to the query
+     * Map Eloquent model to DTO.
      *
-     * @param Builder|HasMany $query
-     * @param array $sorters
+     * @param Category $category
      *
-     * @return Builder|HasMany
+     * @return CategoryDTO
      */
-    public function sort(Builder|HasMany $query, array $sorters): Builder|HasMany
+    public function mapToDTO(Category $category): CategoryDTO
     {
-        return $this->productSorter->applySorters($query, $sorters);
+        return new CategoryDTO(
+            $category->id,
+            $category->name,
+            $category->alias,
+        );
     }
 
     /**
-     * Apply filters to the query
+     * @param LengthAwarePaginator<int, Product> $products
      *
-     * @param Builder|HasMany $query
-     * @param array $filters
-     *
-     * @return Builder|HasMany
+     * @return ProductsCategoryDTO
      */
-    public function filter(Builder|HasMany $query, array $filters): Builder|HasMany
+    public function mapPaginateToDTO(LengthAwarePaginator $products): ProductsCategoryDTO
     {
-        return $this->productFilter->applyFilters($query, $filters);
+        $productsDTO = $products->map(fn ($product) => (new ProductListDTO(
+            id: $product->id,
+            name: $product->name,
+            article: $product->article,
+            manufacturerName: $product->manufacturer->name ?? '',
+            price: $product->price,
+            imageUrl: $product->image_path ? asset($product->image_path) : null,
+        ))->toArray());
+
+        return
+            new ProductsCategoryDTO(
+                products: $productsDTO->toArray(),
+                currentPage: $products->currentPage(),
+                perPage: $products->perPage(),
+                total: $products->total(),
+                lastPage: $products->lastPage(),
+            );
     }
 }

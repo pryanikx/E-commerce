@@ -9,16 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductMaintenance extends Model
 {
-    /**
-     * @var string
-     */
     protected $table = 'products_maintenances';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'product_id',
         'maintenance_id',
@@ -26,7 +18,7 @@ class ProductMaintenance extends Model
     ];
 
     /**
-     * @return BelongsTo
+     * @return BelongsTo<Product, ProductMaintenance>
      */
     public function product(): BelongsTo
     {
@@ -34,7 +26,7 @@ class ProductMaintenance extends Model
     }
 
     /**
-     * @return BelongsTo
+     * @return BelongsTo<Maintenance, ProductMaintenance>
      */
     public function maintenance(): BelongsTo
     {

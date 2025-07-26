@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTO\Manufacturer\ManufacturerDTO;
+use App\DTO\Manufacturer\ManufacturerStoreDTO;
+use App\DTO\Manufacturer\ManufacturerUpdateDTO;
 use App\Models\Manufacturer;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 
 class ManufacturerRepository implements ManufacturerRepositoryInterface
 {
     /**
      * Get all manufacturers from the database.
      *
-     * @return Collection
+     * @return ManufacturerDTO[]
      */
-    public function all(): Collection
+    public function all(): array
     {
-        return Manufacturer::all();
+        return Manufacturer::all()->map(fn (Manufacturer $manufacturer)
+            => $this->mapToDTO($manufacturer))->all();
     }
 
     /**
@@ -25,36 +28,41 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
      *
      * @param int $id
      *
-     * @return Manufacturer
+     * @return ManufacturerDTO
      */
-    public function find(int $id): Manufacturer
+    public function find(int $id): ManufacturerDTO
     {
-        return Manufacturer::findOrFail($id);
+        $manufacturer = Manufacturer::findOrFail($id);
+
+        return $this->mapToDTO($manufacturer);
     }
 
     /**
      * Create a new manufacturer.
      *
-     * @param array $array
+     * @param ManufacturerStoreDTO $dto
      *
-     * @return Manufacturer
+     * @return ManufacturerDTO
      */
-    public function create(array $array): Manufacturer
+    public function create(ManufacturerStoreDTO $dto): ManufacturerDTO
     {
-        return Manufacturer::create($array);
+        $manufacturer = Manufacturer::create($dto->toArray());
+
+        return $this->mapToDTO($manufacturer);
     }
 
     /**
      * Update an existing manufacturer.
      *
-     * @param Manufacturer $manufacturer
-     * @param array $data
+     * @param ManufacturerUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(Manufacturer $manufacturer, array $data): bool
+    public function update(ManufacturerUpdateDTO $dto): bool
     {
-        return $manufacturer->update($data);
+        $manufacturer = Manufacturer::findOrFail($dto->id);
+
+        return $manufacturer->update($dto->toArray());
     }
 
     /**
@@ -67,5 +75,20 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
     public function delete(int $id): bool
     {
         return (bool) Manufacturer::destroy($id);
+    }
+
+    /**
+     * Map Eloquent model to DTO.
+     *
+     * @param Manufacturer $manufacturer
+     *
+     * @return ManufacturerDTO
+     */
+    private function mapToDTO(Manufacturer $manufacturer): ManufacturerDTO
+    {
+        return new ManufacturerDTO(
+            $manufacturer->id,
+            $manufacturer->name,
+        );
     }
 }

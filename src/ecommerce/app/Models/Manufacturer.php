@@ -12,17 +12,12 @@ class Manufacturer extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
     ];
 
     /**
-     * @return HasMany
+     * @return HasMany<Product, Manufacturer>
      */
     public function product(): HasMany
     {

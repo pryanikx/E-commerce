@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\DTO\User\LoginDTO;
+use App\DTO\User\RegisterDTO;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\LoginService;
@@ -18,13 +20,13 @@ class AuthController extends Controller
      * @param RegisterService $registerService
      */
     public function __construct(
-        protected LoginService $loginService,
-        protected RegisterService $registerService,
+        private readonly LoginService $loginService,
+        private readonly RegisterService $registerService,
     ) {
     }
 
     /**
-     * register a new user.
+     * Register a new user.
      *
      * @param RegisterRequest $request
      *
@@ -32,13 +34,22 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $result = $this->registerService->register($request->validated());
+        $requestValidated = $request->validated();
 
-        return response()->json($result);
+        $user = $this->registerService->register(
+            new RegisterDTO(
+                $requestValidated['name'],
+                $requestValidated['email'],
+                $requestValidated['password'],
+                $requestValidated['role']
+            )
+        );
+
+        return response()->json($user, 200);
     }
 
     /**
-     * login an existing user/admin.
+     * Login an existing user/admin.
      *
      * @param LoginRequest $request
      *
@@ -47,16 +58,23 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         try {
-            $result = $this->loginService->login($request->validated());
+            $requestValidated = $request->validated();
 
-            return response()->json($result, 200);
+            $user = $this->loginService->login(
+                new LoginDTO(
+                    $requestValidated['email'],
+                    $requestValidated['password'],
+                )
+            );
+
+            return response()->json($user, 200);
         } catch (\Exception $exception) {
             return response()->json(['error' => $exception->getMessage()], 401);
         }
     }
 
     /**
-     * logout a user/admin.
+     * Logout a user/admin.
      *
      * @param Request $request
      *
@@ -64,7 +82,13 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $this->loginService->logout($request->user());
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['error' => __('auth.unauthenticated')], 401);
+        }
+
+        $this->loginService->logout($user);
 
         return response()->json(['message' => __('messages.logout')]);
     }

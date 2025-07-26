@@ -6,16 +6,14 @@ namespace App\Providers;
 
 use App\Repositories\CategoryRepository;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
-use App\Repositories\Contracts\LoginRepositoryInterface;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
-use App\Repositories\Contracts\RegisterRepositoryInterface;
-use app\Repositories\LoginRepository;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\MaintenanceRepository;
 use App\Repositories\ManufacturerRepository;
 use App\Repositories\ProductRepository;
-use App\Repositories\RegisterRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -42,12 +40,14 @@ class RepositoryServiceProvider extends ServiceProvider
             CategoryRepository::class
         );
         $this->app->bind(
-            LoginRepositoryInterface::class,
-            LoginRepository::class
+            UserRepositoryInterface::class,
+            UserRepository::class
         );
         $this->app->bind(
-            RegisterRepositoryInterface::class,
-            RegisterRepository::class
+            \Illuminate\Contracts\Auth\Factory::class,
+            function ($app) {
+                return $app['auth'];
+            }
         );
     }
 

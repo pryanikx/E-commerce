@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTO\Maintenance\MaintenanceListDTO;
+use App\DTO\Maintenance\MaintenanceDTO;
 use App\DTO\Maintenance\MaintenanceStoreDTO;
 use App\DTO\Maintenance\MaintenanceUpdateDTO;
-use App\Models\Maintenance;
+use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
+use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
 class MaintenanceService
 {
@@ -16,42 +17,34 @@ class MaintenanceService
 
     /**
      * @param MaintenanceRepositoryInterface $maintenanceRepository
+     * @param CacheInterface $cache
      */
-    public function __construct(protected MaintenanceRepositoryInterface $maintenanceRepository)
-    {
+    public function __construct(
+        private MaintenanceRepositoryInterface $maintenanceRepository,
+        private CacheInterface $cache,
+    ) {
     }
 
     /**
      * Get all maintenances.
      *
-     * @return array|null
+     * @return MaintenanceDTO[]
      */
-    public function getAll(): ?array
+    public function getAll(): array
     {
-        return cache(self::CACHE_KEY, function () {
-            $maintenances = $this->maintenanceRepository->all();
-
-            return $maintenances->map(fn($maintenance)
-                => (new MaintenanceListDTO($maintenance))->toArray())->toArray();
-        });
+        return $this->maintenanceRepository->all();
     }
 
     /**
      * Create new maintenance.
      *
-     * @param array $request_validated
+     * @param MaintenanceStoreDTO $dto
      *
-     * @return Maintenance
+     * @return MaintenanceDTO
      */
-    public function createMaintenance(array $request_validated): Maintenance
+    public function createMaintenance(MaintenanceStoreDTO $dto): MaintenanceDTO
     {
-        $dto = new MaintenanceStoreDTO($request_validated);
-
-        $maintenance = $this->maintenanceRepository->create([
-            'name' => $dto->name,
-            'description' => $dto->description,
-            'duration' => $dto->duration,
-        ]);
+        $maintenance = $this->maintenanceRepository->create($dto);
 
         $this->cacheMaintenances();
 
@@ -61,28 +54,23 @@ class MaintenanceService
     /**
      * Update existing maintenance by ID.
      *
-     * @param int $id
-     * @param array $request_validated
+     * @param MaintenanceUpdateDTO $dto
      *
-     * @return Maintenance
+     * @return MaintenanceDTO
      */
-    public function updateMaintenance(int $id, array $request_validated): Maintenance
+    public function updateMaintenance(MaintenanceUpdateDTO $dto): MaintenanceDTO
     {
-        $maintenance = $this->maintenanceRepository->find($id);
+        $maintenance = $this->maintenanceRepository->find($dto->id);
 
-        $dto = new MaintenanceUpdateDTO($request_validated);
+        $dto->name = $dto->name ?? $maintenance->name;
+        $dto->description = $dto->description  ?? $maintenance->description;
+        $dto->duration = $dto->duration ?? $maintenance->duration;
 
-        $data = [
-            'name' => $dto->name ?? $maintenance->name,
-            'description' => $dto->description ?? $maintenance->description,
-            'duration' => $dto->duration ?? $maintenance->duration,
-        ];
-
-        $this->maintenanceRepository->update($maintenance, $data);
+        $this->maintenanceRepository->update($dto);
 
         $this->cacheMaintenances();
 
-        return $maintenance->refresh();
+        return $this->maintenanceRepository->find($dto->id);
     }
 
     /**
@@ -90,23 +78,27 @@ class MaintenanceService
      *
      * @param int $id
      *
-     * @return bool
+     * @return void
+     * @throws DeleteDataException
      */
-    public function deleteMaintenance(int $id): bool
+    public function deleteMaintenance(int $id): void
     {
-        $is_deleted = $this->maintenanceRepository->delete($id);
+        if (!$this->maintenanceRepository->delete($id)) {
+            throw new DeleteDataException(__('errors.deletion_failed', ['id' => $id]));
+        }
 
         $this->cacheMaintenances();
-
-        return $is_deleted;
     }
 
+    /**
+     * Cache maintenances in storage.
+     *
+     * @return void
+     */
     private function cacheMaintenances(): void
     {
         $maintenances = $this->maintenanceRepository->all();
-        $data = $maintenances->map(fn($maintenance) =>
-        (new MaintenanceListDTO($maintenance))->toArray())->toArray();
 
-        cache()->put(self::CACHE_KEY, $data);
+        $this->cache->put(self::CACHE_KEY, $maintenances);
     }
 }

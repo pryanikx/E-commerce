@@ -17,6 +17,7 @@
         "laravel/tinker": "^2.10.1",
         "league/csv": "^9.24",
         "league/flysystem-aws-s3-v3": "^3.29",
+        "symfony/clock": "^7.3",
         "vladimir-yuldashev/laravel-queue-rabbitmq": "^14.2"
     },
     "require-dev": {

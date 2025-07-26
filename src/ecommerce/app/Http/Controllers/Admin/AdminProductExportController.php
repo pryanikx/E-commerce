@@ -6,8 +6,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\ExportCatalogJob;
+use App\Models\User;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use Psr\Log\LoggerInterface;
 
 class AdminProductExportController extends Controller
 {
@@ -15,30 +17,31 @@ class AdminProductExportController extends Controller
     private const QUEUE_NAME = 'catalog_export';
     private const STATUS_QUEUED = 'queued';
 
+    public function __construct(
+        private readonly AuthFactory $auth
+    ) {
+    }
+
     /**
-     * Export product catalog to CSV and send to RabbitMQ queue
+     * Export product catalog to CSV and send to RabbitMQ queue.
      *
      * @return JsonResponse
      */
     public function exportCatalog(): JsonResponse
     {
         try {
+            /** @var User|null $user */
             $user = $this->getAuthenticatedUser();
-
-            if (!$user) {
-                return $this->unauthorizedResponse();
-            }
 
             $exportId = $this->generateExportId();
 
-            $this->dispatchExportJob($exportId, $user->email);
+            $this->dispatchExportJob($exportId, $user->email ?? '');
 
             return $this->successResponse([
                 'message' => __('messages.catalog_export_started'),
                 'export_id' => $exportId,
                 'status' => self::STATUS_QUEUED
             ]);
-
         } catch (\Exception $e) {
             return $this->errorResponse(
                 __('messages.catalog_export_start_failed'),
@@ -48,17 +51,17 @@ class AdminProductExportController extends Controller
     }
 
     /**
-     * Get authenticated user
+     * Get authenticated user.
      *
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
      */
     private function getAuthenticatedUser()
     {
-        return Auth::user();
+        return $this->auth->guard()->user();
     }
 
     /**
-     * Generate unique export ID
+     * Generate unique export ID.
      *
      * @return string
      */
@@ -68,33 +71,24 @@ class AdminProductExportController extends Controller
     }
 
     /**
-     * Dispatch export job to queue
+     * Dispatch export job to queue.
      *
      * @param string $exportId
      * @param string $userEmail
      */
     private function dispatchExportJob(string $exportId, string $userEmail): void
     {
-        ExportCatalogJob::dispatch($exportId, $userEmail)
-            ->onQueue(self::QUEUE_NAME);
-    }
-
-    /**
-     * Return unauthorized response
-     *
-     * @return JsonResponse
-     */
-    private function unauthorizedResponse(): JsonResponse
-    {
-        return response()->json([
-            'message' => __('messages.user_unauthorized'),
-        ], 401);
+        ExportCatalogJob::dispatch(
+            $exportId,
+            $userEmail,
+            app(LoggerInterface::class)
+        )->onQueue(self::QUEUE_NAME);
     }
 
     /**
      * Return success response
      *
-     * @param array $data
+     * @param array<string, mixed> $data
      * @return JsonResponse
      */
     private function successResponse(array $data): JsonResponse

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\DTO\Product\ProductStoreDTO;
+use App\DTO\Product\ProductUpdateDTO;
+use App\Exceptions\DeleteDataException;
 use App\Http\Controllers\User\ProductController;
 use App\Http\Requests\Product\ProductStoreRequest;
 use App\Http\Requests\Product\ProductUpdateRequest;
@@ -12,7 +15,7 @@ use Illuminate\Http\JsonResponse;
 class AdminProductController extends ProductController
 {
     /**
-     * store a new product.
+     * Store a new product.
      *
      * @param ProductStoreRequest $request
      *
@@ -20,13 +23,27 @@ class AdminProductController extends ProductController
      */
     public function store(ProductStoreRequest $request): JsonResponse
     {
-        $product = $this->productService->createProduct($request->validated());
+        $requestValidated = $request->validated();
+
+        $product = $this->productService->createProduct(
+            new ProductStoreDTO(
+                $requestValidated['name'],
+                $requestValidated['article'],
+                $requestValidated['description'],
+                $requestValidated['release_date'],
+                $requestValidated['price'],
+                $requestValidated['image'],
+                $requestValidated['manufacturer_id'],
+                $requestValidated['category_id'],
+                $requestValidated['maintenance_ids'],
+            )
+        );
 
         return response()->json($product, 201);
     }
 
     /**
-     * update an existing product.
+     * Update an existing product.
      *
      * @param int $id
      * @param ProductUpdateRequest $request
@@ -35,24 +52,38 @@ class AdminProductController extends ProductController
      */
     public function update(int $id, ProductUpdateRequest $request): JsonResponse
     {
-        $product = $this->productService->updateProduct($id, $request->validated());
+        $requestValidated = $request->validated();
+
+        $product = $this->productService->updateProduct(
+            new ProductUpdateDTO(
+                $requestValidated['id'],
+                $requestValidated['name'],
+                $requestValidated['article'],
+                $requestValidated['description'],
+                $requestValidated['release_date'],
+                $requestValidated['price'],
+                $requestValidated['image'],
+                $requestValidated['manufacturer_id'],
+                $requestValidated['category_id'],
+                $requestValidated['maintenance_ids'],
+            )
+        );
 
         return response()->json($product, 200);
     }
 
     /**
-     * erase an existing product.
+     * Erase an existing product.
      *
      * @param int $id
      *
      * @return JsonResponse
+     * @throws DeleteDataException
      */
     public function destroy(int $id): JsonResponse
     {
-        if ($this->productService->deleteProduct($id)) {
-            return response()->json(['message' => __('messages.deleted')], 200);
-        }
+        $this->productService->deleteProduct($id);
 
-        return response()->json(['message' => __('messages.no_product')], 200);
+        return response()->json(['message' => __('messages.deleted')], 200);
     }
 }

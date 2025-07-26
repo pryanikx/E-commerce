@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api/api';
+import { FALLBACK_IMAGE_URL } from '../constants';
 
 const ProductForm = ({ product, onSubmit, onCancel }) => {
     const [formData, setFormData] = useState({
@@ -259,9 +260,12 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
                     <div className="mt-2">
                         <p className="text-sm text-gray-600">Current image:</p>
                         <img
-                            src={product.image_url}
+                            src={product.image_url ?? FALLBACK_IMAGE_URL}
                             alt="Current product image"
                             className="w-20 h-20 object-cover border rounded"
+                            onError={(e) => {
+                                e.currentTarget.src = FALLBACK_IMAGE_URL;
+                            }}
                         />
                     </div>
                 )}

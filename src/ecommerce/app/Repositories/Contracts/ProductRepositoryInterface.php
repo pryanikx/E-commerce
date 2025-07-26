@@ -4,48 +4,53 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
-use App\Models\Product;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\DTO\Product\ProductDTO;
+use App\DTO\Product\ProductStatsDTO;
+use App\DTO\Product\ProductStoreDTO;
+use App\DTO\Product\ProductUpdateDTO;
 
 interface ProductRepositoryInterface
 {
-    const PER_PAGE = 20;
+    /**
+     * Get statistics for products.
+     *
+     * @return ProductStatsDTO
+     */
+    public function getStats(): ProductStatsDTO;
 
     /**
-     * Get all products paginated from the database.
+     * Get all products from the database.
      *
-     * @return LengthAwarePaginator
+     * @return ProductDTO[]
      */
-    public function all(): LengthAwarePaginator;
+    public function all(): array;
 
     /**
      * Find a product by ID.
      *
      * @param int $id
      *
-     * @return Product
+     * @return ProductDTO
      */
-    public function find(int $id): Product;
+    public function find(int $id): ProductDTO;
 
     /**
      * Create a new product.
      *
-     * @param array $data
+     * @param ProductStoreDTO $dto
      *
-     * @return Product
+     * @return ProductDTO
      */
-    public function create(array $data): Product;
+    public function create(ProductStoreDTO $dto): ProductDTO;
 
     /**
      * Update an existing product.
      *
-     * @param Product $product
-     * @param array $data
+     * @param ProductUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(Product $product, array $data): bool;
+    public function update(ProductUpdateDTO $dto): bool;
 
     /**
      * Delete an existing product by ID.
@@ -59,10 +64,10 @@ interface ProductRepositoryInterface
     /**
      * Attach maintenances to a product.
      *
-     * @param Product $product
-     * @param array $maintenances
+     * @param int $id
+     * @param array<int, mixed> $maintenances
      *
      * @return void
      */
-    public function attachMaintenances(Product $product, array $maintenances): void;
+    public function attachMaintenances(int $id, array $maintenances): void;
 }

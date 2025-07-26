@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTO\Manufacturer\ManufacturerListDTO;
+use App\DTO\Manufacturer\ManufacturerDTO;
 use App\DTO\Manufacturer\ManufacturerStoreDTO;
 use App\DTO\Manufacturer\ManufacturerUpdateDTO;
-use App\Models\Manufacturer;
+use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
+use Illuminate\Contracts\Cache\Repository as CacheInterface;
 
 class ManufacturerService
 {
@@ -16,39 +17,34 @@ class ManufacturerService
 
     /**
      * @param ManufacturerRepositoryInterface $manufacturerRepository
+     * @param CacheInterface $cache
      */
-    public function __construct(protected ManufacturerRepositoryInterface $manufacturerRepository)
-    {
+    public function __construct(
+        private readonly ManufacturerRepositoryInterface $manufacturerRepository,
+        private readonly CacheInterface $cache,
+    ) {
     }
 
     /**
      * Get all manufacturers.
      *
-     * @return array|null
+     * @return ManufacturerDTO[]
      */
-    public function getAll(): ?array
+    public function getAll(): array
     {
-        return cache()->rememberForever(self::CACHE_KEY, function () {
-            $manufacturers = $this->manufacturerRepository->all();
-
-            return $manufacturers->map(fn($manufacturer) => (new ManufacturerListDTO($manufacturer))->toArray())->toArray();
-        });
+        return $this->manufacturerRepository->all();
     }
 
     /**
      * Create a new manufacturer.
      *
-     * @param array $request_validated
+     * @param ManufacturerStoreDTO $dto
      *
-     * @return Manufacturer
+     * @return ManufacturerDTO
      */
-    public function createManufacturer(array $request_validated): Manufacturer
+    public function createManufacturer(ManufacturerStoreDTO $dto): ManufacturerDTO
     {
-        $dto = new ManufacturerStoreDTO($request_validated);
-
-        $manufacturer = $this->manufacturerRepository->create([
-            'name' => $dto->name,
-        ]);
+        $manufacturer = $this->manufacturerRepository->create($dto);
 
         $this->cacheManufacturers();
 
@@ -58,26 +54,21 @@ class ManufacturerService
     /**
      * Update an existing manufacturer by ID.
      *
-     * @param int $id
-     * @param array $request_validated
+     * @param ManufacturerUpdateDTO $dto
      *
-     * @return Manufacturer
+     * @return ManufacturerDTO
      */
-    public function updateManufacturer(int $id, array $request_validated): Manufacturer
+    public function updateManufacturer(ManufacturerUpdateDTO $dto): ManufacturerDTO
     {
-        $manufacturer = $this->manufacturerRepository->find($id);
+        $manufacturer = $this->manufacturerRepository->find($dto->id);
 
-        $dto = new ManufacturerUpdateDTO($request_validated);
+        $dto->name = $dto->name ?? $manufacturer->name;
 
-        $data = [
-            'name' => $dto->name ?? $manufacturer->name,
-        ];
-
-        $this->manufacturerRepository->update($manufacturer, $data);
+        $this->manufacturerRepository->update($dto);
 
         $this->cacheManufacturers();
 
-        return $manufacturer->refresh();
+        return $this->manufacturerRepository->find($dto->id);
     }
 
     /**
@@ -85,19 +76,20 @@ class ManufacturerService
      *
      * @param int $id
      *
-     * @return bool|null
+     * @return void
+     * @throws DeleteDataException
      */
-    public function deleteManufacturer(int $id): ?bool
+    public function deleteManufacturer(int $id): void
     {
-        $is_deleted = $this->manufacturerRepository->delete($id);
+        if (!$this->manufacturerRepository->delete($id)) {
+            throw new DeleteDataException(__('errors.deletion_failed', ['id' => $id]));
+        }
 
         $this->cacheManufacturers();
-
-        return $is_deleted;
     }
 
     /**
-     * Save manufacturers in cache
+     * Cache manufacturers in storage.
      *
      * @return void
      */
@@ -105,9 +97,6 @@ class ManufacturerService
     {
         $manufacturers = $this->manufacturerRepository->all();
 
-        $data = $manufacturers->map(fn($manufacturer) =>
-        (new ManufacturerListDTO($manufacturer))->toArray())->toArray();
-
-        cache()->put(self::CACHE_KEY, $data);
+        $this->cache->put(self::CACHE_KEY, $manufacturers);
     }
 }

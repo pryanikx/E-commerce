@@ -40,7 +40,7 @@ return [
     'failure_notification_failed' => 'Failed to send failure notification',
     'temp_file_cleaned' => 'Temporary file cleaned up',
     'email_notification_saved' => 'Email notification saved',
-    'error_email_saved' => '📧 Error email saved',
+    'error_email_saved' => 'Error email saved',
     'catalog_export_completed' => 'Catalog export completed',
     'user_unauthorized' => 'User unauthorized',
     'catalog_export_started' => 'Catalog export has been started. You will receive an email notification after completion.',

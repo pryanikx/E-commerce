@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
+use App\DTO\Category\CategoryDTO;
+use App\DTO\Category\CategoryStoreDTO;
+use App\DTO\Category\CategoryUpdateDTO;
+use App\DTO\Category\ProductsCategoryDTO;
 use App\Models\Category;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Product;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface CategoryRepositoryInterface
@@ -18,37 +20,36 @@ interface CategoryRepositoryInterface
     /**
      * Get all categories from the database.
      *
-     * @return Collection<int, Category>
+     * @return CategoryDTO[]
      */
-    public function all(): Collection;
+    public function all(): array;
 
     /**
      * Find an existing category by ID.
      *
      * @param int $id
      *
-     * @return Category
+     * @return CategoryDTO
      */
-    public function find(int $id): Category;
+    public function find(int $id): CategoryDTO;
 
     /**
      * Create a new category.
      *
-     * @param array<string, mixed> $data
+     * @param CategoryStoreDTO $dto
      *
-     * @return Category
+     * @return CategoryDTO
      */
-    public function create(array $data): Category;
+    public function create(CategoryStoreDTO $dto): CategoryDTO;
 
     /**
      * Update an existing category.
      *
-     * @param Category $category
-     * @param array $data
+     * @param CategoryUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(Category $category, array $data): bool;
+    public function update(CategoryUpdateDTO $dto): bool;
 
     /**
      * Delete a category by ID.
@@ -63,36 +64,32 @@ interface CategoryRepositoryInterface
      * Get paginated products for a category.
      *
      * @param int $id
-     * @param array $filters
-     * @param array $sorters
+     * @param array<string, mixed> $filters
+     * @param array<string, string> $sorters
      * @param int $page
      *
-     * @return LengthAwarePaginator
+     * @return ProductsCategoryDTO
      */
     public function getProductsForCategory(
         int $id,
         array $filters = [],
         array $sorters = [],
         int $page = self::DEFAULT_PAGE_NUMBER
-    ): LengthAwarePaginator;
+    ): ProductsCategoryDTO;
 
     /**
-     * Apply sorters to the query
+     * Map Eloquent model to DTO.
      *
-     * @param Builder|HasMany $query
-     * @param array $sorters
+     * @param Category $category
      *
-     * @return Builder|HasMany
+     * @return CategoryDTO
      */
-    public function sort(Builder|HasMany $query, array $sorters): Builder|HasMany;
+    public function mapToDTO(Category $category): CategoryDTO;
 
     /**
-     * Apply filters to the query
+     * @param LengthAwarePaginator<int, Product> $products
      *
-     * @param Builder|HasMany $query
-     * @param array $filters
-     *
-     * @return Builder|HasMany
+     * @return ProductsCategoryDTO
      */
-    public function filter(Builder|HasMany $query, array $filters): Builder|HasMany;
+    public function mapPaginateToDTO(LengthAwarePaginator $products): ProductsCategoryDTO;
 }

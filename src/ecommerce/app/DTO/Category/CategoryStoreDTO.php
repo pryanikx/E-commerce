@@ -4,27 +4,28 @@ declare(strict_types=1);
 
 namespace App\DTO\Category;
 
-/**
- * Data transfer object for storing a new category.
- */
-readonly class CategoryStoreDTO
+class CategoryStoreDTO
 {
     /**
-     * @var string $name
+     * @param string $name
+     * @param string $alias
      */
-    public string $name;
+    public function __construct(
+        public string $name,
+        public string $alias,
+    ) {
+    }
 
     /**
-     * @var string $alias
+     * Transform a DTO object to array.
+     *
+     * @return array<string, mixed>
      */
-    public string $alias;
-
-    /**
-     * @param array $request_data
-     */
-    public function __construct(array $request_data)
+    public function toArray(): array
     {
-        $this->name = $request_data['name'];
-        $this->alias = $request_data['alias'];
+        return [
+            'name' => $this->name,
+            'alias' => $this->alias,
+        ];
     }
 }

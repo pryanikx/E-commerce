@@ -1,0 +1,1 @@
+export const FALLBACK_IMAGE_URL = '/assets/fallback_image.png'; 

@@ -31,7 +31,9 @@ class CategoryController extends Controller
             return response()->json(['message' => __('messages.empty_categories')], 200);
         }
 
-        return response()->json($categories, 200);
+        return response()->json([
+            'data' => $categories
+        ], 200);
     }
 
     /**
@@ -44,13 +46,21 @@ class CategoryController extends Controller
      */
     public function show(CategoryProductRequest $request, int $id): JsonResponse
     {
-        $products = $this->categoryService->getProductsForCategory(
+        $result = $this->categoryService->getProductsForCategory(
             $id,
             $request->getFilters(),
             $request->getSortParams(),
             $request->getPage()
         );
 
-        return response()->json($products);
+        return response()->json([
+            'data' => $result->products,
+            'meta' => [
+                $result->currentPage,
+                $result->perPage,
+                $result->total,
+                $result->lastPage
+                ]
+        ], 200);
     }
 }

@@ -4,41 +4,57 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTO\Auth\LoginDTO;
+use App\DTO\User\LoginDTO;
+use App\DTO\User\UserDTO;
 use App\Models\User;
-use App\Repositories\Contracts\LoginRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 
 class LoginService
 {
-
+    /**
+     * @param AuthFactory $auth
+     * @param UserRepositoryInterface $userRepository
+     */
     public function __construct(
-        protected LoginRepositoryInterface $loginRepository,
-    )
-    {
+        private readonly AuthFactory $auth,
+        private readonly UserRepositoryInterface $userRepository,
+    ) {
     }
 
     /**
      * Login an existing user/admin.
      *
-     * @param array $request_validated
+     * @param LoginDTO $dto
      *
-     * @return array
+     * @return UserDTO|array<string, null>
      * @throws \Exception
      */
-    public function login(array $request_validated): array
+    public function login(LoginDTO $dto): UserDTO|array
     {
-        $dto = new LoginDTO($request_validated);
+        if (!$this->auth->guard()->attempt((array) $dto)) {
+            return [
+                'token' => null,
+                'user' => null
+            ];
+        }
 
-        $user_data = $this->loginRepository->login($dto->toArray());
+        $user = $this->auth->guard()->user();
 
-        return [
-            'token' => $user_data['token'],
-            'user' => $user_data['user'],
-        ];
+        if (!$user) {
+            return [
+                'token' => null,
+                'user' => null
+            ];
+        }
+
+        $token = $this->userRepository->createAccessToken($user);
+
+        return $this->userRepository->mapToDTO($user, $token);
     }
 
     /**
-     * Logout user/admin
+     * Logout user/admin.
      *
      * @param User $user
      *
@@ -46,6 +62,6 @@ class LoginService
      */
     public function logout(User $user): void
     {
-        $this->loginRepository->logout($user);
+        $this->userRepository->deleteAccessToken($user);
     }
 }

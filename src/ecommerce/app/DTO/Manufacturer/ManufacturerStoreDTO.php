@@ -4,21 +4,25 @@ declare(strict_types=1);
 
 namespace App\DTO\Manufacturer;
 
-/**
- * Data transfer object for storing a new manufacturer.
- */
-readonly class ManufacturerStoreDTO
+class ManufacturerStoreDTO
 {
     /**
-     * @var string $name
+     * @param string $name
      */
-    public string $name;
+    public function __construct(
+        public string $name,
+    ) {
+    }
 
     /**
-     * @param array $request_data
+     * Transform a DTO object to array.
+     *
+     * @return array<string, mixed>
      */
-    public function __construct(array $request_data)
+    public function toArray(): array
     {
-        $this->name = $request_data['name'];
+        return [
+            'name' => $this->name,
+        ];
     }
 }

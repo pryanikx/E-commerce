@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\DTO\Maintenance\MaintenanceStoreDTO;
+use App\DTO\Maintenance\MaintenanceUpdateDTO;
+use App\Exceptions\DeleteDataException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Maintenance\MaintenanceStoreRequest;
 use App\Http\Requests\Maintenance\MaintenanceUpdateRequest;
@@ -15,8 +18,9 @@ class AdminMaintenanceController extends Controller
     /**
      * @param MaintenanceService $maintenanceService
      */
-    public function __construct(protected MaintenanceService $maintenanceService)
-    {
+    public function __construct(
+        private readonly MaintenanceService $maintenanceService
+    ) {
     }
 
     /**
@@ -32,7 +36,12 @@ class AdminMaintenanceController extends Controller
             return response()->json(['message' => __('messages.empty_maintenances')], 200);
         }
 
-        return response()->json($maintenances, 200);
+        return response()->json(
+            [
+            'data' => $maintenances,
+            ],
+            200
+        );
     }
 
     /**
@@ -44,7 +53,15 @@ class AdminMaintenanceController extends Controller
      */
     public function store(MaintenanceStoreRequest $request): JsonResponse
     {
-        $maintenance = $this->maintenanceService->createMaintenance($request->validated());
+        $requestValidated = $request->validated();
+
+        $maintenance = $this->maintenanceService->createMaintenance(
+            new MaintenanceStoreDTO(
+                $requestValidated['name'],
+                $requestValidated['description'],
+                $requestValidated['duration'],
+            )
+        );
 
         return response()->json($maintenance, 201);
     }
@@ -59,7 +76,16 @@ class AdminMaintenanceController extends Controller
      */
     public function update(int $id, MaintenanceUpdateRequest $request): JsonResponse
     {
-        $maintenance = $this->maintenanceService->updateMaintenance($id, $request->validated());
+        $requestValidated = $request->validated();
+
+        $maintenance = $this->maintenanceService->updateMaintenance(
+            new MaintenanceUpdateDTO(
+                $requestValidated['id'],
+                $requestValidated['name'],
+                $requestValidated['description'],
+                $requestValidated['duration'],
+            )
+        );
 
         return response()->json($maintenance, 200);
     }
@@ -70,13 +96,12 @@ class AdminMaintenanceController extends Controller
      * @param int $id
      *
      * @return JsonResponse
+     * @throws DeleteDataException
      */
     public function destroy(int $id): JsonResponse
     {
-        if ($this->maintenanceService->deleteMaintenance($id)) {
-            return response()->json(['message' => __('messages.deleted')], 200);
-        }
+        $this->maintenanceService->deleteMaintenance($id);
 
-        return response()->json(['message' => __('messages.empty_maintenances')], 200);
+        return response()->json(['message' => __('messages.deleted')], 200);
     }
 }

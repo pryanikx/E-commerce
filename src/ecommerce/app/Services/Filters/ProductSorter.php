@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Filters;
 
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -20,10 +21,11 @@ class ProductSorter
     /**
      * Apply sorting to the product query.
      *
-     * @param Builder|HasMany $query
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     * @param Builder<Product>|HasMany<Product, TModel> $query
      * @param array<string, string> $sorters
      *
-     * @return Builder|HasMany
+     * @return Builder<Product>|HasMany<Product, TModel>
      */
     public function applySorters(Builder|HasMany $query, array $sorters): Builder|HasMany
     {

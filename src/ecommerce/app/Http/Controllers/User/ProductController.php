@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Services\ProductService;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -32,7 +31,12 @@ class ProductController extends Controller
             return response()->json(['message' => __('messages.empty_products')], 200);
         }
 
-        return response()->json($products, 200);
+        return response()->json(
+            [
+            'data' => $products
+            ],
+            200
+        );
     }
 
     /**
@@ -50,6 +54,11 @@ class ProductController extends Controller
             return response()->json(['message' => __('messages.no_product')], 200);
         }
 
-        return response()->json($product, 200);
+        return response()->json(
+            [
+                'data' => $product
+            ],
+            200
+        );
     }
 }

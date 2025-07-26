@@ -4,35 +4,47 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTO\Auth\RegisterDTO;
+use App\DTO\User\RegisterDTO;
+use App\DTO\User\UserDTO;
 use App\Models\User;
-use App\Repositories\Contracts\RegisterRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use Illuminate\Contracts\Hashing\Hasher;
 
 class RegisterService
 {
-
+    /**
+     * @param UserRepositoryInterface $userRepository
+     * @param Hasher $hasher
+     */
     public function __construct(
-        protected RegisterRepositoryInterface $registerRepository,
-    )
-    {
+        private UserRepositoryInterface $userRepository,
+        private Hasher $hasher,
+    ) {
     }
 
     /**
      * Register a new user.
      *
-     * @param array $request_validated
+     * @param RegisterDTO $dto
      *
-     * @return array
+     * @return UserDTO
      */
-    public function register(array $request_validated): array
+    public function register(RegisterDTO $dto): UserDTO
     {
-        $dto = new RegisterDTO($request_validated);
+        $dto->password = $this->hashPassword($dto->password);
 
-        $created_user = $this->registerRepository->register($dto->toArray());
+        return $this->userRepository->create($dto);
+    }
 
-        return [
-            'user' => $created_user['user'],
-            'token' => $created_user['token'],
-        ];
+    /**
+     * Hash the password.
+     *
+     * @param string $password
+     *
+     * @return string
+     */
+    private function hashPassword(string $password): string
+    {
+        return $this->hasher->make($password);
     }
 }

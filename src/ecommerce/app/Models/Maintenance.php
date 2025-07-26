@@ -9,11 +9,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Maintenance extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'description',
@@ -21,7 +16,7 @@ class Maintenance extends Model
     ];
 
     /**
-     * @return BelongsToMany
+     * @return BelongsToMany<Product, Maintenance>
      */
     public function products(): BelongsToMany
     {

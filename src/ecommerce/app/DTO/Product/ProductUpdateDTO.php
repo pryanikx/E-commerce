@@ -6,69 +6,52 @@ namespace App\DTO\Product;
 
 use Illuminate\Http\UploadedFile;
 
-/**
- * Data transfer object for updating a product.
- */
-readonly class ProductUpdateDTO
+class ProductUpdateDTO
 {
     /**
-     * @var string|null $name
+     * @param int $id
+     * @param string|null $name
+     * @param string|null $article
+     * @param string|null $description
+     * @param string|null $releaseDate
+     * @param float|array<string, float> $price ,
+     * @param UploadedFile|mixed|null $image
+     * @param int|null $manufacturerId
+     * @param int|null $categoryId
+     * @param array<int, mixed>|null $maintenances
      */
-    public ?string $name;
-    /**
-     * @var string|null $article
-     */
-    public ?string $article;
-    /**
-     * @var string|null $description
-     */
-    public ?string $description;
-    /**
-     * @var string|null $release_date
-     */
-    public ?string $release_date;
-    /**
-     * @var float|null $price
-     */
-    public ?float $price;
-    /**
-     * @var UploadedFile|null $image
-     */
-    public ?UploadedFile $image;
-    /**
-     * @var int|null $manufacturer_id
-     */
-    public ?int $manufacturer_id;
-    /**
-     * @var int|null $category_id
-     */
-    public ?int $category_id;
-    /**
-     * @var array|null $maintenances
-     */
-    public ?array $maintenances;
+    public function __construct(
+        public int $id,
+        public ?string $name,
+        public ?string $article,
+        public ?string $description,
+        public ?string $releaseDate,
+        public float|array|null $price,
+        public mixed $image,
+        public ?int $manufacturerId,
+        public ?int $categoryId,
+        public ?array $maintenances,
+    ) {
+    }
 
     /**
-     * @param array $validated
+     * Transform a DTO object to array.
+     *
+     * @return array<string, mixed>
      */
-
-    public function __construct(array $validated)
+    public function toArray(): array
     {
-        $this->name = $validated['name'] ?? null;
-        $this->article = $validated['article'] ?? null;
-        $this->description = $validated['description'] ?? null;
-        $this->release_date = $validated['release_date'] ?? null;
-        $this->price = isset($validated['price']) ? (float) $validated['price'] : null;
-        $this->image = isset($validated['image']) &&
-            $validated['image'] instanceof \Illuminate\Http\UploadedFile
-            ? $validated['image'] : null;
-        $this->manufacturer_id = isset($validated['manufacturer_id'])
-            ? (int) $validated['manufacturer_id'] : null;
-        $this->category_id = isset($validated['category_id']) ? (int) $validated['category_id'] : null;
-        $this->maintenances = isset($validated['maintenance_ids']) && is_array($validated['maintenance_ids'])
-            ? collect($validated['maintenance_ids'])->mapWithKeys(function ($m) {
-                return [(int) $m['id'] => ['price' => (float) $m['price']]];
-            })->toArray()
-            : null;
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'article' => $this->article,
+            'description' => $this->description,
+            'release_date' => $this->releaseDate,
+            'price' => $this->price,
+            'image_url' => $this->image,
+            'manufacturer_id' => $this->manufacturerId,
+            'category_id' => $this->categoryId,
+            'maintenances' => $this->maintenances,
+        ];
     }
 }

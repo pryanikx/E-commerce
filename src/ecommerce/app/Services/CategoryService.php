@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTO\Category\CategoryListDTO;
+use App\DTO\Category\CategoryDTO;
 use App\DTO\Category\CategoryStoreDTO;
 use App\DTO\Category\CategoryUpdateDTO;
-use App\DTO\Product\ProductListDTO;
-use App\Models\Category;
+use App\DTO\Category\ProductsCategoryDTO;
+use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
-use App\Services\Currency\CurrencyCalculatorService;
+use Illuminate\Contracts\Cache\Repository as CacheInterface;
 use Illuminate\Support\Str;
 
 class CategoryService
@@ -20,76 +20,53 @@ class CategoryService
 
     /**
      * @param CategoryRepositoryInterface $categoryRepository
-     * @param CurrencyCalculatorService $currencyCalculator
+     * @param CacheInterface $cache
      */
     public function __construct(
-        protected CategoryRepositoryInterface $categoryRepository,
-        protected CurrencyCalculatorService $currencyCalculator
-    )
-    {
+        private readonly CategoryRepositoryInterface $categoryRepository,
+        private readonly CacheInterface $cache,
+    ) {
     }
 
     /**
      * Get all categories.
      *
-     * @return array|null
+     * @return CategoryDTO[]
      */
-    public function getAll(): ?array
+    public function getAll(): array
     {
-        return cache()->rememberForever(self::CACHE_KEY, function () {
-            $categories = $this->categoryRepository->all();
-
-            return $categories->map(fn($category)
-                => (new CategoryListDTO($category))->toArray())->toArray();
-        });
+        return $this->categoryRepository->all();
     }
 
     /**
      * Get paginated products of the specified category.
      *
      * @param int $id
-     * @param array $filters
-     * @param array $sorters
+     * @param array<string, mixed> $filters
+     * @param array<string, string> $sorters
      * @param int $page
      *
-     * @return array
+     * @return ProductsCategoryDTO
      */
     public function getProductsForCategory(
         int $id,
         array $filters = [],
         array $sorters = [],
         int $page = self::DEFAULT_PAGE_NUMBER
-    ): array
-    {
-        $products = $this->categoryRepository->getProductsForCategory($id, $filters, $sorters, $page);
-
-        return [
-            'data' => $products->map(fn($product)
-                => (new ProductListDTO($product, $this->currencyCalculator))->toArray())->toArray(),
-            'meta' => [
-                'current_page' => $products->currentPage(),
-                'per_page' => $products->perPage(),
-                'total' => $products->total(),
-                'last_page' => $products->lastPage(),
-            ],
-        ];
+    ): ProductsCategoryDTO {
+        return $this->categoryRepository->getProductsForCategory($id, $filters, $sorters, $page);
     }
 
     /**
      * Create a new category.
      *
-     * @param array $request_validated
+     * @param CategoryStoreDTO $dto
      *
-     * @return Category
+     * @return CategoryDTO
      */
-    public function createCategory(array $request_validated): Category
+    public function createCategory(CategoryStoreDTO $dto): CategoryDTO
     {
-        $dto = new CategoryStoreDTO($request_validated);
-
-        $category =  $this->categoryRepository->create([
-            'name' => $dto->name,
-            'alias' => $dto->alias,
-        ]);
+        $category = $this->categoryRepository->create($dto);
 
         $this->cacheCategories();
 
@@ -99,59 +76,53 @@ class CategoryService
     /**
      * Update an existing category by ID.
      *
-     * @param int $id
-     * @param array $request_validated
-     *
-     * @return Category
+     * @param CategoryUpdateDTO $dto
+     * @return CategoryDTO
      */
-    public function updateCategory(int $id, array $request_validated): Category
+    public function updateCategory(CategoryUpdateDTO $dto): CategoryDTO
     {
-        $category = $this->categoryRepository->find($id);
+        $category = $this->categoryRepository->find($dto->id);
 
-        $dto = new CategoryUpdateDTO($request_validated);
+        $dto->name = $dto->name ?? $category->name;
+        $dto->alias = $dto->alias ?? Str::slug($dto->name);
 
-        $data = [
-            'name' => $dto->name ?? $category->name,
-            'alias' => $dto->alias ?? ($dto->name ? Str::slug($dto->name) : $category->alias),
-        ];
-
-        $this->categoryRepository->update($category, $data);
-
+        $this->categoryRepository->update($dto);
         $this->cacheCategories();
 
-        return $category->refresh();
+        return $this->categoryRepository->find($dto->id);
     }
 
     /**
-     * delete an existing category by ID.
+     * Delete an existing category by ID.
      *
      * @param int $id
      *
-     * @return bool
+     * @return void
+     * @throws DeleteDataException
      */
-    public function deleteCategory(int $id): bool
+    public function deleteCategory(int $id): void
     {
-        $is_deleted =  $this->categoryRepository->delete($id);
+        if (!$this->categoryRepository->delete($id)) {
+            throw new DeleteDataException(__('errors.deletion_failed', ['id' => $id]));
+        }
 
         $this->cacheCategories();
-
-        return $is_deleted;
     }
 
     /**
-     * find an existing category by ID.
+     * Find an existing category by ID.
      *
      * @param int $id
      *
-     * @return Category
+     * @return CategoryDTO
      */
-    public function find(int $id): Category
+    public function find(int $id): CategoryDTO
     {
         return $this->categoryRepository->find($id);
     }
 
     /**
-     * Save categories in cache
+     * Cache categories in storage.
      *
      * @return void
      */
@@ -159,9 +130,6 @@ class CategoryService
     {
         $categories = $this->categoryRepository->all();
 
-        $data = $categories->map(fn($category) =>
-            (new CategoryListDTO($category))->toArray())->toArray();
-
-        cache()->put(self::CACHE_KEY, $data);
+        $this->cache->put(self::CACHE_KEY, $categories);
     }
 }

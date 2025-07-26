@@ -13,11 +13,6 @@ class Product extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'name',
         'article',
@@ -30,7 +25,7 @@ class Product extends Model
     ];
 
     /**
-     * @return BelongsTo
+     * @return BelongsTo<Category, Product>
      */
     public function category(): BelongsTo
     {
@@ -38,7 +33,7 @@ class Product extends Model
     }
 
     /**
-     * @return BelongsTo
+     * @return BelongsTo<Manufacturer, Product>
      */
     public function manufacturer(): BelongsTo
     {
@@ -46,7 +41,7 @@ class Product extends Model
     }
 
     /**
-     * @return BelongsToMany
+     * @return BelongsToMany<Maintenance, Product>
      */
     public function maintenances(): BelongsToMany
     {
@@ -57,7 +52,7 @@ class Product extends Model
     /**
      * Get the attributes that should be cast.
      *
-     * @return array
+     * @return array<string, string>
      */
     protected function casts(): array
     {

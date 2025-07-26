@@ -8,6 +8,8 @@ class ProductStoreRequest extends BaseProductRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * @return bool
      */
     public function authorize(): bool
     {
@@ -17,7 +19,7 @@ class ProductStoreRequest extends BaseProductRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|mixed>
      */
     public function rules(): array
     {

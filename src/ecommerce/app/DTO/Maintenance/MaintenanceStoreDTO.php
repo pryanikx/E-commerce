@@ -4,33 +4,31 @@ declare(strict_types=1);
 
 namespace App\DTO\Maintenance;
 
-/**
- * Data transfer object for storing a new maintenance.
- */
-readonly class MaintenanceStoreDTO
+class MaintenanceStoreDTO
 {
     /**
-     * @var string $name
+     * @param string $name
+     * @param string|null $description
+     * @param string|null $duration
      */
-    public string $name;
+    public function __construct(
+        public string $name,
+        public ?string $description,
+        public ?string $duration,
+    ) {
+    }
 
     /**
-     * @var string|null $description
+     * Transform a DTO object to array.
+     *
+     * @return array<string, mixed>
      */
-    public ?string $description;
-
-    /**
-     * @var string|null $duration
-     */
-    public ?string $duration;
-
-    /**
-     * @param array $request_data
-     */
-    public function __construct(array $request_data)
+    public function toArray(): array
     {
-        $this->name = $request_data['name'];
-        $this->description = $request_data['description'] ?? null;
-        $this->duration = $request_data['duration'] ?? null;
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+            'duration' => $this->duration,
+        ];
     }
 }

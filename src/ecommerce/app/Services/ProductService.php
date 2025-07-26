@@ -4,287 +4,170 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTO\Product\ProductListDTO;
-use App\DTO\Product\ProductShowDTO;
+use App\DTO\Product\ProductDTO;
+use App\DTO\Product\ProductStatsDTO;
 use App\DTO\Product\ProductStoreDTO;
 use App\DTO\Product\ProductUpdateDTO;
-use App\Models\Product;
+use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\ProductRepositoryInterface;
-use App\Services\Currency\CurrencyCalculatorService;
+use App\Services\Support\ImageService;
+use App\Transformers\ProductTransformer;
+use Illuminate\Contracts\Cache\Repository as CacheInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Storage;
 
 class ProductService
 {
-    private const FALLBACK_IMAGE_PATH = 'storage/products/fallback_image1.png';
-    private const CACHE_TTL_MINUTES = 30;
-    private const STORAGE_DISK = 'public';
+    private const CACHE_TTL = 300;
 
     /**
      * @param ProductRepositoryInterface $productRepository
-     * @param CurrencyCalculatorService $currencyCalculator
+     * @param ProductTransformer $transformer
+     * @param ImageService $imageService
+     * @param CacheInterface $cache
      */
     public function __construct(
-        protected ProductRepositoryInterface $productRepository,
-        protected CurrencyCalculatorService $currencyCalculator,
+        private ProductRepositoryInterface $productRepository,
+        private ProductTransformer $transformer,
+        private ImageService $imageService,
+        private CacheInterface $cache,
     ) {
     }
 
     /**
-     * Get all products with pagination.
+     * Get statistics for products.
      *
-     * @return array|null
+     * @return ProductStatsDTO
+     */
+    public function getStats(): ProductStatsDTO
+    {
+        return $this->productRepository->getStats();
+    }
+
+    /**
+     * Get all products.
+     *
+     * @return ProductDTO[]|null
      */
     public function getAll(): ?array
     {
         $products = $this->productRepository->all();
 
-        return [
-            'data' => $products->map(function ($product) {
-                $dto = (new ProductListDTO($product, $this->currencyCalculator))->toArray();
-                $dto['image_url'] = $this->getImageUrlWithFallback($product->image_path);
-
-                return $dto;
-            })->toArray(),
-            'meta' => [
-                'current_page' => $products->currentPage(),
-                'per_page' => $products->perPage(),
-                'total' => $products->total(),
-                'last_page' => $products->lastPage(),
-            ],
-        ];
+        return $products ? $this->transformer->transformCollection($products) : null;
     }
 
     /**
      * Get one product by ID with caching.
      *
      * @param int $id
-     * @return array|null
+     *
+     * @return ProductDTO|null
+     * @throws \Exception
      */
-    public function getProduct(int $id): ?array
+    public function getProduct(int $id): ?ProductDTO
     {
         $cacheKey = $this->getProductCacheKey($id);
 
-        return cache()->remember($cacheKey, now()->addMinutes(self::CACHE_TTL_MINUTES),
+        return $this->cache->remember(
+            $cacheKey,
+            self::CACHE_TTL,
             function () use ($id) {
                 try {
                     $product = $this->productRepository->find($id);
-                    $dto = new ProductShowDTO($product, $this->currencyCalculator);
-                    $dtoArray = $dto->toArray();
-                    $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
 
-                    return $dtoArray;
+                    return $this->transformer->transform($product);
                 } catch (ModelNotFoundException $e) {
                     return null;
                 }
-            });
+            }
+        );
     }
 
     /**
      * Create a new product.
      *
-     * @param array $request_validated
-     * @return Product
+     * @param ProductStoreDTO $dto
+     *
+     * @return ProductDTO
      */
-    public function createProduct(array $request_validated): Product
+    public function createProduct(ProductStoreDTO $dto): ProductDTO
     {
-        $dto = new ProductStoreDTO($request_validated);
-        $image_path = $this->handleImagePath($dto->image);
+        $dto->image = $this->imageService->handleImagePath($dto->image);
+        $dto->maintenances = $this->transformer
+            ->formatMaintenancesForStorage($dto->maintenances);
 
-        $created_product = $this->productRepository->create([
-            'name' => $dto->name,
-            'article' => $dto->article,
-            'description' => $dto->description,
-            'release_date' => $dto->release_date,
-            'price' => $dto->price,
-            'image_path' => $image_path ?? self::FALLBACK_IMAGE_PATH,
-            'manufacturer_id' => $dto->manufacturer_id,
-            'category_id' => $dto->category_id,
-        ]);
+        $createdProduct = $this->productRepository->create($dto);
 
         if (!empty($dto->maintenances)) {
-            $this->productRepository->attachMaintenances($created_product, $dto->maintenances);
+            $this->productRepository->attachMaintenances($createdProduct->id, $dto->maintenances);
         }
 
-        $this->cacheProduct($created_product->id);
+        $transformedProduct = $this->transformer->transform($createdProduct);
+        $this->cache->put($this->getProductCacheKey($createdProduct->id), $transformedProduct);
 
-        return $created_product;
+        return $transformedProduct;
     }
 
     /**
      * Update an existing product by ID.
      *
-     * @param int $id
-     * @param array $request_validated
-     * @return Product
+     * @param ProductUpdateDTO $dto
+     *
+     * @return ProductDTO
      */
-    public function updateProduct(int $id, array $request_validated): Product
+    public function updateProduct(ProductUpdateDTO $dto): ProductDTO
     {
-        $product = $this->productRepository->find($id);
-        $dto = new ProductUpdateDTO($request_validated);
+        $product = $this->productRepository->find($dto->id);
 
-        $data = $this->prepareUpdateData($dto, $product);
+        $dto->name = $dto->name ?? $product->name;
+        $dto->article = $dto->article ?? $product->article;
+        $dto->description = $dto->description ?? $product->description;
+        $dto->releaseDate = $dto->releaseDate ?? $product->releaseDate;
+        $dto->price = $dto->price ?? $product->price;
+        $dto->manufacturerId = $dto->manufacturerId ?? $product->manufacturerId;
+        $dto->categoryId = $dto->categoryId ?? $product->categoryId;
+        $dto->image = $dto->image !== null
+            ? $this->imageService->handleImagePath($dto->image, $product->imagePath)
+            : $product->imagePath;
 
-        $this->productRepository->update($product, $data);
+        $this->productRepository->update($dto);
 
         if ($dto->maintenances !== null) {
-            $this->productRepository->attachMaintenances($product, $dto->maintenances);
+            $processedMaintenances = $this->transformer->
+            formatMaintenancesForStorage($dto->maintenances);
+
+            $this->productRepository->attachMaintenances($dto->id, $processedMaintenances);
         }
 
-        $this->refreshProductCache($product->id);
+        $updatedProduct = $this->productRepository->find($dto->id);
+        $transformedProduct = $this->transformer->transform($updatedProduct);
 
-        return $product->refresh();
+        $this->cache->put($this->getProductCacheKey($dto->id), $transformedProduct);
+
+        return $transformedProduct;
     }
 
     /**
      * Delete an existing product by ID.
      *
      * @param int $id
-     * @return bool
-     */
-    public function deleteProduct(int $id): bool
-    {
-        cache()->forget($this->getProductCacheKey($id));
-
-        return $this->productRepository->delete($id);
-    }
-
-    /**
-     * Prepare data for product update.
      *
-     * @param ProductUpdateDTO $dto
-     * @param Product $product
-     *
-     * @return array
-     */
-    private function prepareUpdateData(ProductUpdateDTO $dto, Product $product): array
-    {
-        return [
-            'name' => $dto->name ?? $product->name,
-            'article' => $dto->article ?? $product->article,
-            'description' => $dto->description ?? $product->description,
-            'release_date' => $dto->release_date ?? $product->release_date,
-            'price' => $dto->price ?? $product->price,
-            'manufacturer_id' => $dto->manufacturer_id ?? $product->manufacturer_id,
-            'category_id' => $dto->category_id ?? $product->category_id,
-            'image_path' => $dto->image !== null ? $this->handleImagePath($dto->image, $product->image_path) : $product->image_path,
-        ];
-    }
-
-    /**
-     * Store an uploaded file and return its path.
-     *
-     * @param \Illuminate\Http\UploadedFile|null $image
-     * @param string|null $oldPath
-     * @return string
-     */
-    private function handleImagePath(?\Illuminate\Http\UploadedFile $image, ?string $oldPath = null): string
-    {
-        if ($image && $image->isValid()) {
-            try {
-                $this->deleteOldImageIfExists($oldPath);
-
-                $filename = uniqid() . '.' . $image->getClientOriginalExtension();
-                $path = $image->storeAs('products', $filename, self::STORAGE_DISK);
-
-                return $path ? 'storage/' . $path : $this->getFallbackImagePath();
-            } catch (\Exception $e) {
-                logger()->error(
-                    __('errors.store_image_failed', ['error' => $e->getMessage()])
-                );
-                return $oldPath ?? $this->getFallbackImagePath();
-            }
-        }
-
-        return $oldPath ?? $this->getFallbackImagePath();
-    }
-
-    /**
-     * Delete old image if it exists and is not the fallback image.
-     *
-     * @param string|null $oldPath
      * @return void
+     * @throws DeleteDataException
      */
-    private function deleteOldImageIfExists(?string $oldPath): void
+    public function deleteProduct(int $id): void
     {
-        if ($oldPath &&
-            $oldPath !== $this->getFallbackImagePath() &&
-            Storage::disk(self::STORAGE_DISK)->exists(str_replace('storage/', '', $oldPath))
-        ) {
-            Storage::disk(self::STORAGE_DISK)->delete(str_replace('storage/', '', $oldPath));
-        }
-    }
-
-    /**
-     * Get fallback image path.
-     *
-     * @return string
-     */
-    private function getFallbackImagePath(): string
-    {
-        return self::FALLBACK_IMAGE_PATH;
-    }
-
-    /**
-     * Check if the image path exists and return its URL or the fallback image URL.
-     *
-     * @param string|null $imagePath
-     * @return string
-     */
-    private function getImageUrlWithFallback(?string $imagePath): string
-    {
-        $fallbackUrl = asset($this->getFallbackImagePath());
-
-        if ($imagePath &&
-            $imagePath !== '/' &&
-            Storage::disk(self::STORAGE_DISK)->exists(str_replace('storage/', '', $imagePath))
-        ) {
-            return asset($imagePath);
+        if (!$this->productRepository->delete($id)) {
+            throw new DeleteDataException(__('errors.deletion_failed', ['id' => $id]));
         }
 
-        return $fallbackUrl;
+        $this->cache->forget($this->getProductCacheKey($id));
     }
 
     /**
-     * Refresh product cache.
+     * Get a cache key for one product.
      *
      * @param int $id
-     * @return void
-     */
-    private function refreshProductCache(int $id): void
-    {
-        cache()->forget($this->getProductCacheKey($id));
-        $this->cacheProduct($id);
-    }
-
-    /**
-     * Save product in cache.
      *
-     * @param int $id
-     * @return void
-     */
-    private function cacheProduct(int $id): void
-    {
-        try {
-            $product = $this->productRepository->find($id);
-            $dto = new ProductShowDTO($product, $this->currencyCalculator);
-            $dtoArray = $dto->toArray();
-            $dtoArray['image_url'] = $this->getImageUrlWithFallback($product->image_path);
-
-            cache()->put(
-                $this->getProductCacheKey($id),
-                $dtoArray,
-                now()->addMinutes(self::CACHE_TTL_MINUTES)
-            );
-        } catch (\Exception $e) {
-            logger()->error(__('errors.cache_failed', ['error' => $e->getMessage()]));
-        }
-    }
-
-    /**
-     * Get cache key for one product.
-     *
-     * @param int $id
      * @return string
      */
     private function getProductCacheKey(int $id): string

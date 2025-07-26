@@ -1,38 +1,58 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
+use App\Services\Currency\Clients\Contracts\CurrencyApiClientInterface;
+use App\Services\Currency\Clients\OpenExchangeRatesClient;
 use App\Services\Currency\CurrencyCalculatorService;
 use App\Services\Currency\CurrencySource;
 use App\Services\Currency\OpenExchangeRatesSource;
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Http\Client\Factory as HttpFactoryInterface;
 use Illuminate\Support\ServiceProvider;
+use Psr\Clock\ClockInterface;
+use Psr\Log\LoggerInterface;
 
 class CurrencyServiceProvider extends ServiceProvider
 {
-    private const DEFAULT_CURRENCY_BASE = 'USD';
-
-    /**
-     * Register services.
-     */
     public function register(): void
     {
-        $this->app->singleton(CurrencySource::class, function ($app) {
-            return new OpenExchangeRatesSource();
+        $this->app->bind(CurrencyApiClientInterface::class, function ($app) {
+            return new OpenExchangeRatesClient(
+                $app->make(HttpFactoryInterface::class),
+                $app->make(LoggerInterface::class),
+                config('services.open_exchange_rates.api_key'),
+                config(
+                    'services.open_exchange_rates.api_url',
+                    'https://openexchangerates.org/api/latest.json'
+                ),
+            );
+        });
+
+        $this->app->bind(CurrencySource::class, function ($app) {
+            return new OpenExchangeRatesSource(
+                $app->make(CurrencyApiClientInterface::class),
+                $app->make(LoggerInterface::class),
+                $app->make(Repository::class),
+                $app->make(ClockInterface::class),
+                config(
+                    'services.open_exchange_rates.supported_currencies',
+                    ['BYN', 'USD', 'EUR', 'RUB']
+                ),
+            );
         });
 
         $this->app->singleton(CurrencyCalculatorService::class, function ($app) {
             return new CurrencyCalculatorService(
                 $app->make(CurrencySource::class),
-                config('services.currency.base', self::DEFAULT_CURRENCY_BASE)
+                config('services.currency.base', 'USD'),
+                config(
+                    'services.open_exchange_rates.supported_currencies',
+                    ['BYN', 'USD', 'EUR', 'RUB']
+                ),
             );
         });
-    }
-
-    /**
-     * Bootstrap services.
-     */
-    public function boot(): void
-    {
-        //
     }
 }

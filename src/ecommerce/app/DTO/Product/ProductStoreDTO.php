@@ -6,72 +6,49 @@ namespace App\DTO\Product;
 
 use Illuminate\Http\UploadedFile;
 
-/**
- * Data transfer object for storing a new product.
- */
-readonly class ProductStoreDTO
+class ProductStoreDTO
 {
     /**
-     * @var string $name
+     * @param string $name
+     * @param string $article
+     * @param string|null $description
+     * @param string $releaseDate
+     * @param float|array<string, float> $price,
+     * @param UploadedFile|mixed|null $image
+     * @param int $manufacturerId
+     * @param int $categoryId
+     * @param array<int, mixed>|null $maintenances
      */
-    public string $name;
+    public function __construct(
+        public string $name,
+        public string $article,
+        public ?string $description,
+        public string $releaseDate,
+        public float|array $price,
+        public mixed $image,
+        public int $manufacturerId,
+        public int $categoryId,
+        public ?array $maintenances,
+    ) {
+    }
 
     /**
-     * @var string $article
+     * Transform a DTO object to array.
+     *
+     * @return array<string, mixed>
      */
-    public string $article;
-
-    /**
-     * @var string $description
-     */
-    public string $description;
-
-    /**
-     * @var string $release_date
-     */
-    public string $release_date;
-
-    /**
-     * @var float $price
-     */
-    public float $price;
-
-    /**
-     * @var UploadedFile|null $image
-     */
-    public ?UploadedFile $image;
-
-    /**
-     * @var int $manufacturer_id
-     */
-    public int $manufacturer_id;
-
-    /**
-     * @var int $category_id
-     */
-    public int $category_id;
-
-    /**
-     * @var array $maintenances
-     */
-    public array $maintenances;
-
-    /**
-     * @param array $validated
-     */
-    public function __construct(array $validated)
+    public function toArray(): array
     {
-        $this->name = $validated['name'];
-        $this->article = $validated['article'];
-        $this->description = $validated['description'];
-        $this->release_date = $validated['release_date'];
-        $this->price = (float) $validated['price'];
-        $this->image = $validated['image'] ?? null;
-        $this->manufacturer_id = (int) $validated['manufacturer_id'];
-        $this->category_id = (int) $validated['category_id'];
-        $this->maintenances = !empty($validated['maintenance_ids'])
-            ? collect($validated['maintenance_ids'])
-                ->mapWithKeys(fn ($m) => [$m['id'] => ['price' => (float) $m['price']]])->toArray()
-            : [];
+        return [
+            'name' => $this->name,
+            'article' => $this->article,
+            'description' => $this->description,
+            'release_date' => $this->releaseDate,
+            'price' => $this->price,
+            'image_url' => $this->image,
+            'manufacturer_id' => $this->manufacturerId,
+            'category_id' => $this->categoryId,
+            'maintenances' => $this->maintenances,
+        ];
     }
 }

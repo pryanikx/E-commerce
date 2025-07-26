@@ -4,21 +4,38 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTO\Product\ProductDTO;
+use App\DTO\Product\ProductStatsDTO;
+use App\DTO\Product\ProductStoreDTO;
+use App\DTO\Product\ProductUpdateDTO;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductRepository implements ProductRepositoryInterface
 {
     /**
-     * Get all products paginated from the database.
+     * Get statistics for products.
      *
-     * @return LengthAwarePaginator;
+     * @return ProductStatsDTO
      */
-    public function all(): LengthAwarePaginator
+    public function getStats(): ProductStatsDTO
     {
-        return Product::with(['manufacturer'])->paginate(self::PER_PAGE);
+        return new ProductStatsDTO(
+            totalProducts: Product::count(),
+            productsWithImages: Product::whereNotNull('image_path')->count(),
+            productsWithManufacturer: Product::whereHas('manufacturer')->count(),
+            productsWithCategory: Product::whereHas('category')->count(),
+        );
+    }
+    /**
+     * Get all products from the database.
+     *
+     * @return ProductDTO[]
+     */
+    public function all(): array
+    {
+        return Product::with(['manufacturer', 'maintenances'])->get()->map(fn (Product $product)
+        => $this->mapToDTO($product))->all();
     }
 
     /**
@@ -26,36 +43,43 @@ class ProductRepository implements ProductRepositoryInterface
      *
      * @param int $id
      *
-     * @return Product
+     * @return ProductDTO
      */
-    public function find(int $id): Product
+    public function find(int $id): ProductDTO
     {
-        return Product::with(['manufacturer', 'category', 'maintenances'])->findOrFail($id);
+        $product = Product::with(['manufacturer', 'category', 'maintenances'])->findOrFail($id);
+
+        return $this->mapToDTO($product);
     }
 
     /**
      * Create a new product.
      *
-     * @param array $data
+     * @param ProductStoreDTO $dto
      *
-     * @return Product
+     * @return ProductDTO
      */
-    public function create(array $data): Product
+    public function create(ProductStoreDTO $dto): ProductDTO
     {
-        return Product::create($data);
+        $product = Product::create($dto->toArray());
+
+        $product->load(['manufacturer', 'category', 'maintenances']);
+
+        return $this->mapToDTO($product);
     }
 
     /**
      * Update an existing product.
      *
-     * @param Product $product
-     * @param array $data
+     * @param ProductUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(Product $product, array $data): bool
+    public function update(ProductUpdateDTO $dto): bool
     {
-        return $product->update($data);
+        $product = Product::findOrFail($dto->id);
+
+        return $product->update($dto->toArray());
     }
 
     /**
@@ -73,13 +97,51 @@ class ProductRepository implements ProductRepositoryInterface
     /**
      * Attach maintenances to a product.
      *
-     * @param Product $product
-     * @param array $maintenances
+     * @param int $id
+     * @param array<int, mixed> $maintenances
      *
      * @return void
      */
-    public function attachMaintenances(Product $product, array $maintenances): void
+    public function attachMaintenances(int $id, array $maintenances): void
     {
+        $product = Product::findOrFail($id);
         $product->maintenances()->sync($maintenances);
+    }
+
+    /**
+     * Map Eloquent model to DTO.
+     *
+     * @param Product $product
+     *
+     * @return ProductDTO
+     */
+    private function mapToDTO(Product $product): ProductDTO
+    {
+        $maintenances = null;
+
+        if ($product->relationLoaded('maintenances')) {
+            $maintenances = $product->maintenances->map(function ($maintenance) {
+                return [
+                    'id' => $maintenance->id,
+                    'name' => $maintenance->name,
+                    'price' => (float) ($maintenance->pivot->price ?? 0),
+                    ];
+            })->toArray();
+        }
+
+        return new ProductDTO(
+            id: $product->id,
+            name: $product->name,
+            article: $product->article,
+            description: $product->description,
+            releaseDate: (string) $product->release_date,
+            price: (float) $product->price,
+            imagePath: $product->image_path,
+            manufacturerId: $product->manufacturer_id,
+            manufacturerName: $product->manufacturer->name ?? '',
+            categoryId: $product->category_id,
+            categoryName: $product->category->name ?? '',
+            maintenances: $maintenances,
+        );
     }
 }
