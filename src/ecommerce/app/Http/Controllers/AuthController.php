@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\DTO\User\LoginDTO;
+use App\DTO\User\RegisterDTO;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\LoginService;
@@ -32,12 +34,21 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $userData = $this->registerService->register($request->validated());
+        $requestValidated = $request->validated();
+
+        $user = $this->registerService->register(
+            new RegisterDTO(
+                $requestValidated['name'],
+                $requestValidated['email'],
+                $requestValidated['password'],
+                $requestValidated['role']
+            )
+        );
 
         return response()->json(
             [
-                'token' => $userData['token'],
-                'user' => $userData['user'],
+                'token' => $user->token,
+                'user' => $user,
             ],
             200
         );
@@ -53,12 +64,22 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         try {
-            $userData = $this->loginService->login($request->validated());
+            $requestValidated = $request->validated();
 
-            return response()->json([
-                'token' => $userData['token'],
-                'user' => $userData['user'],
-            ], 200);
+            $user = $this->loginService->login(
+                new LoginDTO(
+                    $requestValidated['email'],
+                    $requestValidated['password'],
+                )
+            );
+
+            return response()->json(
+                [
+                    'token' => $user->token,
+                    'user' => $user,
+                ],
+                200
+            );
         } catch (\Exception $exception) {
             return response()->json(['error' => $exception->getMessage()], 401);
         }

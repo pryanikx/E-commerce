@@ -20,6 +20,11 @@ class RegisterDTO
     ) {
     }
 
+    /**
+     * Convert DTO to array.
+     *
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [

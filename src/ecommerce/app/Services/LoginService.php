@@ -4,51 +4,45 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTO\User\LoginDTO;
+use App\DTO\User\UserDTO;
 use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 
 class LoginService
 {
     /**
      * @param AuthFactory $auth
+     * @param UserRepositoryInterface $userRepository
      */
     public function __construct(
-        private readonly AuthFactory $auth
+        private readonly AuthFactory $auth,
+        private readonly UserRepositoryInterface $userRepository,
     ) {
     }
 
     /**
      * Login an existing user/admin.
      *
-     * @param array<string, string> $requestValidated
+     * @param LoginDTO $dto
      *
-     * @return array<string, mixed>
+     * @return UserDTO|array<string, null>
      * @throws \Exception
      */
-    public function login(array $requestValidated): array
+    public function login(LoginDTO $dto): UserDTO|array
     {
-        if (!$this->auth->guard()->attempt($requestValidated)) {
+        if (!$this->auth->guard()->attempt($dto->toArray())) {
             return [
                 'token' => null,
-                'user' => null,
+                'user' => null
             ];
         }
 
         $user = $this->auth->guard()->user();
+        $token = $this->userRepository->createAccessToken($user);
 
-        if (!$user) {
-            return [
-                'token' => null,
-                'user' => null,
-            ];
-        }
-
-        $token = $user->createToken('token')->plainTextToken;
-
-        return [
-            'token' => $token,
-            'user' => $user,
-        ];
+        return $this->userRepository->mapToDTO($user, $token);
     }
 
     /**
@@ -60,6 +54,6 @@ class LoginService
      */
     public function logout(User $user): void
     {
-        $user->currentAccessToken()->delete();
+        $this->userRepository->deleteAccessToken($user);
     }
 }
