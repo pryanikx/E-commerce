@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories\Contracts;
 
 use App\DTO\Manufacturer\ManufacturerDTO;
+use App\DTO\Manufacturer\ManufacturerStoreDTO;
+use App\DTO\Manufacturer\ManufacturerUpdateDTO;
 
 interface ManufacturerRepositoryInterface
 {
@@ -27,21 +29,20 @@ interface ManufacturerRepositoryInterface
     /**
      * Create a new manufacturer.
      *
-     * @param array<string, mixed> $array
+     * @param ManufacturerStoreDTO $dto
      *
      * @return ManufacturerDTO
      */
-    public function create(array $array): ManufacturerDTO;
+    public function create(ManufacturerStoreDTO $dto): ManufacturerDTO;
 
     /**
      * Update an existing manufacturer.
      *
-     * @param int $id
-     * @param array<string, mixed> $data
+     * @param ManufacturerUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(int $id, array $data): bool;
+    public function update(ManufacturerUpdateDTO $dto): bool;
 
     /**
      * Delete a manufacturer by ID.

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\DTO\Manufacturer\ManufacturerStoreDTO;
+use App\DTO\Manufacturer\ManufacturerUpdateDTO;
 use App\Exceptions\DeleteDataException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacturer\ManufacturerStoreRequest;
@@ -16,8 +18,9 @@ class AdminManufacturerController extends Controller
     /**
      * @param ManufacturerService $manufacturerService
      */
-    public function __construct(private readonly ManufacturerService $manufacturerService)
-    {
+    public function __construct(
+        private readonly ManufacturerService $manufacturerService
+    ) {
     }
 
     /**
@@ -50,7 +53,13 @@ class AdminManufacturerController extends Controller
      */
     public function store(ManufacturerStoreRequest $request): JsonResponse
     {
-        $manufacturer = $this->manufacturerService->createManufacturer($request->validated());
+        $requestValidated = $request->validated();
+
+        $manufacturer = $this->manufacturerService->createManufacturer(
+            new ManufacturerStoreDTO(
+                $requestValidated['name'],
+            )
+        );
 
         return response()->json($manufacturer, 201);
     }
@@ -65,7 +74,14 @@ class AdminManufacturerController extends Controller
      */
     public function update(int $id, ManufacturerUpdateRequest $request): JsonResponse
     {
-        $manufacturer = $this->manufacturerService->updateManufacturer($id, $request->validated());
+        $requestValidated = $request->validated();
+
+        $manufacturer = $this->manufacturerService->updateManufacturer(
+            new ManufacturerUpdateDTO(
+                $requestValidated['id'],
+                $requestValidated['name'],
+            )
+        );
 
         return response()->json($manufacturer, 200);
     }

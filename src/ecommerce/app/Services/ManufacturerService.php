@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTO\Manufacturer\ManufacturerDTO;
+use App\DTO\Manufacturer\ManufacturerStoreDTO;
+use App\DTO\Manufacturer\ManufacturerUpdateDTO;
 use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\ManufacturerRepositoryInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
@@ -19,7 +21,7 @@ class ManufacturerService
      */
     public function __construct(
         private readonly ManufacturerRepositoryInterface $manufacturerRepository,
-        private readonly CacheInterface                  $cache,
+        private readonly CacheInterface $cache,
     ) {
     }
 
@@ -36,15 +38,13 @@ class ManufacturerService
     /**
      * Create a new manufacturer.
      *
-     * @param array<string, mixed> $requestValidated
+     * @param ManufacturerStoreDTO $dto
      *
      * @return ManufacturerDTO
      */
-    public function createManufacturer(array $requestValidated): ManufacturerDTO
+    public function createManufacturer(ManufacturerStoreDTO $dto): ManufacturerDTO
     {
-        $manufacturer = $this->manufacturerRepository->create([
-            'name' => $requestValidated['name'],
-        ]);
+        $manufacturer = $this->manufacturerRepository->create($dto);
 
         $this->cacheManufacturers();
 
@@ -54,24 +54,21 @@ class ManufacturerService
     /**
      * Update an existing manufacturer by ID.
      *
-     * @param int $id
-     * @param array<string, mixed> $requestValidated
+     * @param ManufacturerUpdateDTO $dto
      *
      * @return ManufacturerDTO
      */
-    public function updateManufacturer(int $id, array $requestValidated): ManufacturerDTO
+    public function updateManufacturer(ManufacturerUpdateDTO $dto): ManufacturerDTO
     {
-        $manufacturer = $this->manufacturerRepository->find($id);
+        $manufacturer = $this->manufacturerRepository->find($dto->id);
 
-        $data = [
-            'name' => $requestValidated['name'] ?? $manufacturer->name,
-        ];
+        $dto->name = $dto->name ?? $manufacturer->name;
 
-        $this->manufacturerRepository->update($id, $data);
+        $this->manufacturerRepository->update($dto);
 
         $this->cacheManufacturers();
 
-        return $this->manufacturerRepository->find($id);
+        return $this->manufacturerRepository->find($dto->id);
     }
 
     /**
