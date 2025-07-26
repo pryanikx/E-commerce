@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\DTO\Product\ProductDTO;
 use App\DTO\Product\ProductStatsDTO;
+use App\DTO\Product\ProductStoreDTO;
+use App\DTO\Product\ProductUpdateDTO;
 use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Services\Support\ImageService;
@@ -83,28 +85,20 @@ class ProductService
     /**
      * Create a new product.
      *
-     * @param array<string, mixed> $requestValidated
+     * @param ProductStoreDTO $dto
+     *
      * @return ProductDTO
      */
-    public function createProduct(array $requestValidated): ProductDTO
+    public function createProduct(ProductStoreDTO $dto): ProductDTO
     {
-        $imagePath = $this->imageService->handleImagePath($requestValidated['image']);
-        $processedMaintenances = $this->transformer->
-        formatMaintenancesForStorage($requestValidated['maintenances']);
+        $dto->image = $this->imageService->handleImagePath($dto->image);
+        $dto->maintenances = $this->transformer
+            ->formatMaintenancesForStorage($dto->maintenances);
 
-        $createdProduct = $this->productRepository->create([
-            'name' => $requestValidated['name'],
-            'article' => $requestValidated['article'],
-            'description' => $requestValidated['description'],
-            'release_date' => $requestValidated['release_date'],
-            'price' => $requestValidated['price'],
-            'image_path' => $imagePath,
-            'manufacturer_id' => $requestValidated['manufacturer_id'],
-            'category_id' => $requestValidated['category_id'],
-        ]);
+        $createdProduct = $this->productRepository->create($dto);
 
-        if (!empty($processedMaintenances)) {
-            $this->productRepository->attachMaintenances($createdProduct->id, $processedMaintenances);
+        if (!empty($dto->maintenances)) {
+            $this->productRepository->attachMaintenances($createdProduct->id, $dto->maintenances);
         }
 
         $transformedProduct = $this->transformer->transform($createdProduct);
@@ -116,40 +110,38 @@ class ProductService
     /**
      * Update an existing product by ID.
      *
-     * @param int $id
-     * @param array<string, mixed> $requestValidated
+     * @param ProductUpdateDTO $dto
+     *
      * @return ProductDTO
      */
-    public function updateProduct(int $id, array $requestValidated): ProductDTO
+    public function updateProduct(ProductUpdateDTO $dto): ProductDTO
     {
-        $product = $this->productRepository->find($id);
+        $product = $this->productRepository->find($dto->id);
 
-        $updateData = [
-            'name' => $requestValidated['name'] ?? $product->name,
-            'article' => $requestValidated['article'] ?? $product->article,
-            'description' => $requestValidated['description'] ?? $product->description,
-            'release_date' => $requestValidated['release_date'] ?? $product->releaseDate,
-            'price' => $requestValidated['price'] ?? $product->price,
-            'manufacturer_id' => $requestValidated['manufacturer_id'] ?? $product->manufacturerId,
-            'category_id' => $requestValidated['category_id'] ?? $product->categoryId,
-            'image_path' => $requestValidated['image'] !== null ?
-                $this->imageService->handleImagePath($requestValidated['image'], $product->imagePath) :
-                $product->imagePath,
-        ];
+        $dto->name = $dto->name ?? $product->name;
+        $dto->article = $dto->article ?? $product->article;
+        $dto->description = $dto->description ?? $product->description;
+        $dto->releaseDate = $dto->releaseDate ?? $product->releaseDate;
+        $dto->price = $dto->price ?? $product->price;
+        $dto->manufacturerId = $dto->manufacturerId ?? $product->manufacturerId;
+        $dto->categoryId = $dto->categoryId ?? $product->categoryId;
+        $dto->image = $dto->image !== null
+            ? $this->imageService->handleImagePath($dto->image, $product->imagePath)
+            : $product->imagePath;
 
-        $this->productRepository->update($id, $updateData);
+        $this->productRepository->update($dto);
 
-        if ($requestValidated['maintenances'] !== null) {
+        if ($dto->maintenances !== null) {
             $processedMaintenances = $this->transformer->
-            formatMaintenancesForStorage($requestValidated['maintenances']);
+            formatMaintenancesForStorage($dto->maintenances);
 
-            $this->productRepository->attachMaintenances($id, $processedMaintenances);
+            $this->productRepository->attachMaintenances($dto->id, $processedMaintenances);
         }
 
-        $updatedProduct = $this->productRepository->find($id);
+        $updatedProduct = $this->productRepository->find($dto->id);
         $transformedProduct = $this->transformer->transform($updatedProduct);
 
-        $this->cache->put($this->getProductCacheKey($id), $transformedProduct);
+        $this->cache->put($this->getProductCacheKey($dto->id), $transformedProduct);
 
         return $transformedProduct;
     }

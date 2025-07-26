@@ -6,6 +6,8 @@ namespace App\Repositories\Contracts;
 
 use App\DTO\Product\ProductDTO;
 use App\DTO\Product\ProductStatsDTO;
+use App\DTO\Product\ProductStoreDTO;
+use App\DTO\Product\ProductUpdateDTO;
 
 interface ProductRepositoryInterface
 {
@@ -35,21 +37,20 @@ interface ProductRepositoryInterface
     /**
      * Create a new product.
      *
-     * @param array<string, mixed> $data
+     * @param ProductStoreDTO $dto
      *
      * @return ProductDTO
      */
-    public function create(array $data): ProductDTO;
+    public function create(ProductStoreDTO $dto): ProductDTO;
 
     /**
      * Update an existing product.
      *
-     * @param int $id
-     * @param array<string, mixed> $data
+     * @param ProductUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(int $id, array $data): bool;
+    public function update(ProductUpdateDTO $dto): bool;
 
     /**
      * Delete an existing product by ID.

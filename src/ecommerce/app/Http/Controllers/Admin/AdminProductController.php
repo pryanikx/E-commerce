@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\DTO\Product\ProductStoreDTO;
+use App\DTO\Product\ProductUpdateDTO;
 use App\Exceptions\DeleteDataException;
 use App\Http\Controllers\User\ProductController;
 use App\Http\Requests\Product\ProductStoreRequest;
@@ -21,7 +23,21 @@ class AdminProductController extends ProductController
      */
     public function store(ProductStoreRequest $request): JsonResponse
     {
-        $product = $this->productService->createProduct($request->validated());
+        $requestValidated = $request->validated();
+
+        $product = $this->productService->createProduct(
+            new ProductStoreDTO(
+                $requestValidated['name'],
+                $requestValidated['article'],
+                $requestValidated['description'],
+                $requestValidated['release_date'],
+                $requestValidated['price'],
+                $requestValidated['image'],
+                $requestValidated['manufacturer_id'],
+                $requestValidated['category_id'],
+                $requestValidated['maintenance_ids'],
+            )
+        );
 
         return response()->json($product, 201);
     }
@@ -36,7 +52,22 @@ class AdminProductController extends ProductController
      */
     public function update(int $id, ProductUpdateRequest $request): JsonResponse
     {
-        $product = $this->productService->updateProduct($id, $request->validated());
+        $requestValidated = $request->validated();
+
+        $product = $this->productService->updateProduct(
+            new ProductUpdateDTO(
+                $requestValidated['id'],
+                $requestValidated['name'],
+                $requestValidated['article'],
+                $requestValidated['description'],
+                $requestValidated['release_date'],
+                $requestValidated['price'],
+                $requestValidated['image'],
+                $requestValidated['manufacturer_id'],
+                $requestValidated['category_id'],
+                $requestValidated['maintenance_ids'],
+            )
+        );
 
         return response()->json($product, 200);
     }

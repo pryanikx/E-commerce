@@ -6,6 +6,8 @@ namespace App\Repositories;
 
 use App\DTO\Product\ProductDTO;
 use App\DTO\Product\ProductStatsDTO;
+use App\DTO\Product\ProductStoreDTO;
+use App\DTO\Product\ProductUpdateDTO;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 
@@ -53,13 +55,13 @@ class ProductRepository implements ProductRepositoryInterface
     /**
      * Create a new product.
      *
-     * @param array<string, mixed> $data
+     * @param ProductStoreDTO $dto
      *
      * @return ProductDTO
      */
-    public function create(array $data): ProductDTO
+    public function create(ProductStoreDTO $dto): ProductDTO
     {
-        $product = Product::create($data);
+        $product = Product::create($dto->toArray());
 
         $product->load(['manufacturer', 'category', 'maintenances']);
 
@@ -69,16 +71,15 @@ class ProductRepository implements ProductRepositoryInterface
     /**
      * Update an existing product.
      *
-     * @param int $id
-     * @param array<string, mixed> $data
+     * @param ProductUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(int $id, array $data): bool
+    public function update(ProductUpdateDTO $dto): bool
     {
-        $product = Product::findOrFail($id);
+        $product = Product::findOrFail($dto->id);
 
-        return $product->update($data);
+        return $product->update($dto->toArray());
     }
 
     /**
