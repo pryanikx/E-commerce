@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories\Contracts;
 
 use App\DTO\Maintenance\MaintenanceDTO;
+use App\DTO\Maintenance\MaintenanceStoreDTO;
+use App\DTO\Maintenance\MaintenanceUpdateDTO;
 
 interface MaintenanceRepositoryInterface
 {
@@ -27,21 +29,20 @@ interface MaintenanceRepositoryInterface
     /**
      * Create new maintenance.
      *
-     * @param array<string, mixed> $array
+     * @param MaintenanceStoreDTO $dto
      *
      * @return MaintenanceDTO
      */
-    public function create(array $array): MaintenanceDTO;
+    public function create(MaintenanceStoreDTO $dto): MaintenanceDTO;
 
     /**
      * Update existing maintenance.
      *
-     * @param int $id
-     * @param array<string, mixed> $data
+     * @param MaintenanceUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(int $id, array $data): bool;
+    public function update(MaintenanceUpdateDTO $dto): bool;
 
     /**
      * Delete maintenance by ID.

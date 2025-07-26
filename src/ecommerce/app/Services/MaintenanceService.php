@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTO\Maintenance\MaintenanceDTO;
+use App\DTO\Maintenance\MaintenanceStoreDTO;
+use App\DTO\Maintenance\MaintenanceUpdateDTO;
 use App\Exceptions\DeleteDataException;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
@@ -36,17 +38,13 @@ class MaintenanceService
     /**
      * Create new maintenance.
      *
-     * @param array<string, mixed> $requestValidated
+     * @param MaintenanceStoreDTO $dto
      *
      * @return MaintenanceDTO
      */
-    public function createMaintenance(array $requestValidated): MaintenanceDTO
+    public function createMaintenance(MaintenanceStoreDTO $dto): MaintenanceDTO
     {
-        $maintenance = $this->maintenanceRepository->create([
-            'name' => $requestValidated['name'],
-            'description' => $requestValidated['description'],
-            'duration' => $requestValidated['duration'],
-        ]);
+        $maintenance = $this->maintenanceRepository->create($dto);
 
         $this->cacheMaintenances();
 
@@ -56,26 +54,23 @@ class MaintenanceService
     /**
      * Update existing maintenance by ID.
      *
-     * @param int $id
-     * @param array<string, mixed> $requestValidated
+     * @param MaintenanceUpdateDTO $dto
      *
      * @return MaintenanceDTO
      */
-    public function updateMaintenance(int $id, array $requestValidated): MaintenanceDTO
+    public function updateMaintenance(MaintenanceUpdateDTO $dto): MaintenanceDTO
     {
-        $maintenance = $this->maintenanceRepository->find($id);
+        $maintenance = $this->maintenanceRepository->find($dto->id);
 
-        $data = [
-            'name' => $requestValidated['name'] ?? $maintenance->name,
-            'description' => $requestValidated['description'] ?? $maintenance->description,
-            'duration' => $requestValidated['duration'] ?? $maintenance->duration,
-        ];
+        $dto->name = $dto->name ?? $maintenance->name;
+        $dto->description = $dto->description  ?? $maintenance->description;
+        $dto->duration = $dto->duration ?? $maintenance->duration;
 
-        $this->maintenanceRepository->update($id, $data);
+        $this->maintenanceRepository->update($dto);
 
         $this->cacheMaintenances();
 
-        return $this->maintenanceRepository->find($id);
+        return $this->maintenanceRepository->find($dto->id);
     }
 
     /**

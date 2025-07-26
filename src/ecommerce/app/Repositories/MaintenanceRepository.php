@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\DTO\Maintenance\MaintenanceDTO;
+use App\DTO\Maintenance\MaintenanceStoreDTO;
+use App\DTO\Maintenance\MaintenanceUpdateDTO;
 use App\Models\Maintenance;
 use App\Repositories\Contracts\MaintenanceRepositoryInterface;
 
@@ -38,13 +40,13 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
     /**
      * Create new maintenance.
      *
-     * @param array<string, mixed> $array
+     * @param MaintenanceStoreDTO $dto
      *
      * @return MaintenanceDTO
      */
-    public function create(array $array): MaintenanceDTO
+    public function create(MaintenanceStoreDTO $dto): MaintenanceDTO
     {
-        $maintenance = Maintenance::create($array);
+        $maintenance = Maintenance::create((array) $dto);
 
         return $this->mapToDTO($maintenance);
     }
@@ -52,16 +54,15 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
     /**
      * Update existing maintenance.
      *
-     * @param int $id
-     * @param array<string, mixed> $data
+     * @param MaintenanceUpdateDTO $dto
      *
      * @return bool
      */
-    public function update(int $id, array $data): bool
+    public function update(MaintenanceUpdateDTO $dto): bool
     {
-        $maintenance = Maintenance::findOrFail($id);
+        $maintenance = Maintenance::findOrFail($dto->id);
 
-        return $maintenance->update($data);
+        return $maintenance->update((array) $dto);
     }
 
     /**
