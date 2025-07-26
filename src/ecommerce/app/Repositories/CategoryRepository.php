@@ -62,7 +62,7 @@ class CategoryRepository implements CategoryRepositoryInterface
      */
     public function create(CategoryStoreDTO $dto): CategoryDTO
     {
-        $category = Category::create((array) $dto);
+        $category = Category::create($dto->toArray());
 
         return $this->mapToDTO($category);
     }
@@ -78,7 +78,7 @@ class CategoryRepository implements CategoryRepositoryInterface
     {
         $category = Category::findOrFail($dto->id);
 
-        return $category->update((array) $dto);
+        return $category->update($dto->toArray());
     }
 
     /**

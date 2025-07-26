@@ -46,7 +46,7 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
      */
     public function create(MaintenanceStoreDTO $dto): MaintenanceDTO
     {
-        $maintenance = Maintenance::create((array) $dto);
+        $maintenance = Maintenance::create($dto->toArray());
 
         return $this->mapToDTO($maintenance);
     }
@@ -62,7 +62,7 @@ class MaintenanceRepository implements MaintenanceRepositoryInterface
     {
         $maintenance = Maintenance::findOrFail($dto->id);
 
-        return $maintenance->update((array) $dto);
+        return $maintenance->update($dto->toArray());
     }
 
     /**

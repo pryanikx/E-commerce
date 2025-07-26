@@ -46,7 +46,7 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
      */
     public function create(ManufacturerStoreDTO $dto): ManufacturerDTO
     {
-        $manufacturer = Manufacturer::create((array) $dto);
+        $manufacturer = Manufacturer::create($dto->toArray());
 
         return $this->mapToDTO($manufacturer);
     }
@@ -62,7 +62,7 @@ class ManufacturerRepository implements ManufacturerRepositoryInterface
     {
         $manufacturer = Manufacturer::findOrFail($dto->id);
 
-        return $manufacturer->update((array) $dto);
+        return $manufacturer->update($dto->toArray());
     }
 
     /**

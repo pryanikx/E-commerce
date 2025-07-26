@@ -33,7 +33,7 @@ class ProductStoreDTO
     }
 
     /**
-     * Transform a dto object to array.
+     * Transform a DTO object to array.
      *
      * @return array<string, mixed>
      */

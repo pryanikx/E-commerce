@@ -17,4 +17,18 @@ class MaintenanceStoreDTO
         public ?string $duration,
     ) {
     }
+
+    /**
+     * Transform a DTO object to array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+            'duration' => $this->duration,
+        ];
+    }
 }

@@ -13,4 +13,16 @@ class ManufacturerStoreDTO
         public string $name,
     ) {
     }
+
+    /**
+     * Transform a DTO object to array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+        ];
+    }
 }
