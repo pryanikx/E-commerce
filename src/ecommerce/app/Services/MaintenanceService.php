@@ -62,9 +62,9 @@ class MaintenanceService
     {
         $maintenance = $this->maintenanceRepository->find($dto->id);
 
-        $dto->name = $dto->name ?? $maintenance->name;
-        $dto->description = $dto->description  ?? $maintenance->description;
-        $dto->duration = $dto->duration ?? $maintenance->duration;
+        $dto->name ??= $maintenance->name;
+        $dto->description ??= $maintenance->description;
+        $dto->duration ??= $maintenance->duration;
 
         $this->maintenanceRepository->update($dto);
 

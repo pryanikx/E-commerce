@@ -62,7 +62,7 @@ class ManufacturerService
     {
         $manufacturer = $this->manufacturerRepository->find($dto->id);
 
-        $dto->name = $dto->name ?? $manufacturer->name;
+        $dto->name ??= $manufacturer->name;
 
         $this->manufacturerRepository->update($dto);
 

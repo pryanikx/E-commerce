@@ -83,8 +83,8 @@ class CategoryService
     {
         $category = $this->categoryRepository->find($dto->id);
 
-        $dto->name = $dto->name ?? $category->name;
-        $dto->alias = $dto->alias ?? Str::slug($dto->name);
+        $dto->name ??= $category->name;
+        $dto->alias ??= Str::slug($dto->name);
 
         $this->categoryRepository->update($dto);
         $this->cacheCategories();

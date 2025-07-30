@@ -32,7 +32,7 @@ class CurrencyCalculatorService
      */
     public function convert(float $price, ?array $targetCurrencies = null): array
     {
-        $targetCurrencies = $targetCurrencies ?? $this->supportedCurrencies;
+        $targetCurrencies ??= $this->supportedCurrencies;
         $rates = $this->source->getExchangeRates($this->baseCurrency);
         $converted = [];
 

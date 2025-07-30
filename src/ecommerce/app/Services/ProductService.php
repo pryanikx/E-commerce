@@ -118,13 +118,13 @@ class ProductService
     {
         $product = $this->productRepository->find($dto->id);
 
-        $dto->name = $dto->name ?? $product->name;
-        $dto->article = $dto->article ?? $product->article;
-        $dto->description = $dto->description ?? $product->description;
-        $dto->releaseDate = $dto->releaseDate ?? $product->releaseDate;
-        $dto->price = $dto->price ?? $product->price;
-        $dto->manufacturerId = $dto->manufacturerId ?? $product->manufacturerId;
-        $dto->categoryId = $dto->categoryId ?? $product->categoryId;
+        $dto->name ??= $product->name;
+        $dto->article ??= $product->article;
+        $dto->description ??= $product->description;
+        $dto->releaseDate ??= $product->releaseDate;
+        $dto->price ??= $product->price;
+        $dto->manufacturerId ??= $product->manufacturerId;
+        $dto->categoryId ??= $product->categoryId;
         $dto->image = $dto->image !== null
             ? $this->imageService->handleImagePath($dto->image, $product->imagePath)
             : $product->imagePath;
